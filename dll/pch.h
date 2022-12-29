@@ -8,8 +8,7 @@
 #define PCH_H
 
 // add headers that you want to pre-compile here
-#include "framework.h"
-
+#include <windows.h>
 #include <iostream>
 #include <iomanip>
 #include <filesystem>
@@ -18,10 +17,14 @@
 #include <mutex>
 #include <set>
 
-#include <d3d9.h>
-#include <d3dx9.h>
+// #include <d3d9.h>
+// #include <d3dx9.h>
+// #pragma comment(lib, "d3d9.lib")
+// #pragma comment(lib, "d3dx9.lib")
 
-#pragma comment(lib, "d3d9.lib")
-#pragma comment(lib, "d3dx9.lib")
+#include <D3D11.h>
+#include <D3DX11.h>
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "d3dx11.lib")
 
 #endif //PCH_H

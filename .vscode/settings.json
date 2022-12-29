@@ -1,0 +1,14 @@
+{
+    "files.exclude": {
+        "**/*.sln": true,
+        "**/*.vcxproj*": true,
+        "**/*.vcxproj.filters": true,
+        "**/*.vs": true,
+        "dll/Debug": true,
+        "dll/x64": true,
+    },
+    "files.associations": {
+        "iomanip": "cpp",
+        "string": "cpp"
+    }
+}
