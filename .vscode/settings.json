@@ -10,5 +10,6 @@
     "files.associations": {
         "iomanip": "cpp",
         "string": "cpp"
-    }
+    },
+    "workspace_superhotmcc": true
 }

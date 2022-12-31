@@ -12,7 +12,8 @@
                 "isDefault": true
             },
             "presentation": {
-                "reveal": "always"
+                "reveal": "always",
+                "clear": true
             },
             // Use the standard MS compiler pattern to detect errors, warnings and infos
             "problemMatcher": "$msCompile"
@@ -20,7 +21,34 @@
         {
             "label": "create header",
             "type": "shell",
-            "command": ""
-        }
+            // "command": "echo ${fileWorkspaceFolder}\\headers\\${fileBasenameNoExtension}.h",
+            "command": [
+                "$File = '${fileDirname}\\headers\\${fileBasenameNoExtension}.h'; if(!(Test-Path $File)) {New-Item -path $File -value '// Generated header' -Force}"
+            ],
+            "presentation": {
+                "reveal": "never"
+            },
+        },
+        {
+            "label": "open header",
+            "type": "shell",
+            "command": [
+                "$File = '${fileDirname}\\headers\\${fileBasenameNoExtension}.h'; code -r $File"
+            ],
+            "presentation": {
+                "reveal": "never"
+            },
+        },
+        {
+            "label": "create and open header",
+            "dependsOn": [
+                "create header",
+                "open header"
+            ],
+            "dependsOrder": "sequence",
+            "presentation": {
+                "reveal": "never"
+            },
+        },
     ]
 }

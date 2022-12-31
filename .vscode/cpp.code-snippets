@@ -1,0 +1,6 @@
+{
+	"Include Header": {
+		"prefix": "header",
+		"body": "#include \"./headers/${TM_FILENAME_BASE}.h\"",
+	}
+}
