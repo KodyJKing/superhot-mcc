@@ -2,6 +2,63 @@
 <CheatTable CheatEngineTableVersion="38">
   <CheatEntries>
     <CheatEntry>
+      <ID>16</ID>
+      <Description>"DLL"</Description>
+      <Options moAlwaysHideChildren="1" moManualExpandCollapse="1"/>
+      <LastState Value="" RealAddress="00000000"/>
+      <GroupHeader>1</GroupHeader>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>13</ID>
+          <Description>"Inject DLL"</Description>
+          <LastState/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+{$lua}
+if syntaxcheck then return end
+tryInjectDll(memrec, "dll")
+{$asm}
+[DISABLE]
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Toggle Activation</Action>
+              <Keys>
+                <Key>121</Key>
+              </Keys>
+              <ID>0</ID>
+              <ActivateSound>Activate</ActivateSound>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>14</ID>
+          <Description>"Reopen Process"</Description>
+          <LastState/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+{$lua}
+if syntaxcheck then return end
+reopenProcess(memrec)
+{$asm}
+[DISABLE]
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Toggle Activation</Action>
+              <Keys>
+                <Key>120</Key>
+              </Keys>
+              <ID>0</ID>
+              <ActivateSound>Deactivate</ActivateSound>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
       <ID>12</ID>
       <Description>"Cheats"</Description>
       <Options moAlwaysHideChildren="1" moManualExpandCollapse="1"/>
@@ -11,7 +68,7 @@
         <CheatEntry>
           <ID>4</ID>
           <Description>"Instant Regen"</Description>
-          <LastState Activated="1"/>
+          <LastState/>
           <VariableType>Auto Assembler Script</VariableType>
           <AssemblerScript>{ Game   : MCC-Win64-Shipping.exe
   Version: 
@@ -80,6 +137,115 @@ dealloc(newmem)
 }
 </AssemblerScript>
         </CheatEntry>
+        <CheatEntry>
+          <ID>15</ID>
+          <Description>"Heal On Damage"</Description>
+          <LastState/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>{ Game   : mcc-win64-shipping.exe
+  Version: 
+  Date   : 2022-12-31
+  Author : Kody
+
+  This script does blah blah blah
+}
+
+[ENABLE]
+
+aobscanmodule(HealOnDamage,halo1.dll,F3 0F 11 83 9C 00 00 00 EB) // should be unique
+alloc(newmem,$1000,HealOnDamage)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+
+  push rax
+  push rbx
+  push rcx
+  push rdx
+  push rsi
+  push rdi
+  push rbp
+  push rsp
+  push r8
+  push r9
+  push r10
+  push r11
+  push r12
+  push r13
+  push r14
+  push r15
+
+{$ccode entityPtr=rbx}
+  float* pHealth = (float*)(entityPtr + 0x9C);
+  *pHealth = 1.0f;
+{$asm}
+
+  pop r15
+  pop r14
+  pop r13
+  pop r12
+  pop r11
+  pop r10
+  pop r9
+  pop r8
+  pop rsp
+  pop rbp
+  pop rdi
+  pop rsi
+  pop rdx
+  pop rcx
+  pop rbx
+  pop rax
+
+  jmp return
+
+HealOnDamage:
+  jmp newmem
+  nop 3
+return:
+registersymbol(HealOnDamage)
+
+[DISABLE]
+
+HealOnDamage:
+  db F3 0F 11 83 9C 00 00 00
+
+unregistersymbol(HealOnDamage)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: 7FFBEF60909C
+
+7FFBEF60906A: 0F 2F 83 9C 00 00 00     - comiss xmm0,[rbx+0000009C]
+7FFBEF609071: 0F 28 F0                 - movaps xmm6,xmm0
+7FFBEF609074: 76 08                    - jna 7FFBEF60907E
+7FFBEF609076: 41 0F BA E9 07           - bts r9d,07
+7FFBEF60907B: 45 89 0F                 - mov [r15],r9d
+7FFBEF60907E: 0F B6 AC 24 20 01 00 00  - movzx ebp,byte ptr [rsp+00000120]
+7FFBEF609086: 40 80 FD 01              - cmp bpl,01
+7FFBEF60908A: 0F 85 DA 00 00 00        - jne 7FFBEF60916A
+7FFBEF609090: F3 0F 10 83 9C 00 00 00  - movss xmm0,[rbx+0000009C]
+7FFBEF609098: F3 0F 5C C6              - subss xmm0,xmm6
+// ---------- INJECTING HERE ----------
+7FFBEF60909C: F3 0F 11 83 9C 00 00 00  - movss [rbx+0000009C],xmm0
+// ---------- DONE INJECTING  ----------
+7FFBEF6090A4: EB 12                    - jmp 7FFBEF6090B8
+7FFBEF6090A6: 0F B6 AC 24 20 01 00 00  - movzx ebp,byte ptr [rsp+00000120]
+7FFBEF6090AE: 40 80 FD 01              - cmp bpl,01
+7FFBEF6090B2: 0F 85 B2 00 00 00        - jne 7FFBEF60916A
+7FFBEF6090B8: 66 41 83 FD FF           - cmp r13w,-01
+7FFBEF6090BD: 0F 84 A7 00 00 00        - je 7FFBEF60916A
+7FFBEF6090C3: 0F B7 83 30 01 00 00     - movzx eax,word ptr [rbx+00000130]
+7FFBEF6090CA: 41 0F B6 CD              - movzx ecx,r13l
+7FFBEF6090CE: 0F A3 C8                 - bt eax,ecx
+7FFBEF6090D1: 0F 82 93 00 00 00        - jb 7FFBEF60916A
+}
+</AssemblerScript>
+        </CheatEntry>
       </CheatEntries>
     </CheatEntry>
     <CheatEntry>
@@ -92,17 +258,12 @@ dealloc(newmem)
         <CheatEntry>
           <ID>10</ID>
           <Description>"halo1.dll"</Description>
+          <LastState Value="9460301" RealAddress="7FFBEE9F0000"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>halo1.dll</Address>
         </CheatEntry>
       </CheatEntries>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>9</ID>
-      <Description>"Health"</Description>
-      <VariableType>Float</VariableType>
-      <Address>22769A62574+9C</Address>
     </CheatEntry>
   </CheatEntries>
   <CheatCodes>
@@ -557,5 +718,8 @@ dealloc(newmem)
       </Elements>
     </Structure>
   </Structures>
-  <Comments>Previous halo1.dll base: 7FFBD4F00000</Comments>
+  <Comments>Previous halo1.dll base: 7FFBD4F00000
+</Comments>
+  <LuaScript>dofile("lua/tablemain.lua")
+</LuaScript>
 </CheatTable>

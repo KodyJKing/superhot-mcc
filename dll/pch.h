@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <mutex>
 #include <set>
+#include <exception>
 
 // #include <d3d9.h>
 // #include <d3dx9.h>
