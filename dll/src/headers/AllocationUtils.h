@@ -4,7 +4,9 @@ namespace AllocationUtils {
 
     UINT_PTR findFreePageNear(UINT_PTR address, size_t minSize);
 
-    UINT_PTR VirtualAllocNear(UINT_PTR address, size_t size, DWORD flAllocationType, DWORD flProtect);
+    UINT_PTR virtualAllocNear(UINT_PTR address, size_t size, DWORD flAllocationType, DWORD flProtect);
+
+    void test_virtualAllocNear(UINT_PTR address, size_t size);
     
 }
 

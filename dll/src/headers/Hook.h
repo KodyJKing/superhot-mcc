@@ -44,7 +44,8 @@ namespace Hook {
         void writePopState(char ** head);
         void writeJump(char ** head, UINT_PTR hookFunc);
         void writeCall(char ** head, UINT_PTR hookFunc);
-
+        void writeAbsoluteJump(char** head, UINT_PTR hookFunc);
+        void writeAbsoluteCall(char** head, UINT_PTR hookFunc);
     };
 
     JumpHook addJumpHook(

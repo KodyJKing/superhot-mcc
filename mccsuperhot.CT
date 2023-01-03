@@ -263,6 +263,75 @@ dealloc(newmem)
           <VariableType>4 Bytes</VariableType>
           <Address>halo1.dll</Address>
         </CheatEntry>
+        <CheatEntry>
+          <ID>18</ID>
+          <Description>"Shellcode Scratch"</Description>
+          <LastState/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>{ Game   : mcc-win64-shipping.exe
+  Version: 
+  Date   : 2023-01-03
+  Author : Kody
+
+  This script does blah blah blah
+}
+
+[ENABLE]
+
+aobscanmodule(INJECT,halo1.dll,F3 0F 11 83 9C 00 00 00 EB) // should be unique
+alloc(newmem,$1000,INJECT)
+
+label(code)
+label(return)
+
+newmem:
+
+code:
+  call 1212121234343434
+
+INJECT:
+  jmp newmem
+  nop 3
+return:
+registersymbol(INJECT)
+
+[DISABLE]
+
+INJECT:
+  db F3 0F 11 83 9C 00 00 00
+
+unregistersymbol(INJECT)
+dealloc(newmem)
+
+{
+// ORIGINAL CODE - INJECTION POINT: 7FFBEF60909C
+
+7FFBEF60906A: 0F 2F 83 9C 00 00 00     - comiss xmm0,[rbx+0000009C]
+7FFBEF609071: 0F 28 F0                 - movaps xmm6,xmm0
+7FFBEF609074: 76 08                    - jna 7FFBEF60907E
+7FFBEF609076: 41 0F BA E9 07           - bts r9d,07
+7FFBEF60907B: 45 89 0F                 - mov [r15],r9d
+7FFBEF60907E: 0F B6 AC 24 20 01 00 00  - movzx ebp,byte ptr [rsp+00000120]
+7FFBEF609086: 40 80 FD 01              - cmp bpl,01
+7FFBEF60908A: 0F 85 DA 00 00 00        - jne 7FFBEF60916A
+7FFBEF609090: F3 0F 10 83 9C 00 00 00  - movss xmm0,[rbx+0000009C]
+7FFBEF609098: F3 0F 5C C6              - subss xmm0,xmm6
+// ---------- INJECTING HERE ----------
+7FFBEF60909C: F3 0F 11 83 9C 00 00 00  - movss [rbx+0000009C],xmm0
+// ---------- DONE INJECTING  ----------
+7FFBEF6090A4: EB 12                    - jmp 7FFBEF6090B8
+7FFBEF6090A6: 0F B6 AC 24 20 01 00 00  - movzx ebp,byte ptr [rsp+00000120]
+7FFBEF6090AE: 40 80 FD 01              - cmp bpl,01
+7FFBEF6090B2: 0F 85 B2 00 00 00        - jne 7FFBEF60916A
+7FFBEF6090B8: 66 41 83 FD FF           - cmp r13w,-01
+7FFBEF6090BD: 0F 84 A7 00 00 00        - je 7FFBEF60916A
+7FFBEF6090C3: 0F B7 83 30 01 00 00     - movzx eax,word ptr [rbx+00000130]
+7FFBEF6090CA: 41 0F B6 CD              - movzx ecx,r13l
+7FFBEF6090CE: 0F A3 C8                 - bt eax,ecx
+7FFBEF6090D1: 0F 82 93 00 00 00        - jb 7FFBEF60916A
+}
+</AssemblerScript>
+        </CheatEntry>
       </CheatEntries>
     </CheatEntry>
   </CheatEntries>

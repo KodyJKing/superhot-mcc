@@ -1,5 +1,10 @@
 #include "./headers/Hook.h"
 #include "./headers/AllocationUtils.h"
+#include "./utils/headers/MathUtils.h"
+
+bool isValid32BitOffset(UINT_PTR offset) {
+    return offset >= MININT32 && offset <= MAXINT32;
+}
 
 namespace Hook {
 
@@ -20,11 +25,11 @@ namespace Hook {
     }
 
     inline void writeOffset(char** pDest, UINT_PTR address) {
-        INT_PTR offset = (INT_PTR) address - (INT_PTR)*pDest - (INT_PTR) sizeof(DWORD);
-        int32_t i32Offset = (int32_t) offset;
-        if (i32Offset != offset)
+        // INT_PTR offset = (INT_PTR) address - (INT_PTR)*pDest - (INT_PTR) sizeof(DWORD);
+        INT_PTR offset = MathUtils::signedDifference(address - sizeof(DWORD), (INT_PTR)*pDest);
+        if ( isValid32BitOffset(offset) )
             throw std::runtime_error("Offset does not fit in 32-bit integer.");
-        write(pDest, i32Offset);
+        write(pDest, (int32_t) offset);
     }
     // ======================
     
@@ -32,8 +37,8 @@ namespace Hook {
     void JumpHook::allocTrampoline(size_t size) {
         trampolineSize = size;
         // trampolineBytes = (char*) VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE);
-        trampolineBytes = (char*) AllocationUtils::VirtualAllocNear(address, size, MEM_COMMIT, PAGE_READWRITE);
-        std::cout << "Allocating trampoline at " << std::uppercase << std::hex << (UINT_PTR) trampolineBytes << std::endl;
+        trampolineBytes = (char*) AllocationUtils::virtualAllocNear(address, size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+        // std::cout << "Allocated trampoline at " << std::uppercase << std::hex << (UINT_PTR) trampolineBytes << std::endl;
     }
 
     void JumpHook::protectTrampoline() {
@@ -90,12 +95,10 @@ namespace Hook {
 
     void JumpHook::writeStolenBytes(char** head) {
         transplantedBytes = *head;
-        auto iTransplantOffset = (INT_PTR) address - (INT_PTR) transplantedBytes;
-        transplantOffset = (int32_t) iTransplantOffset;
-        if (transplantOffset != iTransplantOffset) {
-            std::cout << "Transplanted offset: " << std::uppercase << std::hex << iTransplantOffset << std::endl;
+        auto transplantOffset64 = (INT_PTR) address - (INT_PTR) transplantedBytes;
+        if ( isValid32BitOffset(transplantOffset64) )
             throw std::runtime_error("Transplanted offset does not fit in 32-bit integer.");
-        }
+        transplantOffset = (int32_t) transplantOffset64;
         writeBytes(head, (char*)address, numStolenBytes);
     }
 
@@ -129,14 +132,38 @@ namespace Hook {
     }
 
     void JumpHook::writeJump(char** head, UINT_PTR hookFunc) {
-        write(head, JMP);
-        writeOffset(head, hookFunc);
+        #ifdef _WIN64
+            this->writeAbsoluteJump(head, hookFunc);
+        #else
+            write(head, JMP);
+            writeOffset(head, hookFunc);
+        #endif
         trampolineReturn = (UINT_PTR) *head;
     }
 
     void JumpHook::writeCall(char** head, UINT_PTR hookFunc) {
-        write(head, CALL);
-        writeOffset(head, hookFunc);
+        #ifdef _WIN64
+            this->writeAbsoluteCall(head, hookFunc);
+        #else
+            write(head, CALL);
+            writeOffset(head, hookFunc);
+        #endif
+    }
+
+    void JumpHook::writeAbsoluteJump(char** head, UINT_PTR hookFunc) {
+        write(head, '\xFF');
+        write(head, '\x25');
+        write(head, (DWORD) 0);
+        write(head, hookFunc);
+    }
+
+    void JumpHook::writeAbsoluteCall(char** head, UINT_PTR hookFunc) {
+        write(head, '\xFF');
+        write(head, '\x15');
+        write(head, (DWORD) 2);
+        write(head, '\xEB');
+        write(head, '\x08');
+        write(head, hookFunc);
     }
     // ======================
 

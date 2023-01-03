@@ -2,8 +2,11 @@
 #include "./headers/dllmain.h"
 #include "./headers/DX11Hook.h"
 #include "./headers/Hook.h"
+#include "./headers/AllocationUtils.h"
+#include "./utils/headers/keypressed.h"
 
-HMODULE thisHModule;
+HMODULE hmSuperHotHack;
+HMODULE hmHalo1;
 
 BOOL APIENTRY DllMain( 
     HMODULE hModule,
@@ -12,7 +15,8 @@ BOOL APIENTRY DllMain(
 ) {
     switch (ul_reason_for_call) {
         case DLL_PROCESS_ATTACH:
-            thisHModule = hModule;
+            hmSuperHotHack = hModule;
+            hmHalo1 = GetModuleHandleA("halo1.dll");
             CreateThread(0, 0, mainThread, 0, 0, 0);
         case DLL_THREAD_ATTACH:
         case DLL_THREAD_DETACH:
@@ -40,14 +44,21 @@ DWORD __stdcall mainThread(LPVOID lpParameter) {
 
     std::cout << "MCC-SUPERHOT Mod Loaded" << std::endl;
 
-    DX11Hook::init();
+    std::cout << "halo1.dll located at: ";
+    std::cout << std::uppercase << std::hex << hmHalo1;
+    std::cout << std::endl;
+
+    // DX11Hook::init();
     testHook();
 
     if (!err) {
-        while (TRUE) {
-            if (GetAsyncKeyState(VK_F9))
-                break;
-            Sleep(16);
+        while ( !GetAsyncKeyState(VK_F9) ) {
+
+            // if ( keypressed(VK_F6) )
+            //     AllocationUtils::test_virtualAllocNear(0x00007FFBEA568000U, 1000);
+            
+            Sleep(10);
+
         }
     }
 
@@ -68,7 +79,7 @@ DWORD __stdcall mainThread(LPVOID lpParameter) {
         FreeConsole();
     }
 
-    FreeLibraryAndExitThread(thisHModule, 0);
+    FreeLibraryAndExitThread(hmSuperHotHack, 0);
     
 }
 
