@@ -25,7 +25,6 @@ namespace Hook {
     }
 
     inline void writeOffset(char** pDest, UINT_PTR address) {
-        // INT_PTR offset = (INT_PTR) address - (INT_PTR)*pDest - (INT_PTR) sizeof(DWORD);
         INT_PTR offset = MathUtils::signedDifference(address - sizeof(DWORD), (INT_PTR)*pDest);
         if ( isValid32BitOffset(offset) )
             throw std::runtime_error("Offset does not fit in 32-bit integer.");
@@ -35,10 +34,13 @@ namespace Hook {
     
     // === Jump Hook ========
     void JumpHook::allocTrampoline(size_t size) {
+        /*
+            TODO: Write a custom allocator to avoid wasting a memory.
+                  Currently we have to allocate 64KB at a time due to 
+                  windows' allocation granularity limit.
+        */
         trampolineSize = size;
-        // trampolineBytes = (char*) VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE);
         trampolineBytes = (char*) AllocationUtils::virtualAllocNear(address, size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
-        // std::cout << "Allocated trampoline at " << std::uppercase << std::hex << (UINT_PTR) trampolineBytes << std::endl;
     }
 
     void JumpHook::protectTrampoline() {

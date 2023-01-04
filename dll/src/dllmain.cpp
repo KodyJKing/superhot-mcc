@@ -7,6 +7,7 @@
 
 HMODULE hmSuperHotHack;
 HMODULE hmHalo1;
+UINT_PTR halo1Base;
 
 BOOL APIENTRY DllMain( 
     HMODULE hModule,
@@ -17,6 +18,7 @@ BOOL APIENTRY DllMain(
         case DLL_PROCESS_ATTACH:
             hmSuperHotHack = hModule;
             hmHalo1 = GetModuleHandleA("halo1.dll");
+            halo1Base = (UINT_PTR) hmHalo1;
             CreateThread(0, 0, mainThread, 0, 0, 0);
         case DLL_THREAD_ATTACH:
         case DLL_THREAD_DETACH:
@@ -42,11 +44,11 @@ DWORD __stdcall mainThread(LPVOID lpParameter) {
             err |= freopen_s(&pFile_stdin, "CONIN$", "r", stdin);
     }
 
-    std::cout << "MCC-SUPERHOT Mod Loaded" << std::endl;
+    std::cout << "MCC-SUPERHOT Mod Loaded\n\n";
 
     std::cout << "halo1.dll located at: ";
     std::cout << std::uppercase << std::hex << hmHalo1;
-    std::cout << std::endl;
+    std::cout << "\n\n";
 
     // DX11Hook::init();
     testHook();
@@ -87,14 +89,26 @@ void onDamageEntity() {
     std::cout << "Printing from hook." << std::endl;
 }
 
+void onDamageEntity2() {
+    std::cout << "Printing from hook 2." << std::endl;
+}
+
 void testHook() {
 
     Hook::addJumpHook(
-        "Insta Kill",
-        0x7FFBEF60909CU,
+        "Test hook 1",
+        halo1Base+0xC1909CU,
         8,
         (UINT_PTR) onDamageEntity,
         HK_PUSH_STATE
+    );
+
+    Hook::addJumpHook(
+        "Test hook 2",
+        halo1Base+0xC18E60U,
+        7,
+        (UINT_PTR) onDamageEntity2,
+        HK_PUSH_STATE 
     );
 
 }

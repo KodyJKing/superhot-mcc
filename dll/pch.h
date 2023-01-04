@@ -13,6 +13,7 @@
 #include <iomanip>
 #include <filesystem>
 #include <string>
+#include <sstream>
 #include <unordered_map>
 #include <mutex>
 #include <set>
