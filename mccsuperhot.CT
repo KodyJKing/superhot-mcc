@@ -258,6 +258,7 @@ dealloc(newmem)
         <CheatEntry>
           <ID>10</ID>
           <Description>"halo1.dll"</Description>
+          <LastState Value="9460301" RealAddress="7FFBE6720000"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>halo1.dll</Address>
@@ -468,6 +469,54 @@ dealloc(newmem)
         <Byte>FF</Byte>
         <Byte>75</Byte>
         <Byte>04</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Call Present</Description>
+      <AddressString>halo1.dll+1EAB29</AddressString>
+      <Before>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>01</Byte>
+        <Byte>8B</Byte>
+        <Byte>D7</Byte>
+      </Before>
+      <Actual>
+        <Byte>FF</Byte>
+        <Byte>50</Byte>
+        <Byte>40</Byte>
+      </Actual>
+      <After>
+        <Byte>90</Byte>
+        <Byte>83</Byte>
+        <Byte>2D</Byte>
+        <Byte>E8</Byte>
+        <Byte>61</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Present Function</Description>
+      <AddressString>dxgi.dll+15E0</AddressString>
+      <Before>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+      </Before>
+      <Actual>
+        <Byte>E9</Byte>
+        <Byte>65</Byte>
+        <Byte>EB</Byte>
+        <Byte>0F</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>89</Byte>
+        <Byte>74</Byte>
+        <Byte>24</Byte>
+        <Byte>20</Byte>
       </After>
     </CodeEntry>
   </CheatCodes>

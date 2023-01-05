@@ -50,7 +50,7 @@ DWORD __stdcall mainThread(LPVOID lpParameter) {
     std::cout << std::uppercase << std::hex << hmHalo1;
     std::cout << "\n\n";
 
-    // DX11Hook::init();
+    DX11Hook::init();
     testHook();
 
     if (!err) {
@@ -66,7 +66,7 @@ DWORD __stdcall mainThread(LPVOID lpParameter) {
 
     std::cout << "Exiting..." << std::endl;
     
-    Hook::removeAllJumpHookRecords();
+    Hook::cleanupHooks();
     Sleep(500);
 
     if (useConsole) {
@@ -97,16 +97,14 @@ void testHook() {
 
     Hook::addJumpHook(
         "Test hook 1",
-        halo1Base+0xC1909CU,
-        8,
+        halo1Base+0xC1909CU, 8,
         (UINT_PTR) onDamageEntity,
         HK_PUSH_STATE
     );
 
     Hook::addJumpHook(
         "Test hook 2",
-        halo1Base+0xC18E60U,
-        7,
+        halo1Base+0xC18E60U, 7,
         (UINT_PTR) onDamageEntity2,
         HK_PUSH_STATE 
     );

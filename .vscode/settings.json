@@ -1,7 +1,7 @@
 {
     "files.exclude": {
         "**/*.sln": true,
-        "**/*.vcxproj*": true,
+        // "**/*.vcxproj*": true,
         "**/*.vcxproj.filters": true,
         "**/*.vs": true,
         "dll/Debug": true,

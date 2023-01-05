@@ -14,6 +14,7 @@
 #define HK_JUMP         0b00000001
 #define HK_PUSH_STATE   0b00000010
 #define HK_STOLEN_AFTER 0b00000100
+#define HK_TEMPORARY    0b00001000
 // ===============================
     
 namespace Hook {
@@ -37,6 +38,9 @@ namespace Hook {
         void restoreStolenBytes();
         void hook();
         void unhook();
+
+        void release();
+
         void writeStolenBytes(char ** head);
         void fixStolenOffset(size_t stolenByteIndex);
         void writeReturnJump(char ** head);
@@ -46,18 +50,10 @@ namespace Hook {
         void writeCall(char ** head, UINT_PTR hookFunc);
         void writeAbsoluteJump(char** head, UINT_PTR hookFunc);
         void writeAbsoluteCall(char** head, UINT_PTR hookFunc);
+
     };
 
-    JumpHook addJumpHook(
-        const char* description,
-        UINT_PTR address,
-        size_t numStolenBytes,
-        UINT_PTR hookFunc,
-        DWORD flags,
-        UINT_PTR* returnAddress
-    );
-
-    JumpHook addJumpHook(
+    JumpHook* ezCreateJumpHook(
         const char* description,
         UINT_PTR address,
         size_t numStolenBytes,
@@ -65,6 +61,15 @@ namespace Hook {
         DWORD flags
     );
 
-    void removeAllJumpHookRecords();
+    JumpHook* addJumpHook(
+        const char* description,
+        UINT_PTR address,
+        size_t numStolenBytes,
+        UINT_PTR hookFunc,
+        DWORD flags
+    );
+
+    JumpHook* removeBeforeClosing(JumpHook* hook);
+    void cleanupHooks();
 
 }

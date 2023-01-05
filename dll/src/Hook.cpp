@@ -12,6 +12,10 @@ namespace Hook {
     char pusha64[] = { '\x50', '\x53', '\x51', '\x52', '\x56', '\x57', '\x55', '\x54', '\x41', '\x50', '\x41', '\x51', '\x41', '\x52', '\x41', '\x53', '\x41', '\x54', '\x41', '\x55', '\x41', '\x56', '\x41', '\x57' };
     // Byte codes for pop r15 ... push rbx, pop rax.
     char popa64[]  = { '\x41', '\x5F', '\x41', '\x5E', '\x41', '\x5D', '\x41', '\x5C', '\x41', '\x5B', '\x41', '\x5A', '\x41', '\x59', '\x41', '\x58', '\x5C', '\x5D', '\x5F', '\x5E', '\x5A', '\x59', '\x5B', '\x58' };
+    // sub rsp, 20h
+    char allocShadow[] =   { '\x48', '\x83', '\xEC', '\x20' };
+    // add rsp, 20h
+    char deallocShadow[] = { '\x48', '\x83', '\xC4', '\x20' };
 
     // === Buffer Writing ===
     inline void writeBytes(char** pDest, char* src, size_t count) {
@@ -55,6 +59,7 @@ namespace Hook {
 
     void JumpHook::hook() {
         std::cout << "Adding jump hook: " << description << std::endl;
+        std::cout << "Trampoline located at: " << std::hex << (UINT_PTR)trampolineBytes << std::endl << std::endl;
 
         stolenBytes = (char*) malloc(numStolenBytes);
         memcpy(stolenBytes, (char*)address, numStolenBytes);
@@ -91,6 +96,11 @@ namespace Hook {
         std::cout << "Removing jump hook: " << description << std::endl;
         restoreStolenBytes();
         freeTrampoline();
+    }
+
+    void JumpHook::release() {
+        this->unhook();
+        delete this;
     }
 
     // Trampoline code generation
@@ -145,7 +155,9 @@ namespace Hook {
 
     void JumpHook::writeCall(char** head, UINT_PTR hookFunc) {
         #ifdef _WIN64
+            writeBytes(head, allocShadow, ARRAYSIZE(allocShadow));
             this->writeAbsoluteCall(head, hookFunc);
+            writeBytes(head, deallocShadow, ARRAYSIZE(deallocShadow));
         #else
             write(head, CALL);
             writeOffset(head, hookFunc);
@@ -167,88 +179,114 @@ namespace Hook {
         write(head, '\x08');
         write(head, hookFunc);
     }
+
     // ======================
 
-    std::vector<JumpHook> jumpHookRecords;
-
-    JumpHook addJumpHook(
-        const char* description,
-        UINT_PTR address,
-        size_t numStolenBytes,
-        UINT_PTR hookFunc,
-        DWORD flags,
-        UINT_PTR* returnAddress
-    ) {
-        JumpHook record = { description, address, numStolenBytes };
-
-        try {
-            record.allocTrampoline(numStolenBytes + 1000);
-
-            // === Write trampoline code ===
-            char* head = record.trampolineBytes;
-
-            bool execStolenAfter = flags & HK_STOLEN_AFTER;
-
-            if (!execStolenAfter)
-                record.writeStolenBytes(&head);
-
-            if (flags & HK_PUSH_STATE)
-                record.writePushState(&head);
-            
-            if (flags & HK_JUMP)
-                record.writeJump(&head, hookFunc);
-            else
-                record.writeCall(&head, hookFunc);
-
-            if (flags & HK_PUSH_STATE)
-                record.writePopState(&head);
-
-            if (execStolenAfter)
-                record.writeStolenBytes(&head);
-
-            record.writeReturnJump(&head);
-
-            if (returnAddress != nullptr)
-                *returnAddress = record.trampolineReturn;
-            // =============================
-        }
-        catch ( std::exception &e ) {
-            std::cout << "An error occured while trying to create trampoline: " << e.what() << std::endl;
-            record.freeTrampoline();
-            return record;
-        }
-
-        try {
-            record.protectTrampoline();
-            record.hook();
-
-            std::cout << "Trampoline located at: " << std::hex << (UINT_PTR)record.trampolineBytes << std::endl << std::endl;
-
-            jumpHookRecords.push_back(record);
-            return record;
-
-        } 
-        catch ( std::exception &e ) {
-            std::cout << "An error occured while trying to hook function: " << e.what() << std::endl;
-            record.unhook();
-            return record;
-        }
-
-    }
-
-    JumpHook addJumpHook(
+    JumpHook* ezCreateJumpHook(
         const char* description,
         UINT_PTR address,
         size_t numStolenBytes,
         UINT_PTR hookFunc,
         DWORD flags
     ) {
-        return addJumpHook(description, address, numStolenBytes, hookFunc, flags, nullptr);
+        JumpHook* hook = new JumpHook();
+        hook->description = description;
+        hook->address = address;
+        hook->numStolenBytes = numStolenBytes;
+
+        try {
+            hook->allocTrampoline(numStolenBytes + 1000);
+
+            char* head = hook->trampolineBytes;
+
+            bool execStolenAfter = flags & HK_STOLEN_AFTER;
+
+            if (!execStolenAfter)
+                hook->writeStolenBytes(&head);
+
+            if (flags & HK_PUSH_STATE)
+                hook->writePushState(&head);
+            
+            if (flags & HK_JUMP)
+                hook->writeJump(&head, hookFunc);
+            else
+                hook->writeCall(&head, hookFunc);
+
+            if (flags & HK_PUSH_STATE)
+                hook->writePopState(&head);
+
+            if (execStolenAfter)
+                hook->writeStolenBytes(&head);
+
+            hook->writeReturnJump(&head);
+
+        } catch ( std::exception &e ) {
+            std::cout << "An error occured while trying to create trampoline: " << e.what() << std::endl;
+            hook->freeTrampoline();
+            delete hook;
+            return nullptr;
+        }
+
+        return hook;
+
     }
 
-    void removeAllJumpHookRecords() {
-        for (uint64_t i = 0; i < jumpHookRecords.size(); i++)
-            jumpHookRecords[i].unhook();
+    JumpHook* addJumpHook(
+        const char* description,
+        UINT_PTR address,
+        size_t numStolenBytes,
+        UINT_PTR hookFunc,
+        DWORD flags
+    ) {
+
+        JumpHook* hook = ezCreateJumpHook(description, address, numStolenBytes, hookFunc, flags);
+
+        if (!hook) 
+            return nullptr;
+
+        try {
+            hook->protectTrampoline();
+            hook->hook();
+        }  catch ( std::exception &e ) {
+            std::cout << "An error occured while trying to hook function: " << e.what() << std::endl;
+            hook->unhook();
+            delete hook;
+            return nullptr;
+        }
+
+        if ( !( flags & HK_TEMPORARY ) )
+            removeBeforeClosing(hook);
+
+        return hook;
+
+    }
+    
+    // ==============================================
+
+    std::vector<JumpHook*> jumpHooks;
+
+    JumpHook* removeBeforeClosing(JumpHook* hook) {
+        jumpHooks.emplace_back(hook);
+        return hook;
+    }
+
+    void cleanupHooks() {
+        // for (uint64_t i = 0; i < jumpHooks.size(); i++)
+        //     jumpHooks[i]->release();
+
+        for (uint64_t i = 0; i < jumpHooks.size(); i++) {
+            std::cout << "Removing jump hook: " << jumpHooks[i]->description << std::endl;
+            jumpHooks[i]->restoreStolenBytes();
+        }
+            
+        // Give hook functions time to exit before deallocating trampolines.
+        Sleep(500);
+
+        for (uint64_t i = 0; i < jumpHooks.size(); i++) {
+            jumpHooks[i]->freeTrampoline();
+            std::cout << "Deleting jump hook: " << jumpHooks[i]->description << std::endl;
+            delete jumpHooks[i];
+        }
     }
 
 }
