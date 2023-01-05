@@ -40,21 +40,17 @@ namespace DX11Hook {
         );
     }
 
-    // Begin: Present Hook
+    // We're hooking the begining of the Present function so we can use the same positional arguments.
+    void __stdcall onPresentCalled(IDXGISwapChain* pSwapChain) {
+        std::cout << "Swap chain: " << (uint64_t) pSwapChain << std::endl;
 
-    extern "C" {
-
-        JumpHook* presentJumpHook;
-
-        void __stdcall presentHook();
-
-        // We're hooking the begining of the Present function so we can use the same positional arguments.
-        void __stdcall onPresentCalled(IDXGISwapChain* pSwapChain) {
-
-            std::cout << "Swap chain: " << (uint64_t) pSwapChain << std::endl;
-            
+        ID3D11Device* pDevice;
+        if ( FAILED( pSwapChain->GetDevice(__uuidof(ID3D11Device), (void**)&pDevice) ) ) {
+            std::cout << "Could not get device." << std::endl;
+            return;
         }
 
+        std::cout << "Device: " << (uint64_t) pDevice << std::endl;
     }
 
     void addPresentHook() {
@@ -68,36 +64,30 @@ namespace DX11Hook {
         UINT_PTR presentMethodAddress = vtable[8];
         std::cout << "Present function address: " << presentMethodAddress << "\n\n";
 
-        presentJumpHook = Hook::ezCreateJumpHook(
+        auto hook = Hook::ezCreateJumpHook(
             "Present",
             presentMethodAddress, 5,
-            // (UINT_PTR) presentHook,
             (UINT_PTR) onPresentCalled,
             HK_STOLEN_AFTER|HK_PUSH_STATE
         );
-        presentJumpHook->fixStolenOffset(1);
-        presentJumpHook->protectTrampoline();
-        Hook::removeBeforeClosing(presentJumpHook);
-        presentJumpHook->hook();
+        hook->fixStolenOffset(1);
+        hook->protectTrampoline();
+        Hook::removeBeforeClosing(hook);
+        hook->hook();
 
         pSwapChain->Release();
         pDevice->Release();
         pDeviceContext->Release();
     }
     
-    // End: Present Hook
-
-    void callPresent() {
-        IDXGISwapChain* pSwapChain{};
-        pSwapChain->Present(0x99, 0x42);
-    }
+    // void callPresent() {
+    //     IDXGISwapChain* pSwapChain{};
+    //     pSwapChain->Present(0x99, 0x42);
+    // }
     
     void init() {
-
         // std::cout << "Call present func at: " << (UINT_PTR) callPresent << std::endl;
-
         addPresentHook();
-        
     }
 
 }
