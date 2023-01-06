@@ -114,5 +114,16 @@
         "openProcess",
         "readFloat"
     ],
-    "workspace_superhotmcc": true
+    "workspace_superhotmcc": true,
+    "C_Cpp.formatting": "vcFormat",
+    "C_Cpp.vcFormat.indent.caseLabels": true,
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.block": "sameLine",
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.function": "sameLine",
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.lambda": "sameLine",
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.namespace": "sameLine",
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.type": "sameLine",
+    "C_Cpp.vcFormat.space.withinControlFlowStatementParentheses": true,
+    "C_Cpp.vcFormat.space.withinExpressionParentheses": true,
+    "C_Cpp.vcFormat.space.withinParameterListParentheses": true,
+    "C_Cpp.vcFormat.space.afterCastCloseParenthesis": true
 }
