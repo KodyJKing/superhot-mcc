@@ -1,1 +1,1 @@
-bool keypressed(char vk);
+bool keypressed( char vk );
