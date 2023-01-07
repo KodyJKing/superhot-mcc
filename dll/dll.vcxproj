@@ -174,8 +174,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <!-- <MASM Include="**\*.asm" /> -->
-    <MASM Include="src\DX11HookASM.asm" />
+    <MASM Include="**\*.asm" />
+    <!-- <MASM Include="src\DX11HookASM.asm" /> -->
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

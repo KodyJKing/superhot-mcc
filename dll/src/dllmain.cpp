@@ -1,6 +1,7 @@
 #include "../pch.h"
 #include "./headers/dllmain.h"
-#include "./headers/DX11Hook.h"
+#include "./graphics/headers/DX11Hook.h"
+#include "./graphics/headers/DX11HookTest.h"
 #include "./headers/Hook.h"
 #include "./utils/headers/AllocationUtils.h"
 #include "./utils/headers/keypressed.h"
@@ -50,8 +51,9 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     std::cout << std::uppercase << std::hex << hmHalo1;
     std::cout << "\n\n";
 
-    DX11Hook::init();
-    testHook();
+    DX11HookTest::init();
+    DX11Hook::addPresentHook();
+    // testHook();
 
     if ( !err ) {
         while ( !GetAsyncKeyState( VK_F9 ) ) {
@@ -66,6 +68,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     std::cout << "Exiting..." << std::endl;
 
+    DX11HookTest::cleanup();
     Hook::cleanupHooks();
     Sleep( 500 );
 

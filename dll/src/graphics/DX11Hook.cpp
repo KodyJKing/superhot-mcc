@@ -1,6 +1,6 @@
-#include "../pch.h"
+#include "../../pch.h"
 #include "./headers/DX11Hook.h"
-#include "./headers/Hook.h"
+#include "../headers/Hook.h"
 
 const D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0 };
 
@@ -40,9 +40,18 @@ namespace DX11Hook {
         );
     }
 
+    typedef void ( *PresentCallback )( IDXGISwapChain* pSwapChain, ID3D11Device* pDevice );
+    std::vector<PresentCallback> onPresentCallbacks;
+    std::mutex onPresentCallbacks_mutex;
+    void addOnPresentCallback( PresentCallback cb ) {
+        onPresentCallbacks_mutex.lock();
+        onPresentCallbacks.emplace_back( cb );
+        onPresentCallbacks_mutex.unlock();
+    }
+
     // We're hooking the begining of the Present function so we can use the same positional arguments.
     void __stdcall onPresentCalled( IDXGISwapChain* pSwapChain ) {
-        std::cout << "Swap chain: " << (uint64_t) pSwapChain << std::endl;
+        // std::cout << "Swap chain: " << (uint64_t) pSwapChain << std::endl;
 
         ID3D11Device* pDevice;
         if ( FAILED( pSwapChain->GetDevice( __uuidof( ID3D11Device ), (void**) &pDevice ) ) ) {
@@ -50,7 +59,13 @@ namespace DX11Hook {
             return;
         }
 
-        std::cout << "Device: " << (uint64_t) pDevice << std::endl;
+        // std::cout << "Device: " << (uint64_t) pDevice << std::endl;
+
+        if ( onPresentCallbacks_mutex.try_lock() ) {
+            for ( PresentCallback cb : onPresentCallbacks )
+                cb( pSwapChain, pDevice );
+            onPresentCallbacks_mutex.unlock();
+        }
     }
 
     void addPresentHook() {
@@ -84,10 +99,5 @@ namespace DX11Hook {
     //     IDXGISwapChain* pSwapChain{};
     //     pSwapChain->Present(0x99, 0x42);
     // }
-
-    void init() {
-        // std::cout << "Call present func at: " << (UINT_PTR) callPresent << std::endl;
-        addPresentHook();
-    }
 
 }
