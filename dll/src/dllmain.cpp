@@ -1,5 +1,6 @@
 #include "../pch.h"
 #include "./headers/dllmain.h"
+#include "./headers/Halo1.h"
 #include "./graphics/headers/DX11Hook.h"
 #include "./graphics/headers/DX11HookTest.h"
 #include "./headers/Hook.h"
@@ -51,18 +52,18 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     std::cout << std::uppercase << std::hex << hmHalo1;
     std::cout << "\n\n";
 
+    Halo1::init( halo1Base );
+    auto pDeviceContainer = Halo1::getDeviceContainerPointer();
+    std::cout << "Device container at: " << (UINT_PTR) pDeviceContainer << std::endl;
+    std::cout << "Device at: " << (UINT_PTR) pDeviceContainer->pDevice << std::endl;
+
     DX11HookTest::init();
     DX11Hook::addPresentHook();
     // testHook();
 
     if ( !err ) {
         while ( !GetAsyncKeyState( VK_F9 ) ) {
-
-            // if ( keypressed(VK_F6) )
-            //     AllocationUtils::test_virtualAllocNear(0x00007FFBEA568000U, 1000);
-
             Sleep( 10 );
-
         }
     }
 
