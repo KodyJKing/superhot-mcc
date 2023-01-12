@@ -57,9 +57,9 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     std::cout << "Device container at: " << (UINT_PTR) pDeviceContainer << std::endl;
     std::cout << "Device at: " << (UINT_PTR) pDeviceContainer->pDevice << std::endl;
 
-    DX11HookTest::init();
-    DX11Hook::addPresentHook();
     // testHook();
+    // DX11HookTest::init();
+    DX11Hook::addPresentHook();
 
     if ( !err ) {
         while ( !GetAsyncKeyState( VK_F9 ) ) {
@@ -69,7 +69,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     std::cout << "Exiting..." << std::endl;
 
-    DX11HookTest::cleanup();
+    // DX11HookTest::cleanup();
     Hook::cleanupHooks();
     Sleep( 500 );
 

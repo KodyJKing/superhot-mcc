@@ -1,3 +1,24 @@
+function reloadPackage(path)
+    package.loaded[path] = nil
+    return require(path)
+end
+
+dofile("lua/debuggerscripts.lua")
+
+local json = reloadPackage("lua/json")
+
+function pprint(value)
+    print(json.encode(value))
+end
+
+function hex(x)
+    return string.format("%x", x):upper()
+end
+
+function clearConsole()
+    GetLuaEngine().MenuItem5.doClick()
+end
+
 function getCWD()
     return io.popen "cd":read '*l'
 end

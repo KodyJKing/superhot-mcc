@@ -1,6 +1,7 @@
-#include "../../pch.h"
+#include "./headers/DX11MethodOffsets.h"
 #include "./headers/DX11Hook.h"
 #include "../headers/Hook.h"
+#include "../../pch.h"
 
 const D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0 };
 
@@ -52,15 +53,12 @@ namespace DX11Hook {
     // We're hooking the begining of the Present function so we can use the same positional arguments.
     void __stdcall onPresentCalled( IDXGISwapChain* pSwapChain ) {
         // std::cout << "Swap chain: " << (uint64_t) pSwapChain << std::endl;
-
         ID3D11Device* pDevice;
         if ( FAILED( pSwapChain->GetDevice( __uuidof( ID3D11Device ), (void**) &pDevice ) ) ) {
             std::cout << "Could not get device." << std::endl;
             return;
         }
-
         // std::cout << "Device: " << (uint64_t) pDevice << std::endl;
-
         if ( onPresentCallbacks_mutex.try_lock() ) {
             for ( PresentCallback cb : onPresentCallbacks )
                 cb( pSwapChain, pDevice );
@@ -75,9 +73,17 @@ namespace DX11Hook {
         ID3D11DeviceContext* pDeviceContext;
         createDummy( &pSwapChain, &pDevice, &featureLevel, &pDeviceContext );
 
-        UINT_PTR* vtable = *( (UINT_PTR**) pSwapChain );
-        UINT_PTR presentMethodAddress = vtable[8];
-        std::cout << "Present function address: " << presentMethodAddress << "\n\n";
+        std::cout << "\n";
+
+        UINT_PTR* swapChainVTable = *( (UINT_PTR**) pSwapChain );
+        UINT_PTR presentMethodAddress = swapChainVTable[MO_IDXGISwapChain::Present];
+        std::cout << "Device.Present address: " << presentMethodAddress << "\n";
+
+        UINT_PTR* deviceContextVTable = *( (UINT_PTR**) pDeviceContext );
+        std::cout << "Context.Draw function address: " << deviceContextVTable[MO_ID3D11DeviceContext::Draw] << "\n";
+        std::cout << "Context.DrawIndexed function address: " << deviceContextVTable[MO_ID3D11DeviceContext::DrawIndexed] << "\n";
+
+        std::cout << "\n";
 
         auto hook = Hook::ezCreateJumpHook(
             "Present",
@@ -94,10 +100,5 @@ namespace DX11Hook {
         pDevice->Release();
         pDeviceContext->Release();
     }
-
-    // void callPresent() {
-    //     IDXGISwapChain* pSwapChain{};
-    //     pSwapChain->Present(0x99, 0x42);
-    // }
 
 }

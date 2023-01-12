@@ -161,29 +161,29 @@ namespace DX11HookTest {
         if ( deviceInitFailed )
             return;
 
-        // if ( counter++ % 1000 == 0 )
-        //     printD3DData( pSwapChain, pDevice, ctx );
+        if ( counter++ % 1000 == 0 )
+            printD3DData( pSwapChain, pDevice, ctx );
 
-        // // Set Vertex and Pixel Shaders
-        // ctx->VSSetShader( VS, 0, 0 );
-        // ctx->PSSetShader( PS, 0, 0 );
+        // Set Vertex and Pixel Shaders
+        ctx->VSSetShader( VS, 0, 0 );
+        ctx->PSSetShader( PS, 0, 0 );
 
-        // ctx->OMSetBlendState( blendState, nullptr, 0xFFFFFFFF );
-        // ctx->OMSetDepthStencilState( depthStencilState, 1 );
+        ctx->OMSetBlendState( blendState, nullptr, 0xFFFFFFFF );
+        ctx->OMSetDepthStencilState( depthStencilState, 1 );
 
-        // // Set the vertex buffer
-        // UINT stride = sizeof( Vertex );
-        // UINT offset = 0;
-        // ctx->IASetVertexBuffers( 0, 1, &triangleVertBuffer, &stride, &offset );
+        // Set the vertex buffer
+        UINT stride = sizeof( Vertex );
+        UINT offset = 0;
+        ctx->IASetVertexBuffers( 0, 1, &triangleVertBuffer, &stride, &offset );
 
-        // // Set the Input Layout
-        // ctx->IASetInputLayout( vertLayout );
+        // Set the Input Layout
+        ctx->IASetInputLayout( vertLayout );
 
-        // // Set Primitive Topology
-        // ctx->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+        // Set Primitive Topology
+        ctx->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
-        // // Draw the triangle
-        // ctx->Draw( 3, 0 );
+        // Draw the triangle
+        ctx->Draw( 3, 0 );
 
     }
 

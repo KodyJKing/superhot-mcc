@@ -258,7 +258,7 @@ dealloc(newmem)
         <CheatEntry>
           <ID>10</ID>
           <Description>"halo1.dll"</Description>
-          <LastState Value="9460301" RealAddress="7FF9F9E20000"/>
+          <LastState Value="9460301" RealAddress="7FF9FA050000"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>halo1.dll</Address>
@@ -517,6 +517,181 @@ dealloc(newmem)
         <Byte>74</Byte>
         <Byte>24</Byte>
         <Byte>20</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>DeviceContext Draw Function</Description>
+      <AddressString>d3d11.dll+12D3D0</AddressString>
+      <Before>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+      </Before>
+      <Actual>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>81</Byte>
+        <Byte>F8</Byte>
+        <Byte>04</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>81</Byte>
+        <Byte>C1</Byte>
+        <Byte>30</Byte>
+        <Byte>9E</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>DrawCall&lt;1</Description>
+      <AddressString>halo1.dll+C9AF75</AddressString>
+      <Before>
+        <Byte>01</Byte>
+        <Byte>41</Byte>
+        <Byte>8D</Byte>
+        <Byte>50</Byte>
+        <Byte>04</Byte>
+      </Before>
+      <Actual>
+        <Byte>FF</Byte>
+        <Byte>50</Byte>
+        <Byte>68</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>83</Byte>
+        <Byte>C4</Byte>
+        <Byte>40</Byte>
+        <Byte>5B</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>DrawCall&lt;1&lt;1 : Draw GUI Sprites</Description>
+      <AddressString>halo1.dll+B42115</AddressString>
+      <Before>
+        <Byte>B6</Byte>
+        <Byte>F9</Byte>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>CD</Byte>
+      </Before>
+      <Actual>
+        <Byte>E8</Byte>
+        <Byte>86</Byte>
+        <Byte>8D</Byte>
+        <Byte>15</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>FF</Byte>
+        <Byte>C3</Byte>
+        <Byte>3B</Byte>
+        <Byte>DE</Byte>
+        <Byte>72</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>DrawCall&lt;1&lt;2</Description>
+      <AddressString>halo1.dll+CFD6F1</AddressString>
+      <Before>
+        <Byte>68</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Before>
+      <Actual>
+        <Byte>E8</Byte>
+        <Byte>AA</Byte>
+        <Byte>D7</Byte>
+        <Byte>F9</Byte>
+        <Byte>FF</Byte>
+      </Actual>
+      <After>
+        <Byte>BA</Byte>
+        <Byte>07</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>DrawCall&lt;1&lt;3 : Draw Radar Blips</Description>
+      <AddressString>halo1.dll+C2E102</AddressString>
+      <Before>
+        <Byte>87</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Before>
+      <Actual>
+        <Byte>E8</Byte>
+        <Byte>99</Byte>
+        <Byte>CD</Byte>
+        <Byte>06</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>4C</Byte>
+        <Byte>8B</Byte>
+        <Byte>B4</Byte>
+        <Byte>24</Byte>
+        <Byte>00</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>DrawCall&lt;1&lt;4</Description>
+      <AddressString>halo1.dll+CBFFA5</AddressString>
+      <Before>
+        <Byte>0F</Byte>
+        <Byte>11</Byte>
+        <Byte>44</Byte>
+        <Byte>24</Byte>
+        <Byte>38</Byte>
+      </Before>
+      <Actual>
+        <Byte>E8</Byte>
+        <Byte>F6</Byte>
+        <Byte>AE</Byte>
+        <Byte>FD</Byte>
+        <Byte>FF</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>0D</Byte>
+        <Byte>EF</Byte>
+        <Byte>7C</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>DrawCall&lt;1&lt;5 : Draw Radar Mask</Description>
+      <AddressString>halo1.dll+CFD8A9</AddressString>
+      <Before>
+        <Byte>68</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Before>
+      <Actual>
+        <Byte>E8</Byte>
+        <Byte>F2</Byte>
+        <Byte>D5</Byte>
+        <Byte>F9</Byte>
+        <Byte>FF</Byte>
+      </Actual>
+      <After>
+        <Byte>0F</Byte>
+        <Byte>B7</Byte>
+        <Byte>0D</Byte>
+        <Byte>AB</Byte>
+        <Byte>F0</Byte>
       </After>
     </CodeEntry>
   </CheatCodes>
