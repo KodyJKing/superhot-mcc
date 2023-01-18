@@ -29,6 +29,7 @@ namespace DX11HookTest {
     ID3D11InputLayout* vertLayout;
     ID3D11BlendState* blendState;
     ID3D11DepthStencilState* depthStencilState;
+    ID3D11RenderTargetView* renderTargetView;
     bool hasDoneDeviceInit;
     bool deviceInitFailed;
 
@@ -40,12 +41,20 @@ namespace DX11HookTest {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
     };
 
-    void _deviceInit( ID3D11Device* pDevice ) {
+    void _deviceInit( ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
 
         // Compile Shaders from shader file
         HRESULT hr;
         const size_t shaderSize = std::strlen( shaderSource );
 
+        // Create render target view
+        ID3D11Texture2D* pBackBuffer;
+        pSwapChain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), (void**) &pBackBuffer );
+        pDevice->CreateRenderTargetView( pBackBuffer, NULL, &renderTargetView );
+        pBackBuffer->Release();
+
+        // Compile shaders
+        std::cout << "About to compile shaders" << std::endl;
         hr = D3DX11CompileFromMemory( shaderSource, shaderSize, 0, 0, 0, "VS", "vs_4_0", 0, 0, 0, &VS_Buffer, &errorBlob, 0 );
         safePrintErrorMessage( errorBlob );
         throwIfFail( "Compiling vertex shader", hr );
@@ -54,7 +63,8 @@ namespace DX11HookTest {
         safePrintErrorMessage( errorBlob );
         throwIfFail( "Compiling pixel shader", hr );
 
-        // Create the Shader Objects
+        // Create the shader objects
+        std::cout << "About to create shaders" << std::endl;
         hr = pDevice->CreateVertexShader( VS_Buffer->GetBufferPointer(), VS_Buffer->GetBufferSize(), NULL, &VS );
         throwIfFail( "Creating vertex shader", hr );
         hr = pDevice->CreatePixelShader( PS_Buffer->GetBufferPointer(), PS_Buffer->GetBufferSize(), NULL, &PS );
@@ -63,10 +73,11 @@ namespace DX11HookTest {
         // Create the vertex buffer
         Vertex v[] = {
             {  0.0f,  0.5f, 0.5f },
-            {  0.0f, -0.5f, 0.5f },
+            {  0.5f, -0.5f, 0.5f },
             { -0.5f, -0.5f, 0.5f }
         };
 
+        std::cout << "About to create VBO" << std::endl;
         D3D11_BUFFER_DESC vertexBufferDesc;
         ZeroMemory( &vertexBufferDesc, sizeof( vertexBufferDesc ) );
         vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -76,6 +87,7 @@ namespace DX11HookTest {
         vertexBufferDesc.MiscFlags = 0;
 
         // Create blend state;
+        std::cout << "About to create render state objects" << std::endl;
         D3D11_BLEND_DESC blendDesc{};
         blendDesc.RenderTarget->BlendEnable = true;
         blendDesc.RenderTarget->SrcBlend = D3D11_BLEND_SRC_ALPHA;
@@ -118,12 +130,15 @@ namespace DX11HookTest {
 
     }
 
-    void deviceInit( ID3D11Device* pDevice ) {
+    void deviceInit( ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
+
+        if ( hasDoneDeviceInit )
+            return;
 
         hasDoneDeviceInit = true;
 
         try {
-            _deviceInit( pDevice );
+            _deviceInit( pDevice, pSwapChain );
         }
         catch ( std::exception& e ) {
             std::cout << "Could not initialize device." << std::endl;
@@ -133,36 +148,37 @@ namespace DX11HookTest {
 
     }
 
-    void printD3DData( IDXGISwapChain* pSwapChain, ID3D11Device* pDevice, ID3D11DeviceContext* ctx ) {
-        std::cout << "\nSwap chain: " << (uint64_t) pSwapChain << std::endl;
-        std::cout << "Device: " << (uint64_t) pDevice << std::endl;
+    void fitViewportToWindow( ID3D11DeviceContext* ctx, HWND hwnd ) {
+        RECT rect;
+        GetClientRect( hwnd, &rect );
 
-        D3D11_VIEWPORT viewport{};
-        UINT numViewports = 1;
-        ctx->RSGetViewports( &numViewports, &viewport );
-        printf(
-            "UL: (%2.2f, %2.2f)\nW/H: (%2.2f, %2.2f)\nDEPTH: %2.2f - %2.2f\n",
-            viewport.TopLeftX, viewport.TopLeftY,
-            viewport.Width, viewport.Height,
-            viewport.MinDepth, viewport.MaxDepth
-        );
+        D3D11_VIEWPORT vp{};
+        vp.TopLeftX = 0.0;
+        vp.TopLeftY = 0.0;
+        vp.Width = (float) ( rect.right - rect.left );
+        vp.Height = (float) ( rect.bottom - rect.top );
+        vp.MinDepth = 0.0;
+        vp.MaxDepth = 1.0;
+        ctx->RSSetViewports( 1, &vp );
     }
 
-    int counter = 0;
-    void onPresent( IDXGISwapChain* pSwapChain, ID3D11Device* pDevice ) {
+    void render( ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
 
         // Get device context
         ID3D11DeviceContext* ctx;
         pDevice->GetImmediateContext( &ctx );
 
         if ( !hasDoneDeviceInit )
-            deviceInit( pDevice );
-
+            deviceInit( pDevice, pSwapChain );
         if ( deviceInitFailed )
             return;
 
-        if ( counter++ % 1000 == 0 )
-            printD3DData( pSwapChain, pDevice, ctx );
+        ctx->OMSetRenderTargets( 1, &renderTargetView, NULL );
+
+        // Fit window
+        DXGI_SWAP_CHAIN_DESC sd;
+        pSwapChain->GetDesc( &sd );
+        fitViewportToWindow( ctx, sd.OutputWindow );
 
         // Set Vertex and Pixel Shaders
         ctx->VSSetShader( VS, 0, 0 );
@@ -188,7 +204,7 @@ namespace DX11HookTest {
     }
 
     void init() {
-        DX11Hook::addOnPresentCallback( onPresent );
+        DX11Hook::addOnPresentCallback( render );
     }
 
     void cleanup() {
@@ -201,6 +217,7 @@ namespace DX11HookTest {
         safeRelease( errorBlob );
         safeRelease( blendState );
         safeRelease( depthStencilState );
+        safeRelease( renderTargetView );
     }
 
 }

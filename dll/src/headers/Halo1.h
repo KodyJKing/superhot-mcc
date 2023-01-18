@@ -8,7 +8,7 @@ namespace Halo1 {
         uint64_t vftable; //0x0000
         char gpuName[256]; //0x0008
         char pad_0108[992]; //0x0108
-        uint64_t pDevice; //0x04E8
+        ID3D11Device* pDevice; //0x04E8
         char pad_04F0[88]; //0x04F0
         uint32_t resolutionX; //0x0548
         uint32_t resolutionY; //0x054C

@@ -20,7 +20,7 @@ namespace DX11Hook {
         sd.BufferCount = 1;
         sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        sd.OutputWindow = GetForegroundWindow();
+        sd.OutputWindow = GetForegroundWindow(); // TODO: Parameterize this and pass in MCC's hwnd.
         sd.SampleDesc.Count = 1;
         sd.Windowed = TRUE;
         sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
@@ -41,7 +41,6 @@ namespace DX11Hook {
         );
     }
 
-    typedef void ( *PresentCallback )( IDXGISwapChain* pSwapChain, ID3D11Device* pDevice );
     std::vector<PresentCallback> onPresentCallbacks;
     std::mutex onPresentCallbacks_mutex;
     void addOnPresentCallback( PresentCallback cb ) {
@@ -61,7 +60,7 @@ namespace DX11Hook {
         // std::cout << "Device: " << (uint64_t) pDevice << std::endl;
         if ( onPresentCallbacks_mutex.try_lock() ) {
             for ( PresentCallback cb : onPresentCallbacks )
-                cb( pSwapChain, pDevice );
+                cb( pDevice, pSwapChain );
             onPresentCallbacks_mutex.unlock();
         }
     }
@@ -80,8 +79,8 @@ namespace DX11Hook {
         std::cout << "Device.Present address: " << presentMethodAddress << "\n";
 
         UINT_PTR* deviceContextVTable = *( (UINT_PTR**) pDeviceContext );
-        std::cout << "Context.Draw function address: " << deviceContextVTable[MO_ID3D11DeviceContext::Draw] << "\n";
-        std::cout << "Context.DrawIndexed function address: " << deviceContextVTable[MO_ID3D11DeviceContext::DrawIndexed] << "\n";
+        std::cout << "Context.Draw address: " << deviceContextVTable[MO_ID3D11DeviceContext::Draw] << "\n";
+        std::cout << "Context.DrawIndexed address: " << deviceContextVTable[MO_ID3D11DeviceContext::DrawIndexed] << "\n";
 
         std::cout << "\n";
 

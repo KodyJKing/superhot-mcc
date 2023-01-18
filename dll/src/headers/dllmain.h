@@ -2,4 +2,4 @@
 
 DWORD __stdcall mainThread( LPVOID lpParameter );
 
-void testHook();
+void addHooks();

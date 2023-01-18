@@ -11,6 +11,9 @@ HMODULE hmSuperHotHack;
 HMODULE hmHalo1;
 UINT_PTR halo1Base;
 
+Halo1::DeviceContainer* pDeviceContainer;
+// Renderer* _renderer;
+
 BOOL APIENTRY DllMain(
     HMODULE hModule,
     DWORD  ul_reason_for_call,
@@ -30,21 +33,42 @@ BOOL APIENTRY DllMain(
     return TRUE;
 }
 
+BOOL CALLBACK bringHaloToTop__enumWindowsProc( HWND hwnd, LPARAM lParam ) {
+    char name[255] = {};
+    auto size = GetWindowTextA( hwnd, name, 255 );
+    if ( size == 0 )
+        return true;
+    if ( strncmp( name, "Halo: The Master Chief Collection  ", size ) == 0 ) {
+        BringWindowToTop( hwnd );
+        SetForegroundWindow( hwnd );
+        return false;
+    }
+    return true;
+}
+void bringHaloToTop() {
+    EnumWindows( bringHaloToTop__enumWindowsProc, NULL );
+}
+
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     const bool useConsole = true;
     const bool useStdin = false;
     const bool pressKeyToExit = false;
 
+    const char* logFile = "C:\\Users\\Kody\\Desktop\\log.txt";
+
     errno_t err = 0;
     FILE* pFile_stdout, * pFile_stderr, * pFile_stdin;
     if ( useConsole ) {
         AllocConsole();
+        // err = freopen_s( &pFile_stdout, logFile, "w", stdout );
         err = freopen_s( &pFile_stdout, "CONOUT$", "w", stdout );
         err |= freopen_s( &pFile_stderr, "CONOUT$", "w", stderr );
         if ( useStdin )
             err |= freopen_s( &pFile_stdin, "CONIN$", "r", stdin );
     }
+
+    // bringHaloToTop();
 
     std::cout << "MCC-SUPERHOT Mod Loaded\n\n";
 
@@ -53,13 +77,18 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     std::cout << "\n\n";
 
     Halo1::init( halo1Base );
-    auto pDeviceContainer = Halo1::getDeviceContainerPointer();
-    std::cout << "Device container at: " << (UINT_PTR) pDeviceContainer << std::endl;
-    std::cout << "Device at: " << (UINT_PTR) pDeviceContainer->pDevice << std::endl;
+    pDeviceContainer = Halo1::getDeviceContainerPointer();
+    if ( pDeviceContainer ) {
+        std::cout << "Device container at: " << pDeviceContainer << std::endl;
+        std::cout << "Device at: " << pDeviceContainer->pDevice << std::endl;
+    }
+    else {
+        std::cout << "Device container not found!" << std::endl;
+    }
 
-    // testHook();
-    // DX11HookTest::init();
+    addHooks();
     DX11Hook::addPresentHook();
+    DX11HookTest::init();
 
     if ( !err ) {
         while ( !GetAsyncKeyState( VK_F9 ) ) {
@@ -69,7 +98,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     std::cout << "Exiting..." << std::endl;
 
-    // DX11HookTest::cleanup();
+    DX11HookTest::cleanup();
     Hook::cleanupHooks();
     Sleep( 500 );
 
@@ -89,28 +118,22 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
 }
 
-void onDamageEntity() {
-    std::cout << "Printing from hook." << std::endl;
-}
+// void onPostRenderWorld() {
+//     if ( pDeviceContainer && pDeviceContainer->pDevice )
+//         DX11HookTest::render( pDeviceContainer->pDevice );
+// }
 
-void onDamageEntity2() {
-    std::cout << "Printing from hook 2." << std::endl;
-}
+void addHooks() {
 
-void testHook() {
-
-    Hook::addJumpHook(
-        "Test hook 1",
-        halo1Base + 0xC1909CU, 8,
-        (UINT_PTR) onDamageEntity,
-        HK_PUSH_STATE
-    );
-
-    Hook::addJumpHook(
-        "Test hook 2",
-        halo1Base + 0xC18E60U, 7,
-        (UINT_PTR) onDamageEntity2,
-        HK_PUSH_STATE
-    );
+    // auto hook = Hook::ezCreateJumpHook(
+    //     "Post render world hook",
+    //     halo1Base + 0xC41E2BU, 5,
+    //     (UINT_PTR) onPostRenderWorld,
+    //     HK_PUSH_STATE
+    // );
+    // hook->fixStolenOffset( 1 );
+    // hook->protectTrampoline();
+    // Hook::removeBeforeClosing( hook );
+    // hook->hook();
 
 }
