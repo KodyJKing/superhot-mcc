@@ -10,6 +10,7 @@
 HMODULE hmSuperHotHack;
 HMODULE hmHalo1;
 UINT_PTR halo1Base;
+HWND mccWindow;
 
 Halo1::DeviceContainer* pDeviceContainer;
 // Renderer* _renderer;
@@ -33,20 +34,22 @@ BOOL APIENTRY DllMain(
     return TRUE;
 }
 
-BOOL CALLBACK bringHaloToTop__enumWindowsProc( HWND hwnd, LPARAM lParam ) {
+BOOL CALLBACK getMCCWindow_enumWindowsProc( HWND hwnd, LPARAM lParam ) {
     char name[255] = {};
     auto size = GetWindowTextA( hwnd, name, 255 );
     if ( size == 0 )
         return true;
     if ( strncmp( name, "Halo: The Master Chief Collection  ", size ) == 0 ) {
-        BringWindowToTop( hwnd );
-        SetForegroundWindow( hwnd );
+        HWND* pHwndResult = (HWND*) lParam;
+        *pHwndResult = hwnd;
         return false;
     }
     return true;
 }
-void bringHaloToTop() {
-    EnumWindows( bringHaloToTop__enumWindowsProc, NULL );
+HWND getMCCWindow() {
+    HWND hwnd;
+    EnumWindows( getMCCWindow_enumWindowsProc, (LONG_PTR) &hwnd );
+    return hwnd;
 }
 
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
@@ -68,7 +71,11 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
             err |= freopen_s( &pFile_stdin, "CONIN$", "r", stdin );
     }
 
-    // bringHaloToTop();
+    mccWindow = getMCCWindow();
+
+    // Bring MCC to front.
+    BringWindowToTop( mccWindow );
+    SetForegroundWindow( mccWindow );
 
     std::cout << "MCC-SUPERHOT Mod Loaded\n\n";
 
@@ -87,7 +94,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     }
 
     addHooks();
-    DX11Hook::addPresentHook();
+    DX11Hook::addPresentHook( mccWindow );
     DX11HookTest::init();
 
     if ( !err ) {
@@ -100,6 +107,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     DX11HookTest::cleanup();
     Hook::cleanupHooks();
+
     Sleep( 500 );
 
     if ( useConsole ) {

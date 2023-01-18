@@ -13,14 +13,15 @@ namespace DX11Hook {
         IDXGISwapChain** ppSwapChain,
         ID3D11Device** ppDevice,
         D3D_FEATURE_LEVEL* pFeatureLevel,
-        ID3D11DeviceContext** ppDeviceContext
+        ID3D11DeviceContext** ppDeviceContext,
+        HWND hwnd
     ) {
 
         DXGI_SWAP_CHAIN_DESC sd = {};
         sd.BufferCount = 1;
         sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        sd.OutputWindow = GetForegroundWindow(); // TODO: Parameterize this and pass in MCC's hwnd.
+        sd.OutputWindow = hwnd;
         sd.SampleDesc.Count = 1;
         sd.Windowed = TRUE;
         sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
@@ -65,12 +66,12 @@ namespace DX11Hook {
         }
     }
 
-    void addPresentHook() {
+    void addPresentHook( HWND hwnd ) {
         IDXGISwapChain* pSwapChain;
         ID3D11Device* pDevice;
         D3D_FEATURE_LEVEL featureLevel;
         ID3D11DeviceContext* pDeviceContext;
-        createDummy( &pSwapChain, &pDevice, &featureLevel, &pDeviceContext );
+        createDummy( &pSwapChain, &pDevice, &featureLevel, &pDeviceContext, hwnd );
 
         std::cout << "\n";
 
