@@ -29,9 +29,6 @@ namespace DX11HookTest {
     ID3D11InputLayout* vertLayout;
     ID3D11BlendState* blendState;
     ID3D11DepthStencilState* depthStencilState;
-    ID3D11RenderTargetView* renderTargetView;
-    bool hasDoneDeviceInit;
-    bool deviceInitFailed;
 
     struct Vertex {
         float x, y, z;
@@ -41,17 +38,13 @@ namespace DX11HookTest {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
     };
 
+    bool hasDoneDeviceInit;
+    bool deviceInitFailed;
     void _deviceInit( ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
 
         // Compile Shaders from shader file
         HRESULT hr;
         const size_t shaderSize = std::strlen( shaderSource );
-
-        // Create render target view
-        ID3D11Texture2D* pBackBuffer;
-        pSwapChain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), (void**) &pBackBuffer );
-        pDevice->CreateRenderTargetView( pBackBuffer, NULL, &renderTargetView );
-        pBackBuffer->Release();
 
         // Compile shaders
         std::cout << "About to compile shaders" << std::endl;
@@ -72,9 +65,9 @@ namespace DX11HookTest {
 
         // Create the vertex buffer
         Vertex v[] = {
-            {  0.0f,  0.5f, 0.5f },
-            {  0.5f, -0.5f, 0.5f },
-            { -0.5f, -0.5f, 0.5f }
+            {  0.0f,  0.5f, 0.99f },
+            {  0.5f, -0.5f, 0.99f },
+            { -0.5f, -0.5f, 0.99f }
         };
 
         std::cout << "About to create VBO" << std::endl;
@@ -105,7 +98,7 @@ namespace DX11HookTest {
         desc.DepthEnable = true;
         desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
         desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-        desc.StencilEnable = true;
+        desc.StencilEnable = false;
         desc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
         desc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
         desc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
@@ -131,7 +124,6 @@ namespace DX11HookTest {
     }
 
     void deviceInit( ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
-
         if ( hasDoneDeviceInit )
             return;
 
@@ -145,13 +137,11 @@ namespace DX11HookTest {
             std::cout << e.what() << std::endl;
             deviceInitFailed = true;
         }
-
     }
 
-    void fitViewportToWindow( ID3D11DeviceContext* ctx, HWND hwnd ) {
+    void fitViewportToWindow( ID3D11DeviceContext* pCtx, HWND hwnd ) {
         RECT rect;
         GetClientRect( hwnd, &rect );
-
         D3D11_VIEWPORT vp{};
         vp.TopLeftX = 0.0;
         vp.TopLeftY = 0.0;
@@ -159,47 +149,41 @@ namespace DX11HookTest {
         vp.Height = (float) ( rect.bottom - rect.top );
         vp.MinDepth = 0.0;
         vp.MaxDepth = 1.0;
-        ctx->RSSetViewports( 1, &vp );
+        pCtx->RSSetViewports( 1, &vp );
     }
 
-    void render( ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
-
-        // Get device context
-        ID3D11DeviceContext* ctx;
-        pDevice->GetImmediateContext( &ctx );
+    void render( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
 
         if ( !hasDoneDeviceInit )
             deviceInit( pDevice, pSwapChain );
         if ( deviceInitFailed )
             return;
 
-        ctx->OMSetRenderTargets( 1, &renderTargetView, NULL );
-
         // Fit window
         DXGI_SWAP_CHAIN_DESC sd;
         pSwapChain->GetDesc( &sd );
-        fitViewportToWindow( ctx, sd.OutputWindow );
+        fitViewportToWindow( pCtx, sd.OutputWindow );
 
         // Set Vertex and Pixel Shaders
-        ctx->VSSetShader( VS, 0, 0 );
-        ctx->PSSetShader( PS, 0, 0 );
+        pCtx->VSSetShader( VS, 0, 0 );
+        pCtx->PSSetShader( PS, 0, 0 );
 
-        ctx->OMSetBlendState( blendState, nullptr, 0xFFFFFFFF );
-        ctx->OMSetDepthStencilState( depthStencilState, 1 );
+        pCtx->OMSetBlendState( blendState, nullptr, 0xFFFFFFFF );
+        pCtx->OMSetDepthStencilState( depthStencilState, 1 );
 
         // Set the vertex buffer
         UINT stride = sizeof( Vertex );
         UINT offset = 0;
-        ctx->IASetVertexBuffers( 0, 1, &triangleVertBuffer, &stride, &offset );
+        pCtx->IASetVertexBuffers( 0, 1, &triangleVertBuffer, &stride, &offset );
 
         // Set the Input Layout
-        ctx->IASetInputLayout( vertLayout );
+        pCtx->IASetInputLayout( vertLayout );
 
         // Set Primitive Topology
-        ctx->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+        pCtx->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
         // Draw the triangle
-        ctx->Draw( 3, 0 );
+        pCtx->Draw( 3, 0 );
 
     }
 
@@ -217,7 +201,6 @@ namespace DX11HookTest {
         safeRelease( errorBlob );
         safeRelease( blendState );
         safeRelease( depthStencilState );
-        safeRelease( renderTargetView );
     }
 
 }

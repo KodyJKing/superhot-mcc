@@ -14,16 +14,5 @@ inline void safeRelease( Ty& comPtr ) {
     }
 }
 
-void throwIfFail( const char* taskDescription, HRESULT hr ) {
-    if ( FAILED( hr ) ) {
-        std::stringstream ss;
-        ss << "Error: " << hr;
-        if ( taskDescription )
-            ss << " while: " << taskDescription;
-        throw std::runtime_error( ss.str() );
-    }
-}
-
-void throwIfFail( HRESULT hr ) {
-    throwIfFail( nullptr, hr );
-}
+void throwIfFail( const char* taskDescription, HRESULT hr );
+void throwIfFail( HRESULT hr );

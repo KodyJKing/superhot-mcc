@@ -94,7 +94,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     }
 
     addHooks();
-    DX11Hook::addPresentHook( mccWindow );
+    DX11Hook::hook( mccWindow );
     DX11HookTest::init();
 
     if ( !err ) {
@@ -106,6 +106,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     std::cout << "Exiting..." << std::endl;
 
     DX11HookTest::cleanup();
+    DX11Hook::cleanup();
     Hook::cleanupHooks();
 
     Sleep( 500 );

@@ -1,3 +1,4 @@
+#include "../utils/headers/common.h"
 #include "./headers/DX11MethodOffsets.h"
 #include "./headers/DX11Hook.h"
 #include "../headers/Hook.h"
@@ -50,6 +51,37 @@ namespace DX11Hook {
         onPresentCallbacks_mutex.unlock();
     }
 
+    bool hasDoneDeviceInit;
+    bool deviceInitFailed;
+    ID3D11RenderTargetView* renderTargetView;
+    bool initDevice( ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
+        if ( deviceInitFailed )
+            return false;
+        if ( hasDoneDeviceInit )
+            return true;
+
+        ID3D11Texture2D* pBackBuffer;
+        auto hr = pSwapChain->GetBuffer( 0, __uuidof( ID3D11Texture2D ), (void**) &pBackBuffer );
+        if ( FAILED( hr ) ) {
+            std::cout << "Coud not get buffer.\n";
+            deviceInitFailed = true;
+            return false;
+
+        }
+
+        hr = pDevice->CreateRenderTargetView( pBackBuffer, NULL, &renderTargetView );
+        if ( FAILED( hr ) ) {
+            std::cout << "Coud not create render target view.\n";
+            deviceInitFailed = true;
+            pBackBuffer->Release();
+            return false;
+        }
+
+        pBackBuffer->Release();
+        hasDoneDeviceInit = true;
+        return true;
+    }
+
     // We're hooking the begining of the Present function so we can use the same positional arguments.
     void __stdcall onPresentCalled( IDXGISwapChain* pSwapChain ) {
         // std::cout << "Swap chain: " << (uint64_t) pSwapChain << std::endl;
@@ -59,14 +91,40 @@ namespace DX11Hook {
             return;
         }
         // std::cout << "Device: " << (uint64_t) pDevice << std::endl;
+
+        if ( !hasDoneDeviceInit )
+            initDevice( pDevice, pSwapChain );
+
+        ID3D11DeviceContext* pCtx;
+        pDevice->GetImmediateContext( &pCtx );
+        pCtx->OMSetRenderTargets( 1, &renderTargetView, NULL );
+
         if ( onPresentCallbacks_mutex.try_lock() ) {
             for ( PresentCallback cb : onPresentCallbacks )
-                cb( pDevice, pSwapChain );
+                cb( pCtx, pDevice, pSwapChain );
             onPresentCallbacks_mutex.unlock();
         }
     }
 
-    void addPresentHook( HWND hwnd ) {
+    // int _onSetRenderTargets_count = 0;
+    // void onSetRenderTargets(
+    //     ID3D11DeviceContext* pContext,
+    //     UINT NumViews,
+    //     ID3D11RenderTargetView* const* ppRenderTargetViews,
+    //     ID3D11DepthStencilView* pDepthStencilView
+    // ) {
+    //     if ( !pDepthStencilView )
+    //         return;
+    //     std::cout << "\n";
+    //     std::cout << "Num views " << NumViews << "\n";
+    //     std::cout << "RT Views at " << ppRenderTargetViews << "\n";
+    //     std::cout << "DST Views at " << pDepthStencilView << "\n";
+
+    //     D3D11_DEPTH_STENCIL_VIEW_DESC desc;
+    //     pDepthStencilView->GetDesc( &desc );
+    // };
+
+    void hook( HWND hwnd ) {
         IDXGISwapChain* pSwapChain;
         ID3D11Device* pDevice;
         D3D_FEATURE_LEVEL featureLevel;
@@ -76,29 +134,41 @@ namespace DX11Hook {
         std::cout << "\n";
 
         UINT_PTR* swapChainVTable = *( (UINT_PTR**) pSwapChain );
-        UINT_PTR presentMethodAddress = swapChainVTable[MO_IDXGISwapChain::Present];
-        std::cout << "Device.Present address: " << presentMethodAddress << "\n";
-
         UINT_PTR* deviceContextVTable = *( (UINT_PTR**) pDeviceContext );
+
+        // Output method locations.
+        std::cout << "SwapChain.Present address: " << swapChainVTable[MO_IDXGISwapChain::Present] << "\n";
         std::cout << "Context.Draw address: " << deviceContextVTable[MO_ID3D11DeviceContext::Draw] << "\n";
         std::cout << "Context.DrawIndexed address: " << deviceContextVTable[MO_ID3D11DeviceContext::DrawIndexed] << "\n";
+        std::cout << "Context.OMSetRenderTargets address: " << deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets] << "\n";
 
         std::cout << "\n";
 
-        auto hook = Hook::ezCreateJumpHook(
+        auto presentHook = Hook::ezCreateJumpHook(
             "Present",
-            presentMethodAddress, 5,
+            swapChainVTable[MO_IDXGISwapChain::Present], 5,
             (UINT_PTR) onPresentCalled,
             HK_STOLEN_AFTER | HK_PUSH_STATE
         );
-        hook->fixStolenOffset( 1 );
-        hook->protectTrampoline();
-        Hook::removeBeforeClosing( hook );
-        hook->hook();
+        presentHook->fixStolenOffset( 1 );
+        presentHook->protectTrampoline();
+        Hook::removeBeforeClosing( presentHook );
+        presentHook->hook();
+
+        // auto setRTHook = Hook::addJumpHook(
+        //     "OMSetRenderTargets",
+        //     deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets], 5,
+        //     (UINT_PTR) onSetRenderTargets,
+        //     HK_STOLEN_AFTER | HK_PUSH_STATE
+        // );
 
         pSwapChain->Release();
         pDevice->Release();
         pDeviceContext->Release();
+    }
+
+    void cleanup() {
+        safeRelease( renderTargetView );
     }
 
 }
