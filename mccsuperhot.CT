@@ -258,7 +258,7 @@ dealloc(newmem)
         <CheatEntry>
           <ID>10</ID>
           <Description>"halo1.dll"</Description>
-          <LastState Value="9460301" RealAddress="7FF9F2460000"/>
+          <LastState Value="9460301" RealAddress="7FF9F61B0000"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>halo1.dll</Address>
@@ -1038,6 +1038,31 @@ dealloc(newmem)
         <Byte>0D</Byte>
         <Byte>85</Byte>
         <Byte>1E</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Call Render Entities</Description>
+      <AddressString>halo1.dll+C41E2B</AddressString>
+      <Before>
+        <Byte>0F</Byte>
+        <Byte>B6</Byte>
+        <Byte>FB</Byte>
+        <Byte>74</Byte>
+        <Byte>07</Byte>
+      </Before>
+      <Actual>
+        <Byte>E8</Byte>
+        <Byte>80</Byte>
+        <Byte>C9</Byte>
+        <Byte>F2</Byte>
+        <Byte>FF</Byte>
+      </Actual>
+      <After>
+        <Byte>EB</Byte>
+        <Byte>09</Byte>
+        <Byte>48</Byte>
+        <Byte>8D</Byte>
+        <Byte>4D</Byte>
       </After>
     </CodeEntry>
   </CheatCodes>
