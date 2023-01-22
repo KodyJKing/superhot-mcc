@@ -95,17 +95,23 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     addHooks();
     DX11Hook::hook( mccWindow );
-    DX11HookTest::init();
+    // DX11HookTest::init();
 
     if ( !err ) {
         while ( !GetAsyncKeyState( VK_F9 ) ) {
+
+            if ( keypressed( VK_F4 ) ) {
+                auto pCam = Halo1::getPlayerCameraPointer();
+                std::cout << "Fov: " << pCam->fov << "\n";
+            }
+
             Sleep( 10 );
         }
     }
 
     std::cout << "Exiting..." << std::endl;
 
-    DX11HookTest::cleanup();
+    // DX11HookTest::cleanup();
     DX11Hook::cleanup();
     Hook::cleanupHooks();
 
@@ -126,11 +132,6 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     FreeLibraryAndExitThread( hmSuperHotHack, 0 );
 
 }
-
-// void onPostRenderWorld() {
-//     if ( pDeviceContainer && pDeviceContainer->pDevice )
-//         DX11HookTest::render( pDeviceContainer->pDevice );
-// }
 
 void addHooks() {
 
