@@ -52,6 +52,17 @@ HWND getMCCWindow() {
     return hwnd;
 }
 
+bool printEntityData( Halo1::EntityRecord* pRecord ) {
+    auto pEntity = Halo1::getEntityPointer( pRecord );
+    if ( !pEntity )
+        return true;
+    std::cout << "Type ID: " << pRecord->typeId << "\n";
+    std::cout << "Position: ";
+    pEntity->pos.print();
+    std::cout << "\n";
+    return true;
+}
+
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     const bool useConsole = true;
@@ -93,6 +104,25 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
         std::cout << "Device container not found!" << std::endl;
     }
 
+    auto pEntityList = Halo1::getEntityListPointer();
+    if ( pEntityList ) {
+        std::cout << "Entity list at: " << pEntityList << "\n";
+
+        // auto pRecord = Halo1::getEntityRecord( 0 );
+        // std::cout << "Entity records start at: " << pRecord << "\n";
+        // if ( pRecord ) {
+        //     auto pEntity = Halo1::getEntityPointer( pRecord );
+        //     if ( pEntity ) {
+        //         std::cout << "Entity #0 at: " << pEntity << "\n";
+        //         std::cout << "Entity #0 pos: ";
+        //         pEntity->pos.print();
+        //         std::cout << "\n";
+        //     }
+        // }
+
+        Halo1::foreachEntityRecord( printEntityData );
+    }
+
     addHooks();
     DX11Hook::hook( mccWindow );
     // DX11HookTest::init();
@@ -104,6 +134,9 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
                 auto pCam = Halo1::getPlayerCameraPointer();
                 std::cout << "Fov: " << pCam->fov << "\n";
             }
+
+            // if ( pEntityList )
+            //     std::cout << "Entity count: " << std::dec << pEntityList->count << "\n";
 
             Sleep( 10 );
         }
