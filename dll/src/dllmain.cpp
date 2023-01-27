@@ -56,12 +56,12 @@ bool printEntityData( Halo1::EntityRecord* pRecord ) {
     auto pEntity = Halo1::getEntityPointer( pRecord );
     if ( !pEntity )
         return true;
-    std::cout << "Type ID: " << pRecord->typeId << "\n";
-    std::cout << "Health: " << pEntity->health << "\n";
-    std::cout << "Shield: " << pEntity->shield << "\n";
     std::cout << "Position: ";
     pEntity->pos.print();
-    std::cout << "\n\n";
+    std::cout << "\n";
+    std::cout << "Type ID: " << pRecord->typeId;
+    std::cout << ", Health: " << pEntity->health;
+    std::cout << ", Shield: " << pEntity->shield << "\n\n";
     return true;
 }
 

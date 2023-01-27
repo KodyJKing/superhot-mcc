@@ -26,9 +26,14 @@ namespace Halo1 {
         auto pEntityList = getEntityListPointer();
         if ( !pEntityList )
             return;
-        for ( uint32_t i = 0; i < pEntityList->count; i++ )
-            if ( !cb( getEntityRecord( pEntityList, i ) ) )
+        for ( uint32_t i = 0; i < pEntityList->count; i++ ) {
+            auto pRecord = getEntityRecord( pEntityList, i );
+            if ( pRecord->entityArrayOffset == -1 )
+                continue;
+            if ( !cb( pRecord ) )
                 break;
+
+        }
     }
 
     Entity* getEntityPointer( EntityRecord* pRecord ) {
