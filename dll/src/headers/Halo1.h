@@ -33,7 +33,7 @@ namespace Halo1 {
         uint16_t unknown_1;
         uint16_t unknown_2;
         uint16_t typeId;
-        uint32_t entityArrayOffset;
+        int32_t entityArrayOffset;
     };
 
     class EntityList {

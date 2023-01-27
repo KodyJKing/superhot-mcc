@@ -32,9 +32,9 @@ namespace Halo1 {
     }
 
     Entity* getEntityPointer( EntityRecord* pRecord ) {
-        if ( !pRecord )
+        if ( !pRecord || pRecord->entityArrayOffset == -1 )
             return nullptr;
-        UINT_PTR entityAddress = getEntityArrayBase() + 0x34 + pRecord->entityArrayOffset;
+        UINT_PTR entityAddress = getEntityArrayBase() + 0x34 + (INT_PTR) pRecord->entityArrayOffset;
         return (Entity*) entityAddress;
     }
 
