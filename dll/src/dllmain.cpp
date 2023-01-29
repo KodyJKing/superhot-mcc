@@ -3,6 +3,7 @@
 #include "./headers/Halo1.h"
 #include "./graphics/headers/DX11Hook.h"
 #include "./graphics/headers/DX11HookTest.h"
+#include "./graphics/headers/DX11Utils.h"
 #include "./headers/Hook.h"
 #include "./utils/headers/AllocationUtils.h"
 #include "./utils/headers/keypressed.h"
@@ -13,7 +14,6 @@ UINT_PTR halo1Base;
 HWND mccWindow;
 
 Halo1::DeviceContainer* pDeviceContainer;
-// Renderer* _renderer;
 
 BOOL APIENTRY DllMain(
     HMODULE hModule,
@@ -65,6 +65,23 @@ bool printEntityData( Halo1::EntityRecord* pRecord ) {
     return true;
 }
 
+void printEntities() {
+    auto pEntityList = Halo1::getEntityListPointer();
+    if ( pEntityList ) {
+        std::cout << "Entity list at: " << pEntityList << "\n";
+        std::cout << "Entities: \n\n";
+        Halo1::foreachEntityRecord( printEntityData );
+    }
+}
+
+// bool rendererInit = false;
+// void testRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
+//     if ( !rendererInit ) {
+//         rendererInit = true;
+//     }
+//     fitViewportToWindow( pCtx, mccWindow );
+// }
+
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     const bool useConsole = true;
@@ -101,21 +118,15 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     if ( pDeviceContainer ) {
         std::cout << "Device container at: " << pDeviceContainer << std::endl;
         std::cout << "Device at: " << pDeviceContainer->pDevice << std::endl;
-    }
-    else {
+    } else {
         std::cout << "Device container not found!" << std::endl;
     }
 
-    auto pEntityList = Halo1::getEntityListPointer();
-    if ( pEntityList ) {
-        std::cout << "Entity list at: " << pEntityList << "\n";
-        std::cout << "Entities: \n\n";
-        Halo1::foreachEntityRecord( printEntityData );
-    }
+    // printEntities();
 
-    addHooks();
     DX11Hook::hook( mccWindow );
-    // DX11HookTest::init();
+    DX11HookTest::init();
+    // DX11Hook::addOnPresentCallback( testRender );
 
     if ( !err ) {
         while ( !GetAsyncKeyState( VK_F9 ) ) {
@@ -125,16 +136,13 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
                 std::cout << "Fov: " << pCam->fov << "\n";
             }
 
-            // if ( pEntityList )
-            //     std::cout << "Entity count: " << std::dec << pEntityList->count << "\n";
-
             Sleep( 10 );
         }
     }
 
     std::cout << "Exiting..." << std::endl;
 
-    // DX11HookTest::cleanup();
+    DX11HookTest::cleanup();
     DX11Hook::cleanup();
     Hook::cleanupHooks();
 
@@ -153,20 +161,5 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     }
 
     FreeLibraryAndExitThread( hmSuperHotHack, 0 );
-
-}
-
-void addHooks() {
-
-    // auto hook = Hook::ezCreateJumpHook(
-    //     "Post render world hook",
-    //     halo1Base + 0xC41E2BU, 5,
-    //     (UINT_PTR) onPostRenderWorld,
-    //     HK_PUSH_STATE
-    // );
-    // hook->fixStolenOffset( 1 );
-    // hook->protectTrampoline();
-    // Hook::removeBeforeClosing( hook );
-    // hook->hook();
 
 }

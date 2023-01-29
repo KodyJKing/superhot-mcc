@@ -32,7 +32,6 @@ namespace Halo1 {
                 continue;
             if ( !cb( pRecord ) )
                 break;
-
         }
     }
 
