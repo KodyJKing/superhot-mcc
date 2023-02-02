@@ -11,6 +11,8 @@ ID3D10Blob* compileShader( ID3D11Device* pDevice, LPCSTR source, LPCSTR function
 ID3D11VertexShader* compileVertexShader( ID3D11Device* pDevice, LPCSTR source, LPCSTR functionName, LPCSTR profile, const D3D11_INPUT_ELEMENT_DESC* layout, UINT layoutSize, ID3D11InputLayout** pVertLayout );
 ID3D11PixelShader* compilePixelShader( ID3D11Device* pDevice, LPCSTR source, LPCSTR functionName, LPCSTR profile );
 
+void copyToBuffer( ID3D11DeviceContext* pCtx, ID3D11Buffer* pBuffer, void* pData, size_t bytes );
+
 // template <typename T>
 // void createShader(
 //     ID3D11Device* pDevice, LPCSTR source, LPCSTR functionName, LPCSTR profile,

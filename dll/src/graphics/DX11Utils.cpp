@@ -67,3 +67,15 @@ ID3D11PixelShader* compilePixelShader(
     safeRelease( shaderBlob );
     return shaderObject;
 }
+
+void copyToBuffer(
+    ID3D11DeviceContext* pCtx,
+    ID3D11Buffer* pBuffer,
+    void* pData, size_t bytes
+) {
+    D3D11_MAPPED_SUBRESOURCE mappedResource;
+    auto hr = pCtx->Map( pBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource );
+    throwIfFail( "Mapping D3D Buffer", hr );
+    std::memcpy( mappedResource.pData, pData, bytes );
+    pCtx->Unmap( pBuffer, 0 );
+}

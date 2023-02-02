@@ -54,6 +54,12 @@ namespace DX11HookTest {
         vertexBufferDesc.CPUAccessFlags = 0;
         vertexBufferDesc.MiscFlags = 0;
 
+        D3D11_SUBRESOURCE_DATA vertexBufferData;
+        ZeroMemory( &vertexBufferData, sizeof( vertexBufferData ) );
+        vertexBufferData.pSysMem = v;
+
+        pDevice->CreateBuffer( &vertexBufferDesc, &vertexBufferData, &triangleVertBuffer );
+
         // Create blend state;
         D3D11_BLEND_DESC blendDesc{};
         blendDesc.RenderTarget->BlendEnable = true;
@@ -74,12 +80,6 @@ namespace DX11HookTest {
         desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
         desc.StencilEnable = false;
         throwIfFail( "Creating depth-stencil state", pDevice->CreateDepthStencilState( &desc, &depthStencilState ) );
-
-        D3D11_SUBRESOURCE_DATA vertexBufferData;
-        ZeroMemory( &vertexBufferData, sizeof( vertexBufferData ) );
-        vertexBufferData.pSysMem = v;
-
-        pDevice->CreateBuffer( &vertexBufferDesc, &vertexBufferData, &triangleVertBuffer );
     }
 
     void deviceInit( ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {

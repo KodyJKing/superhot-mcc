@@ -4,6 +4,7 @@
 #include "./graphics/headers/DX11Hook.h"
 #include "./graphics/headers/DX11HookTest.h"
 #include "./graphics/headers/DX11Utils.h"
+#include "./graphics/headers/Renderer.h"
 #include "./headers/Hook.h"
 #include "./utils/headers/AllocationUtils.h"
 #include "./utils/headers/keypressed.h"
@@ -74,13 +75,16 @@ void printEntities() {
     }
 }
 
-// bool rendererInit = false;
-// void testRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
-//     if ( !rendererInit ) {
-//         rendererInit = true;
-//     }
-//     fitViewportToWindow( pCtx, mccWindow );
-// }
+Renderer* renderer;
+bool rendererInit = false;
+void testRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
+    if ( !rendererInit ) {
+        std::cout << "Constructing new Renderer.\n";
+        renderer = new Renderer( pDevice, 4096 );
+        rendererInit = true;
+    }
+    fitViewportToWindow( pCtx, mccWindow );
+}
 
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
@@ -94,8 +98,8 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     FILE* pFile_stdout, * pFile_stderr, * pFile_stdin;
     if ( useConsole ) {
         AllocConsole();
-        // err = freopen_s( &pFile_stdout, logFile, "w", stdout );
-        err = freopen_s( &pFile_stdout, "CONOUT$", "w", stdout );
+        err = freopen_s( &pFile_stdout, logFile, "w", stdout );
+        // err = freopen_s( &pFile_stdout, "CONOUT$", "w", stdout );
         err |= freopen_s( &pFile_stderr, "CONOUT$", "w", stderr );
         if ( useStdin )
             err |= freopen_s( &pFile_stdin, "CONIN$", "r", stdin );
@@ -125,8 +129,8 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     // printEntities();
 
     DX11Hook::hook( mccWindow );
-    DX11HookTest::init();
-    // DX11Hook::addOnPresentCallback( testRender );
+    // DX11HookTest::init();
+    DX11Hook::addOnPresentCallback( testRender );
 
     if ( !err ) {
         while ( !GetAsyncKeyState( VK_F9 ) ) {
@@ -142,7 +146,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     std::cout << "Exiting..." << std::endl;
 
-    DX11HookTest::cleanup();
+    // DX11HookTest::cleanup();
     DX11Hook::cleanup();
     Hook::cleanupHooks();
 
