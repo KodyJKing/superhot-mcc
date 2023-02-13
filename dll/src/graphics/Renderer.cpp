@@ -61,6 +61,9 @@ Renderer::Renderer( ID3D11Device* pDevice, uint32_t maxVertices ) {
         desc.RenderTarget->RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
         throwIfFail( pDevice->CreateBlendState( &desc, &blendState ) );
     }
+
+    auto ident = XMMatrixIdentity();
+    this->setTransform( &ident );
 }
 
 Renderer::~Renderer() {

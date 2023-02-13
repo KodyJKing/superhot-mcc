@@ -21,6 +21,9 @@
 #include <cstdio>
 #include <memory>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 // #include <d3d9.h>
 // #include <d3dx9.h>
 // #pragma comment(lib, "d3d9.lib")

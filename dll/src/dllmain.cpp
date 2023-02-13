@@ -77,13 +77,51 @@ void printEntities() {
 
 Renderer* renderer;
 bool rendererInit = false;
+DWORD startTime;
 void testRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
     if ( !rendererInit ) {
         std::cout << "Constructing new Renderer.\n";
         renderer = new Renderer( pDevice, 4096 );
         rendererInit = true;
+        startTime = GetTickCount();
+
+        RECT rect;
+        GetClientRect( mccWindow, &rect );
+        float w = (float) ( rect.right - rect.left );
+        float h = (float) ( rect.bottom - rect.top );
+        float aspect = h / w;
+        XMMATRIX transform = XMMatrixScaling( aspect, 1.0f, 1.0f );
+        renderer->setTransform( &transform );
     }
+
     fitViewportToWindow( pCtx, mccWindow );
+    renderer->setPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+
+    renderer->begin();
+
+    Vector4 red = { 1.0f, 0.0f, 0.0f, 0.0f };
+    Vector4 green = { 0.0f, 1.0f, 0.0f, 1.0f };
+    Vector4 blue = { 0.0f, 0.0f, 1.0f, 1.0f };
+
+    float t = ( ( GetTickCount() - startTime ) ) / 1000.0f;
+    float angle = (float) M_PI * 2.0f / 3.0f;
+
+    std::cout << t << "\n";
+
+    Vertex verticies[3] = {
+        {{  0.0f,  0.5f, 0.99f }, red },
+        {{  0.5f, -0.5f, 0.99f }, green},
+        {{ -0.5f, -0.5f, 0.99f }, blue}
+    };
+
+    for ( int i = 0; i < 3; i++ )
+        verticies[i].pos = { sinf( i * angle + t ), cosf( i * angle + t ), 0.99f };
+
+    renderer->pushVerticies( ARRAYSIZE( verticies ), verticies );
+    renderer->flush();
+
+    renderer->end();
+
 }
 
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
@@ -98,8 +136,8 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     FILE* pFile_stdout, * pFile_stderr, * pFile_stdin;
     if ( useConsole ) {
         AllocConsole();
-        err = freopen_s( &pFile_stdout, logFile, "w", stdout );
-        // err = freopen_s( &pFile_stdout, "CONOUT$", "w", stdout );
+        // err = freopen_s( &pFile_stdout, logFile, "w", stdout );
+        err = freopen_s( &pFile_stdout, "CONOUT$", "w", stdout );
         err |= freopen_s( &pFile_stderr, "CONOUT$", "w", stderr );
         if ( useStdin )
             err |= freopen_s( &pFile_stdin, "CONIN$", "r", stdin );
@@ -149,6 +187,8 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     // DX11HookTest::cleanup();
     DX11Hook::cleanup();
     Hook::cleanupHooks();
+    if ( renderer )
+        renderer->~Renderer();
 
     Sleep( 500 );
 

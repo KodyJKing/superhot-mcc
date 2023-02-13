@@ -8,13 +8,13 @@ bool isValid32BitOffset( UINT_PTR offset ) {
 
 namespace Hook {
 
-    // Byte codes for push rax, push rbx ... push r15.
+    // Byte codes for: push rax, push rbx ... push r15.
     char pusha64[] = { '\x50', '\x53', '\x51', '\x52', '\x56', '\x57', '\x55', '\x54', '\x41', '\x50', '\x41', '\x51', '\x41', '\x52', '\x41', '\x53', '\x41', '\x54', '\x41', '\x55', '\x41', '\x56', '\x41', '\x57' };
-    // Byte codes for pop r15 ... push rbx, pop rax.
+    // Byte codes for: pop r15 ... push rbx, pop rax.
     char popa64[] = { '\x41', '\x5F', '\x41', '\x5E', '\x41', '\x5D', '\x41', '\x5C', '\x41', '\x5B', '\x41', '\x5A', '\x41', '\x59', '\x41', '\x58', '\x5C', '\x5D', '\x5F', '\x5E', '\x5A', '\x59', '\x5B', '\x58' };
-    // sub rsp, 20h
+    // Byte codes for: sub rsp, 20h
     char allocShadow[] = { '\x48', '\x83', '\xEC', '\x20' };
-    // add rsp, 20h
+    // Byte codes for: add rsp, 20h
     char deallocShadow[] = { '\x48', '\x83', '\xC4', '\x20' };
 
     // === Buffer Writing ===
@@ -220,8 +220,7 @@ namespace Hook {
 
             hook->writeReturnJump( &head );
 
-        }
-        catch ( std::exception& e ) {
+        } catch ( std::exception& e ) {
             std::cout << "An error occured while trying to create trampoline: " << e.what() << std::endl;
             hook->freeTrampoline();
             delete hook;
@@ -248,8 +247,7 @@ namespace Hook {
         try {
             hook->protectTrampoline();
             hook->hook();
-        }
-        catch ( std::exception& e ) {
+        } catch ( std::exception& e ) {
             std::cout << "An error occured while trying to hook function: " << e.what() << std::endl;
             hook->unhook();
             delete hook;
