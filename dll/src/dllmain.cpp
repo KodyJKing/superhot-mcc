@@ -2,7 +2,6 @@
 #include "./headers/dllmain.h"
 #include "./headers/Halo1.h"
 #include "./graphics/headers/DX11Hook.h"
-#include "./graphics/headers/DX11HookTest.h"
 #include "./graphics/headers/DX11Utils.h"
 #include "./graphics/headers/Renderer.h"
 #include "./headers/Hook.h"
@@ -84,29 +83,29 @@ void testRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChai
         renderer = new Renderer( pDevice, 4096 );
         rendererInit = true;
         startTime = GetTickCount();
-
-        RECT rect;
-        GetClientRect( mccWindow, &rect );
-        float w = (float) ( rect.right - rect.left );
-        float h = (float) ( rect.bottom - rect.top );
-        float aspect = h / w;
-        XMMATRIX transform = XMMatrixScaling( aspect, 1.0f, 1.0f );
-        renderer->setTransform( &transform );
     }
+
+    RECT rect;
+    GetClientRect( mccWindow, &rect );
+    float w = (float) ( rect.right - rect.left );
+    float h = (float) ( rect.bottom - rect.top );
+    float aspect = h / w;
+    XMMATRIX transform = XMMatrixScaling( aspect * .5f, 1.0f * .5f, 1.0f );
+    renderer->setTransform( &transform );
 
     fitViewportToWindow( pCtx, mccWindow );
     renderer->setPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
     renderer->begin();
 
-    Vector4 red = { 1.0f, 0.0f, 0.0f, 0.0f };
+    Vector4 red = { 1.0f, 0.0f, 0.0f, 0.5f };
     Vector4 green = { 0.0f, 1.0f, 0.0f, 1.0f };
     Vector4 blue = { 0.0f, 0.0f, 1.0f, 1.0f };
 
     float t = ( ( GetTickCount() - startTime ) ) / 1000.0f;
     float angle = (float) M_PI * 2.0f / 3.0f;
 
-    std::cout << t << "\n";
+    // std::cout << t << "\n";
 
     Vertex verticies[3] = {
         {{  0.0f,  0.5f, 0.99f }, red },
@@ -114,12 +113,15 @@ void testRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChai
         {{ -0.5f, -0.5f, 0.99f }, blue}
     };
 
-    for ( int i = 0; i < 3; i++ )
-        verticies[i].pos = { sinf( i * angle + t ), cosf( i * angle + t ), 0.99f };
+    int numTris = 5;
+    for ( int j = 0; j < numTris; j++ ) {
+        for ( int i = 0; i < 3; i++ )
+            verticies[i].pos = { sinf( i * angle + t ), cosf( i * angle + t ), 0.99f };
+        renderer->pushVerticies( ARRAYSIZE( verticies ), verticies );
+        t += angle / numTris;
+    }
 
-    renderer->pushVerticies( ARRAYSIZE( verticies ), verticies );
     renderer->flush();
-
     renderer->end();
 
 }
@@ -167,7 +169,6 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     // printEntities();
 
     DX11Hook::hook( mccWindow );
-    // DX11HookTest::init();
     DX11Hook::addOnPresentCallback( testRender );
 
     if ( !err ) {
@@ -184,7 +185,6 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     std::cout << "Exiting..." << std::endl;
 
-    // DX11HookTest::cleanup();
     DX11Hook::cleanup();
     Hook::cleanupHooks();
     if ( renderer )

@@ -2,7 +2,7 @@
 
 const char* shaderSource = R"(cbuffer transformBuffer : register(b0)
 {
-	matrix projection;
+	matrix mat;
 };
  
 struct VS_OUTPUT
@@ -21,7 +21,7 @@ VS_OUTPUT VS(VS_INPUT input)
 {
 	VS_OUTPUT output;
  
-	output.pos = mul(projection, float4(input.pos.xy, 0.f, 1.f));
+	output.pos = mul(mat, float4(input.pos.xy, 0.f, 1.f));
 	output.col = input.col;
  
 	return output;
