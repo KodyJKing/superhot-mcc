@@ -1,5 +1,5 @@
 //
-// Thanks to Yazzn for his renderer, which I used for extensively reference here.
+// Thanks to Yazzn for his renderer, which I used for reference here.
 // https://www.unknowncheats.me/forum/d3d-tutorials-and-source/177926-direct3d-11-renderer.html
 //
 
