@@ -1,8 +1,19 @@
+//
+// Thanks to Yazzn for his renderer, which I used for extensively reference here.
+// https://www.unknowncheats.me/forum/d3d-tutorials-and-source/177926-direct3d-11-renderer.html
+//
+
+#pragma once
+
 #include "../../../pch.h"
 #include <DirectXMath.h>
 
+#include "FW1FontWrapper.h"
+#pragma comment(lib, "FW1FontWrapper.lib")
+
 using namespace DirectX;
 
+using Vector2 = XMFLOAT2;
 using Vector3 = XMFLOAT3;
 using Vector4 = XMFLOAT4;
 
@@ -14,7 +25,7 @@ struct Vertex {
 class Renderer {
 
     public:
-    Renderer( ID3D11Device* pDevice, uint32_t maxVertices );
+    Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR defaultFontFamily = L"Verdana" );
     ~Renderer();
 
     void setTransform( XMMATRIX* pTransform );
@@ -25,6 +36,10 @@ class Renderer {
 
     void pushVerticies( uint32_t pushCount, Vertex* pVertices );
     void flush();
+
+    // FW1
+    void drawText( Vector2 pos, LPCWSTR text, Vector4 color, uint32_t flags,
+        float fontSize, LPCWSTR fontFamily );
 
     private:
     ID3D11Device* pDevice;
@@ -45,4 +60,10 @@ class Renderer {
     ID3D11PixelShader* PS;
 
     ID3D11BlendState* blendState;
+
+    // FW1
+    LPCWSTR defaultFontFamily;
+    IFW1Factory* fontFactory;
+    IFW1FontWrapper* fontWrapper;
+    IFW1TextGeometry* textGeometry;
 };

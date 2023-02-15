@@ -1,8 +1,15 @@
+//
+// Thanks to Yazzn for his renderer, which I used for extensively reference here.
+// https://www.unknowncheats.me/forum/d3d-tutorials-and-source/177926-direct3d-11-renderer.html
+//
+
 #include "./headers/DX11Utils.h"
 #include "./headers/Renderer.h"
 #include "./headers/shader.h"
 
-Renderer::Renderer( ID3D11Device* pDevice, uint32_t maxVertices ) {
+#include <DirectXPackedVector.h>
+
+Renderer::Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR defaultFontFamily ) {
     HRESULT hr;
 
     auto vboSize = maxVertices * sizeof( Vertex );
@@ -64,6 +71,12 @@ Renderer::Renderer( ID3D11Device* pDevice, uint32_t maxVertices ) {
 
     auto ident = XMMatrixIdentity();
     this->setTransform( &ident );
+
+    // FW1
+    this->defaultFontFamily = defaultFontFamily;
+    throwIfFail( FW1CreateFactory( FW1_VERSION, &fontFactory ) );
+    throwIfFail( fontFactory->CreateFontWrapper( pDevice, defaultFontFamily, &fontWrapper ) );
+    throwIfFail( fontFactory->CreateTextGeometry( &textGeometry ) );
 }
 
 Renderer::~Renderer() {
@@ -75,6 +88,11 @@ Renderer::~Renderer() {
     safeRelease( PS );
     safeRelease( blendState );
     safeFree( pCpuVertexBuffer );
+
+    // FW1
+    safeRelease( fontWrapper );
+    safeRelease( fontFactory );
+    safeRelease( textGeometry );
 }
 
 void Renderer::setTransform( XMMATRIX* pTransform ) {
@@ -101,10 +119,17 @@ void Renderer::begin() {
     UINT stride = sizeof( Vertex );
     UINT offset = 0;
     pCtx->IASetVertexBuffers( 0, 1, &pVertexBuffer, &stride, &offset );
+
+    // FW1
+    fontWrapper->DrawString( pCtx, L"", 0.0f, 0.0f, 0.0f,
+        0xff000000, FW1_RESTORESTATE | FW1_NOFLUSH );
 }
 
 void Renderer::end() {
     vertexCount = 0;
+
+    // FW1
+    textGeometry->Clear();
 }
 
 void Renderer::flush() {
@@ -115,6 +140,11 @@ void Renderer::flush() {
     pCtx->IASetPrimitiveTopology( topology );
     pCtx->Draw( vertexCount, 0 );
     vertexCount = 0;
+
+    // FW1
+    fontWrapper->Flush( pCtx );
+    fontWrapper->DrawGeometry( pCtx, textGeometry,
+        nullptr, nullptr, FW1_RESTORESTATE );
 }
 
 void Renderer::pushVerticies( uint32_t pushCount, Vertex* pVertices ) {
@@ -124,4 +154,17 @@ void Renderer::pushVerticies( uint32_t pushCount, Vertex* pVertices ) {
     size_t pushBytes = pushCount * sizeof( Vertex );
     std::memcpy( (void*) pVertex, pVertices, pushBytes );
     vertexCount += pushCount;
+}
+
+void Renderer::drawText( Vector2 pos, LPCWSTR text, Vector4 color, uint32_t flags,
+    float fontSize, LPCWSTR fontFamily ) {
+
+    if ( !fontFamily )
+        fontFamily = defaultFontFamily;
+
+    uint32_t color32 = PackedVector::XMCOLOR( color.x, color.y, color.z, color.w );
+
+    FW1_RECTF rect = { pos.x, pos.y, pos.x, pos.y };
+    fontWrapper->AnalyzeString( nullptr, text, fontFamily, fontSize, &rect, color32,
+        flags | FW1_NOFLUSH | FW1_NOWORDWRAP, textGeometry );
 }

@@ -121,6 +121,9 @@ void testRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChai
         t += angle / numTris;
     }
 
+    Vector4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+    renderer->drawText( { 500, 500 }, L"Hello Text!", color, NULL, 20.0f, nullptr );
+
     renderer->flush();
     renderer->end();
 
