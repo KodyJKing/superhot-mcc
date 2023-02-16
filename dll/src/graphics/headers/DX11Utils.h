@@ -3,6 +3,8 @@
 #include "../../../pch.h"
 #include "../../utils/headers/common.h"
 
+using namespace DirectX;
+
 void fitViewportToWindow( ID3D11DeviceContext* pCtx, HWND hwnd );
 
 void safePrintErrorMessage( ID3D10Blob* errorBlob );
@@ -13,21 +15,9 @@ ID3D11PixelShader* compilePixelShader( ID3D11Device* pDevice, LPCSTR source, LPC
 
 void copyToBuffer( ID3D11DeviceContext* pCtx, ID3D11Buffer* pBuffer, void* pData, size_t bytes );
 
-// template <typename T>
-// void createShader(
-//     ID3D11Device* pDevice, LPCSTR source, LPCSTR functionName, LPCSTR profile,
-//     ID3D10Blob** ppShaderBlob, T** ppShader
-// ) {
-//     T* pShader;
-//     auto pShaderBlob = compileShader( pDevice, source, functionName, profile );
-//     HRESULT hr;
-//     if constexpr ( std::is_base_of<ID3D11VertexShader, T>::value )
-//         hr = pDevice->CreateVertexShader( pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &pShader );
-//     else if constexpr ( std::is_base_of<ID3D11PixelShader, T>::value )
-//         hr = pDevice->CreatePixelShader( pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), NULL, &pShader );
-//     throwIfFail( "Creating shader object", hr );
-//     if ( ppShaderBlob )
-//         *ppShaderBlob = pShaderBlob;
-//     if ( ppShader )
-//         *ppShader = pShader;
-// }
+XMMATRIX cameraMatrix(
+    const Vec3 pos, const Vec3 forward,
+    float fov,
+    float clippingNear, float clippingFar,
+    float viewportWidth, float viewportHeight
+);

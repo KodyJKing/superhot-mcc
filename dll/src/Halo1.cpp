@@ -1,5 +1,4 @@
 #include "./headers/Halo1.h"
-#include "../pch.h"
 
 namespace Halo1 {
     UINT_PTR dllBase;

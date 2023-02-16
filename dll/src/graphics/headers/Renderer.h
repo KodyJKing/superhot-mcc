@@ -6,20 +6,15 @@
 #pragma once
 
 #include "../../../pch.h"
-#include <DirectXMath.h>
 
 #include "FW1FontWrapper.h"
 #pragma comment(lib, "FW1FontWrapper.lib")
 
 using namespace DirectX;
 
-using Vector2 = XMFLOAT2;
-using Vector3 = XMFLOAT3;
-using Vector4 = XMFLOAT4;
-
 struct Vertex {
-    Vector3 pos;
-    Vector4 color;
+    Vec3 pos;
+    Vec4 color;
 };
 
 class Renderer {
@@ -38,7 +33,7 @@ class Renderer {
     void flush();
 
     // FW1
-    void drawText( Vector2 pos, LPCWSTR text, Vector4 color, uint32_t flags,
+    void drawText( Vec2 pos, LPCWSTR text, Vec4 color, uint32_t flags,
         float fontSize, LPCWSTR fontFamily );
 
     private:
@@ -60,6 +55,7 @@ class Renderer {
     ID3D11PixelShader* PS;
 
     ID3D11BlendState* blendState;
+    ID3D11RasterizerState* noCullRasterState;
 
     // FW1
     LPCWSTR defaultFontFamily;

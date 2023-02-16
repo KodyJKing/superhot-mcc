@@ -8,4 +8,8 @@ namespace MathUtils {
         return -(INT_PTR) ( b - a );
     }
 
+    float randf() {
+        return (float) rand() / (float) RAND_MAX;
+    }
+
 }

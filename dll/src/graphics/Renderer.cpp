@@ -58,15 +58,32 @@ Renderer::Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR default
 
     { // Create blend state
         D3D11_BLEND_DESC desc{};
+        ZeroMemory( &desc, sizeof( desc ) );
+        // desc.RenderTarget->SrcBlend = D3D11_BLEND_SRC_ALPHA;
         desc.RenderTarget->BlendEnable = true;
-        desc.RenderTarget->SrcBlend = D3D11_BLEND_SRC_ALPHA;
+        desc.RenderTarget->SrcBlend = D3D11_BLEND_ONE;
         desc.RenderTarget->DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        desc.RenderTarget->BlendOp = D3D11_BLEND_OP_ADD;
         desc.RenderTarget->SrcBlendAlpha = D3D11_BLEND_ONE;
         desc.RenderTarget->DestBlendAlpha = D3D11_BLEND_ZERO;
-        desc.RenderTarget->BlendOp = D3D11_BLEND_OP_ADD;
         desc.RenderTarget->BlendOpAlpha = D3D11_BLEND_OP_ADD;
         desc.RenderTarget->RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
         throwIfFail( pDevice->CreateBlendState( &desc, &blendState ) );
+    }
+
+    { // Create no cull raster state
+        D3D11_RASTERIZER_DESC desc{};
+        desc.FillMode = D3D11_FILL_SOLID;
+        desc.CullMode = D3D11_CULL_NONE;
+        desc.FrontCounterClockwise = FALSE;
+        desc.DepthBias = 0;
+        desc.SlopeScaledDepthBias = 0.0f;
+        desc.DepthBiasClamp = 0.0f;
+        desc.DepthClipEnable = true;
+        desc.ScissorEnable = false;
+        desc.MultisampleEnable = false;
+        desc.AntialiasedLineEnable = false;
+        throwIfFail( pDevice->CreateRasterizerState( &desc, &noCullRasterState ) );
     }
 
     auto ident = XMMatrixIdentity();
@@ -111,6 +128,7 @@ void Renderer::begin() {
     pCtx->PSSetShader( PS, 0, 0 );
 
     pCtx->OMSetBlendState( blendState, nullptr, 0xFFFFFFFF );
+    pCtx->RSSetState( noCullRasterState );
 
     pCtx->VSSetConstantBuffers( 0, 1, &pTransformBuffer );
 
@@ -156,7 +174,7 @@ void Renderer::pushVerticies( uint32_t pushCount, Vertex* pVertices ) {
     vertexCount += pushCount;
 }
 
-void Renderer::drawText( Vector2 pos, LPCWSTR text, Vector4 color, uint32_t flags,
+void Renderer::drawText( Vec2 pos, LPCWSTR text, Vec4 color, uint32_t flags,
     float fontSize, LPCWSTR fontFamily ) {
 
     if ( !fontFamily )

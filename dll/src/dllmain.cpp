@@ -6,7 +6,11 @@
 #include "./graphics/headers/Renderer.h"
 #include "./headers/Hook.h"
 #include "./utils/headers/AllocationUtils.h"
+#include "./utils/headers/MathUtils.h"
 #include "./utils/headers/keypressed.h"
+#include "./utils/headers/Vec.h"
+
+using MathUtils::randf;
 
 HMODULE hmSuperHotHack;
 HMODULE hmHalo1;
@@ -56,8 +60,11 @@ bool printEntityData( Halo1::EntityRecord* pRecord ) {
     auto pEntity = Halo1::getEntityPointer( pRecord );
     if ( !pEntity )
         return true;
+    if ( pEntity->health <= 0 )
+        return true;
     std::cout << "Position: ";
-    pEntity->pos.print();
+    Vec::print( pEntity->pos );
+    // pEntity->pos.print();
     std::cout << "\n";
     std::cout << "Type ID: " << pRecord->typeId;
     std::cout << ", Health: " << pEntity->health;
@@ -74,7 +81,44 @@ void printEntities() {
     }
 }
 
+float clippingNear = 0.063f;
+float clippingFar = 200.0f;
+HRESULT halo1CameraMatrix( float w, float h, XMMATRIX& result ) {
+    auto pCam = Halo1::getPlayerCameraPointer();
+    if ( !pCam )
+        return E_FAIL;
+    result = cameraMatrix(
+        pCam->pos, pCam->fwd,
+        pCam->fov,
+        clippingNear, clippingFar,
+        w, h
+    );
+    return S_OK;
+}
+
 Renderer* renderer;
+
+bool drawRandomTriangleOnEntity( Halo1::EntityRecord* rec ) {
+    Vec4 red = { 1.0f, 0.0f, 0.0f, 0.25f };
+    Vec4 green = { 0.0f, 1.0f, 0.0f, 0.25f };
+    Vec4 blue = { 0.0f, 0.0f, 1.0f, 0.25f };
+    Vertex verticies[3] = { {{}, red }, {{}, green}, {{}, blue} };
+
+    auto entity = Halo1::getEntityPointer( rec );
+    auto pos = entity->pos;
+    for ( int i = 0; i < 3; i++ ) {
+#define RAND ( randf() * 2.0f - 1.0f )
+        verticies[i].pos.x = pos.x + RAND;
+        verticies[i].pos.y = pos.y + RAND;
+        verticies[i].pos.z = pos.z + RAND;
+#undef RAND
+    }
+
+    renderer->pushVerticies( ARRAYSIZE( verticies ), verticies );
+
+    return true;
+}
+
 bool rendererInit = false;
 DWORD startTime;
 void testRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
@@ -89,40 +133,46 @@ void testRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChai
     GetClientRect( mccWindow, &rect );
     float w = (float) ( rect.right - rect.left );
     float h = (float) ( rect.bottom - rect.top );
-    float aspect = h / w;
-    XMMATRIX transform = XMMatrixScaling( aspect * .5f, 1.0f * .5f, 1.0f );
+
+    // XMMATRIX transform = XMMatrixScaling( h / w * .5f, 1.0f * .5f, 1.0f );
+    XMMATRIX transform;
+    if ( FAILED( halo1CameraMatrix( w, h, transform ) ) )
+        return;
+
+    // system( "CLS" );
+    // Vec::print( transform );
+
     renderer->setTransform( &transform );
 
     fitViewportToWindow( pCtx, mccWindow );
     renderer->setPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-
     renderer->begin();
 
-    Vector4 red = { 1.0f, 0.0f, 0.0f, 0.5f };
-    Vector4 green = { 0.0f, 1.0f, 0.0f, 1.0f };
-    Vector4 blue = { 0.0f, 0.0f, 1.0f, 1.0f };
+    Vec4 red = { 1.0f, 0.0f, 0.0f, 0.25f };
+    Vec4 green = { 0.0f, 1.0f, 0.0f, 0.25f };
+    Vec4 blue = { 0.0f, 0.0f, 1.0f, 0.25f };
 
     float t = ( ( GetTickCount() - startTime ) ) / 1000.0f;
     float angle = (float) M_PI * 2.0f / 3.0f;
 
     // std::cout << t << "\n";
 
-    Vertex verticies[3] = {
-        {{  0.0f,  0.5f, 0.99f }, red },
-        {{  0.5f, -0.5f, 0.99f }, green},
-        {{ -0.5f, -0.5f, 0.99f }, blue}
-    };
+    Vertex verticies[3] = { {{}, red }, {{}, green}, {{}, blue} };
 
-    int numTris = 5;
-    for ( int j = 0; j < numTris; j++ ) {
-        for ( int i = 0; i < 3; i++ )
-            verticies[i].pos = { sinf( i * angle + t ), cosf( i * angle + t ), 0.99f };
-        renderer->pushVerticies( ARRAYSIZE( verticies ), verticies );
-        t += angle / numTris;
-    }
+    Halo1::foreachEntityRecord( drawRandomTriangleOnEntity );
 
-    Vector4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
-    renderer->drawText( { 500, 500 }, L"Hello Text!", color, NULL, 20.0f, nullptr );
+    // int numTris = 5;
+    // float s = sinf( t );
+    // float scale = 1.0f;
+    // for ( int j = 0; j < numTris; j++ ) {
+    //     for ( int i = 0; i < 3; i++ )
+    //         verticies[i].pos = { sinf( i * angle + t ) * s * scale, cosf( i * angle + t ) * scale, 0.99f };
+    //     renderer->pushVerticies( ARRAYSIZE( verticies ), verticies );
+    //     t += angle / numTris;
+    // }
+
+    // Vec4 color = { 1.0f, 1.0f, 1.0f, 0.25f };
+    // renderer->drawText( { 500, 100 }, L"Hello Text!", color, NULL, 100.0f, nullptr );
 
     renderer->flush();
     renderer->end();
@@ -169,7 +219,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
         std::cout << "Device container not found!" << std::endl;
     }
 
-    // printEntities();
+    printEntities();
 
     DX11Hook::hook( mccWindow );
     DX11Hook::addOnPresentCallback( testRender );
@@ -180,6 +230,8 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
             if ( keypressed( VK_F4 ) ) {
                 auto pCam = Halo1::getPlayerCameraPointer();
                 std::cout << "Fov: " << pCam->fov << "\n";
+                std::cout << "Pos: "; Vec::print( pCam->pos ); std::cout << "\n";
+                std::cout << "Fwd: "; Vec::print( pCam->fwd ); std::cout << "\n";
             }
 
             Sleep( 10 );

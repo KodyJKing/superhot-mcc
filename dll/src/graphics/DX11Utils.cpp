@@ -79,3 +79,21 @@ void copyToBuffer(
     std::memcpy( mappedResource.pData, pData, bytes );
     pCtx->Unmap( pBuffer, 0 );
 }
+
+XMMATRIX cameraMatrix(
+    const Vec3 pos, const Vec3 forward,
+    float fov,
+    float clippingNear, float clippingFar,
+    float viewportWidth, float viewportHeight
+) {
+    float aspect = viewportWidth / viewportHeight;
+    XMMATRIX perspective = XMMatrixPerspectiveFovRH( fov, aspect, clippingNear, clippingFar );
+    Vec4 pos4 = { pos.x, pos.y, pos.z, 1.0f };
+    XMMATRIX view = XMMatrixLookToRH(
+        XMLoadFloat4( &pos4 ),
+        XMLoadFloat3( &forward ),
+        { 0.0f, 0.0f, 1.0f, 0.0f }
+    );
+    return view;
+    // return XMMatrixMultiply( perspective, view );
+}

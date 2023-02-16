@@ -21,7 +21,7 @@ VS_OUTPUT VS(VS_INPUT input)
 {
 	VS_OUTPUT output;
  
-	output.pos = mul(mat, float4(input.pos.xy, 0.f, 1.f));
+	output.pos = mul(mat, float4(input.pos.xyz, 1.f));
 	output.col = input.col;
  
 	return output;

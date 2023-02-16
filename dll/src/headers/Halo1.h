@@ -1,12 +1,11 @@
 #include "../../pch.h"
-#include "../utils/headers/Vec3.h"
 
 namespace Halo1 {
 
     // Created with ReClass.NET 1.2 by KN4CK3R
 
     class DeviceContainer {
-    public:
+        public:
         uint64_t vftable; //0x0000
         char gpuName[256]; //0x0008
         char pad_0108[992]; //0x0108
@@ -18,7 +17,7 @@ namespace Halo1 {
     }; //Size: 0x0928
 
     class Camera {
-    public:
+        public:
         Vec3 pos; //0x0000
         char pad_000C[16]; //0x000C
         uint32_t N00000163; //0x001C
@@ -28,7 +27,7 @@ namespace Halo1 {
     }; //Size: 0x003C
 
     class EntityRecord {
-    public:
+        public:
         uint16_t id;
         uint16_t unknown_1;
         uint16_t unknown_2;
@@ -37,7 +36,7 @@ namespace Halo1 {
     };
 
     class EntityList {
-    public:
+        public:
         char pad_0000[32]; //0x0000
         uint16_t capacity; //0x0020
         char pad_0022[14]; //0x0022
@@ -46,7 +45,7 @@ namespace Halo1 {
     }; //Size: 0x0036
 
     class Entity {
-    public:
+        public:
         char pad_0000[24]; //0x0000
         Vec3 pos; //0x0018
         Vec3 vel; //0x0024

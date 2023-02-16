@@ -24,10 +24,11 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-// #include <d3d9.h>
-// #include <d3dx9.h>
-// #pragma comment(lib, "d3d9.lib")
-// #pragma comment(lib, "d3dx9.lib")
+#include <DirectXMath.h>
+using Vec2 = DirectX::XMFLOAT2;
+using Vec3 = DirectX::XMFLOAT3;
+using Vec4 = DirectX::XMFLOAT4;
+using DirectX::XMMATRIX;
 
 #include <D3D11.h>
 #include <D3DX11.h>
