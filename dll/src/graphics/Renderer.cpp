@@ -24,7 +24,7 @@ Renderer::Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR default
     { // Compile shaders
         D3D11_INPUT_ELEMENT_DESC layout[] = {
             { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-            { "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         };
         VS = compileVertexShader( pDevice, shaderSource, "VS", "vs_4_0", layout, ARRAYSIZE( layout ), &vertLayout );
         PS = compilePixelShader( pDevice, shaderSource, "PS", "ps_4_0" );
@@ -59,9 +59,9 @@ Renderer::Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR default
     { // Create blend state
         D3D11_BLEND_DESC desc{};
         ZeroMemory( &desc, sizeof( desc ) );
-        // desc.RenderTarget->SrcBlend = D3D11_BLEND_SRC_ALPHA;
         desc.RenderTarget->BlendEnable = true;
-        desc.RenderTarget->SrcBlend = D3D11_BLEND_ONE;
+        desc.RenderTarget->SrcBlend = D3D11_BLEND_SRC_ALPHA;
+        // desc.RenderTarget->SrcBlend = D3D11_BLEND_ONE;
         desc.RenderTarget->DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
         desc.RenderTarget->BlendOp = D3D11_BLEND_OP_ADD;
         desc.RenderTarget->SrcBlendAlpha = D3D11_BLEND_ONE;

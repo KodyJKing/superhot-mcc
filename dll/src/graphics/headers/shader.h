@@ -13,7 +13,7 @@ struct VS_OUTPUT
  
 struct VS_INPUT
 {
-	float4 pos : POSITION;
+	float3 pos : POSITION;
 	float4 col : COLOR;
 };
  
@@ -21,7 +21,7 @@ VS_OUTPUT VS(VS_INPUT input)
 {
 	VS_OUTPUT output;
  
-	output.pos = mul(mat, float4(input.pos.xyz, 1.f));
+	output.pos = mul(mat, float4(input.pos, 1.0f));
 	output.col = input.col;
  
 	return output;
