@@ -23,3 +23,11 @@ void updateFloat( const char* floatName, float& x, float rate, int increaseKey, 
     if ( increase || decrease )
         std::cout << floatName << ": " << x << "\n";
 }
+
+bool keypressed( char vk ) {
+    static bool wasPressed[0xFF] = {};
+    int isPressed = GetAsyncKeyState( vk ) != 0;
+    int result = !wasPressed[vk] && isPressed;
+    wasPressed[vk] = isPressed;
+    return result;
+}
