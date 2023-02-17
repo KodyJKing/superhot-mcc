@@ -33,8 +33,8 @@ class Renderer {
     void flush();
 
     // FW1
-    void drawText( Vec2 pos, LPCWSTR text, Vec4 color, uint32_t flags,
-        float fontSize, LPCWSTR fontFamily );
+    void drawText( Vec2 pos, LPCWSTR text, Vec4 color, uint32_t flags, float fontSize, LPCWSTR fontFamily );
+    Vec2 measureText( LPCWSTR text, float fontSize, LPCWSTR fontFamily );
 
     private:
     ID3D11Device* pDevice;
@@ -62,4 +62,5 @@ class Renderer {
     IFW1Factory* fontFactory;
     IFW1FontWrapper* fontWrapper;
     IFW1TextGeometry* textGeometry;
+    bool hasTextToFlush;
 };

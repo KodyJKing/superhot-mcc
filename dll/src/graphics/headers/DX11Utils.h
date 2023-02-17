@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../../../pch.h"
-#include "../../utils/headers/common.h"
 
 using namespace DirectX;
 

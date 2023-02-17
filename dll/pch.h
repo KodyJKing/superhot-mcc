@@ -9,6 +9,7 @@
 
 // add headers that you want to pre-compile here
 #include <windows.h>
+
 #include <iostream>
 #include <iomanip>
 #include <filesystem>
@@ -20,6 +21,9 @@
 #include <exception>
 #include <cstdio>
 #include <memory>
+// #include <format>
+
+#include <inttypes.h>
 
 #define _USE_MATH_DEFINES
 #include <math.h>

@@ -64,13 +64,14 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     std::cout << "\n\n";
 
     Halo1::init( halo1Base );
-    pDeviceContainer = Halo1::getDeviceContainerPointer();
-    if ( pDeviceContainer ) {
-        std::cout << "Device container at: " << pDeviceContainer << std::endl;
-        std::cout << "Device at: " << pDeviceContainer->pDevice << std::endl;
-    } else {
-        std::cout << "Device container not found!" << std::endl;
-    }
+
+    // pDeviceContainer = Halo1::getDeviceContainerPointer();
+    // if ( pDeviceContainer ) {
+    //     std::cout << "Device container at: " << pDeviceContainer << std::endl;
+    //     std::cout << "Device at: " << pDeviceContainer->pDevice << std::endl;
+    // } else {
+    //     std::cout << "Device container not found!" << std::endl;
+    // }
 
     // Halo1::printEntities();
 
@@ -80,12 +81,12 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     if ( !err ) {
         while ( !GetAsyncKeyState( VK_F9 ) ) {
 
-            if ( keypressed( VK_F4 ) ) {
-                auto pCam = Halo1::getPlayerCameraPointer();
-                std::cout << "Fov: " << pCam->fov << "\n";
-                std::cout << "Pos: "; Vec::print( pCam->pos ); std::cout << "\n";
-                std::cout << "Fwd: "; Vec::print( pCam->fwd ); std::cout << "\n";
-            }
+            // if ( keypressed( VK_F4 ) ) {
+            //     auto pCam = Halo1::getPlayerCameraPointer();
+            //     std::cout << "Fov: " << pCam->fov << "\n";
+            //     std::cout << "Pos: "; Vec::print( pCam->pos ); std::cout << "\n";
+            //     std::cout << "Fwd: "; Vec::print( pCam->fwd ); std::cout << "\n";
+            // }
 
             Sleep( 10 );
         }

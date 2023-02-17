@@ -3,6 +3,14 @@
 
 namespace MathUtils {
 
+    float lerp( float start, float end, float t ) {
+        return start * ( 1.0f - t ) + end * t;
+    }
+
+    float unlerp( float start, float end, float x ) {
+        return ( x - start ) / ( end - start );
+    }
+
     INT_PTR signedDifference( UINT_PTR a, UINT_PTR b ) {
         if ( a > b ) return (INT_PTR) ( a - b );
         return -(INT_PTR) ( b - a );

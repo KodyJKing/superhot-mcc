@@ -1,4 +1,7 @@
 #include "./headers/DX11Utils.h"
+#include "../utils/headers/common.h"
+#include "../utils/headers/MathUtils.h"
+#include "../utils/headers/Vec.h"
 
 void safePrintErrorMessage( ID3D10Blob* errorBlob ) {
     if ( errorBlob )
@@ -112,5 +115,10 @@ Vec3 worldToScreen(
             perspective, view, world
         )
     );
+
+    auto diff = Vec::sub( point, camPos );
+    auto depth = Vec::dot( diff, camForward );
+    result.z = MathUtils::unlerp( clippingNear, clippingFar, depth );
+
     return result;
 }

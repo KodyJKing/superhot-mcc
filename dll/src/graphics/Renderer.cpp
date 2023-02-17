@@ -8,6 +8,7 @@
 #include "./headers/DX11Utils.h"
 #include "./headers/Renderer.h"
 #include "./headers/shader.h"
+#include "../utils/headers/common.h"
 
 #include <DirectXPackedVector.h>
 
@@ -96,6 +97,7 @@ Renderer::Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR default
     throwIfFail( FW1CreateFactory( FW1_VERSION, &fontFactory ) );
     throwIfFail( fontFactory->CreateFontWrapper( pDevice, defaultFontFamily, &fontWrapper ) );
     throwIfFail( fontFactory->CreateTextGeometry( &textGeometry ) );
+    hasTextToFlush = false;
 }
 
 Renderer::~Renderer() {
@@ -153,18 +155,21 @@ void Renderer::end() {
 }
 
 void Renderer::flush() {
-    if ( vertexCount == 0 )
-        return;
-    size_t vertexBytes = vertexCount * sizeof( Vertex );
-    copyToBuffer( pCtx, pVertexBuffer, (void*) pCpuVertexBuffer, vertexBytes );
-    pCtx->IASetPrimitiveTopology( topology );
-    pCtx->Draw( vertexCount, 0 );
-    vertexCount = 0;
+    if ( vertexCount > 0 ) {
+        size_t vertexBytes = vertexCount * sizeof( Vertex );
+        copyToBuffer( pCtx, pVertexBuffer, (void*) pCpuVertexBuffer, vertexBytes );
+        pCtx->IASetPrimitiveTopology( topology );
+        pCtx->Draw( vertexCount, 0 );
+        vertexCount = 0;
+    }
 
     // FW1
-    fontWrapper->Flush( pCtx );
-    fontWrapper->DrawGeometry( pCtx, textGeometry,
-        nullptr, nullptr, FW1_RESTORESTATE );
+    if ( hasTextToFlush ) {
+        fontWrapper->Flush( pCtx );
+        fontWrapper->DrawGeometry( pCtx, textGeometry,
+            nullptr, nullptr, FW1_RESTORESTATE );
+        hasTextToFlush = false;
+    }
 }
 
 void Renderer::pushVerticies( uint32_t pushCount, Vertex* pVertices ) {
@@ -180,12 +185,26 @@ void Renderer::pushVerticies( uint32_t pushCount, Vertex* pVertices ) {
 void Renderer::drawText( Vec2 pos, LPCWSTR text, Vec4 color, uint32_t flags,
     float fontSize, LPCWSTR fontFamily ) {
 
-    if ( !fontFamily )
-        fontFamily = defaultFontFamily;
+    if ( !fontFamily ) fontFamily = defaultFontFamily;
 
     uint32_t color32 = PackedVector::XMCOLOR( color.x, color.y, color.z, color.w );
 
     FW1_RECTF rect = { pos.x, pos.y, pos.x, pos.y };
     fontWrapper->AnalyzeString( nullptr, text, fontFamily, fontSize, &rect, color32,
         flags | FW1_NOFLUSH | FW1_NOWORDWRAP, textGeometry );
+
+    hasTextToFlush = true;
+
+}
+
+Vec2 Renderer::measureText( LPCWSTR text, float fontSize, LPCWSTR fontFamily ) {
+
+    if ( !fontFamily ) fontFamily = defaultFontFamily;
+
+    FW1_RECTF nullRect = { 0.f, 0.f, 0.f, 0.f };
+    FW1_RECTF rect = fontWrapper->MeasureString( text, fontFamily,
+        fontSize, &nullRect, FW1_NOWORDWRAP );
+
+    return { rect.Right, rect.Bottom };
+
 }

@@ -26,4 +26,17 @@ namespace Vec {
         }
     }
 
+    Vec2 add( Vec2 a, Vec2 b ) { return { a.x + b.x, a.y + b.y }; }
+    Vec2 sub( Vec2 a, Vec2 b ) { return { a.x - b.x, a.y - b.y }; }
+    Vec2 scale( Vec2 a, float s ) { return { a.x * s, a.y * s }; }
+    Vec2 scale( Vec2 a, float x, float y ) { return { a.x * x, a.y * y }; }
+    float dot( Vec2 a, Vec2 b ) { return a.x * b.x + a.y * b.y; }
+
+    Vec3 add( Vec3 a, Vec3 b ) { return { a.x + b.x, a.y + b.y, a.z + b.z }; }
+    Vec3 sub( Vec3 a, Vec3 b ) { return { a.x - b.x, a.y - b.y, a.z - b.z }; }
+    Vec3 scale( Vec3 a, float s ) { return { a.x * s, a.y * s, a.z * s }; }
+    float dot( Vec3 a, Vec3 b ) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+    float length( Vec3 a ) { return sqrtf( a.x * a.x + a.y * a.y + a.z * a.z ); }
+    Vec3 unit( Vec3 a ) { return scale( a, 1 / length( a ) ); }
+
 }
