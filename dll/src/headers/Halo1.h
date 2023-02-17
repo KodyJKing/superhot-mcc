@@ -72,4 +72,10 @@ namespace Halo1 {
     EntityRecord* getEntityRecord( uint32_t i );
     EntityRecord* getEntityRecord( EntityList* pEntityList, uint32_t i );
 
+    bool printEntity( EntityRecord* pRecord );
+    void printEntities();
+
+    HRESULT getCameraMatrix( float w, float h, XMMATRIX& result );
+    Vec3 projectPoint( float w, float h, const Vec3 point );
+
 }

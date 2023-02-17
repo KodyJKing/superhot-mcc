@@ -3,6 +3,8 @@
 // https://www.unknowncheats.me/forum/d3d-tutorials-and-source/177926-direct3d-11-renderer.html
 //
 
+// TODO: Move FW1 code into TextRenderer class.
+
 #include "./headers/DX11Utils.h"
 #include "./headers/Renderer.h"
 #include "./headers/shader.h"
@@ -174,6 +176,7 @@ void Renderer::pushVerticies( uint32_t pushCount, Vertex* pVertices ) {
     vertexCount += pushCount;
 }
 
+// FW1
 void Renderer::drawText( Vec2 pos, LPCWSTR text, Vec4 color, uint32_t flags,
     float fontSize, LPCWSTR fontFamily ) {
 

@@ -1,4 +1,6 @@
-#include "./headers/Halo1.h"
+#include "headers/Halo1.h"
+#include "graphics/headers/DX11Utils.h"
+#include "utils/headers/Vec.h"
 
 namespace Halo1 {
     UINT_PTR dllBase;
@@ -25,7 +27,7 @@ namespace Halo1 {
         auto pEntityList = getEntityListPointer();
         if ( !pEntityList )
             return;
-        for ( uint32_t i = 0; i < pEntityList->count; i++ ) {
+        for ( uint32_t i = 0; i < pEntityList->capacity; i++ ) {
             auto pRecord = getEntityRecord( pEntityList, i );
             if ( pRecord->entityArrayOffset == -1 )
                 continue;
@@ -39,6 +41,59 @@ namespace Halo1 {
             return nullptr;
         UINT_PTR entityAddress = getEntityArrayBase() + 0x34 + (INT_PTR) pRecord->entityArrayOffset;
         return (Entity*) entityAddress;
+    }
+
+    bool printEntity( EntityRecord* pRecord ) {
+        auto pEntity = getEntityPointer( pRecord );
+        if ( !pEntity )
+            return true;
+        std::cout << "Position: ";
+        Vec::print( pEntity->pos );
+        std::cout << "\n";
+        std::cout << "Type ID: " << pRecord->typeId;
+        std::cout << ", Health: " << pEntity->health;
+        std::cout << ", Shield: " << pEntity->shield << "\n\n";
+        return true;
+    }
+
+    void printEntities() {
+        auto pEntityList = getEntityListPointer();
+        if ( pEntityList ) {
+            std::cout << "Entity list at: " << pEntityList << "\n";
+            std::cout << "Entities: \n\n";
+            foreachEntityRecord( printEntity );
+        }
+    }
+
+    // === Camera helpers ===
+
+    // For some reason, Halo 1's camera stores a different fov value than it actually uses and must be scaled. 
+    // This value was found by trial and error using updateFloat function.
+    float fovScale = 0.643564f;
+    float clippingNear = 0.1f;
+    float clippingFar = 100.0f;
+    HRESULT getCameraMatrix( float w, float h, XMMATRIX& result ) {
+        auto pCam = Halo1::getPlayerCameraPointer();
+        if ( !pCam )
+            return E_FAIL;
+        result = cameraMatrix(
+            pCam->pos, pCam->fwd, pCam->fov * fovScale,
+            clippingNear, clippingFar,
+            w, h
+        );
+        return S_OK;
+    }
+
+    Vec3 projectPoint( float w, float h, const Vec3 point ) {
+        auto pCam = Halo1::getPlayerCameraPointer();
+        if ( !pCam )
+            return {};
+        return worldToScreen(
+            point,
+            pCam->pos, pCam->fwd, pCam->fov * fovScale,
+            clippingNear, clippingFar,
+            w, h
+        );
     }
 
 }

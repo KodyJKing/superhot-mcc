@@ -81,19 +81,36 @@ void copyToBuffer(
 }
 
 XMMATRIX cameraMatrix(
-    const Vec3 pos, const Vec3 forward,
-    float fov,
+    const Vec3 camPos, const Vec3 camForward, float fov,
     float clippingNear, float clippingFar,
     float viewportWidth, float viewportHeight
 ) {
     float aspect = viewportWidth / viewportHeight;
     XMMATRIX perspective = XMMatrixPerspectiveFovRH( fov, aspect, clippingNear, clippingFar );
-    Vec4 pos4 = { pos.x, pos.y, pos.z, 1.0f };
-    XMMATRIX view = XMMatrixLookToRH(
-        XMLoadFloat4( &pos4 ),
-        XMLoadFloat3( &forward ),
-        { 0.0f, 0.0f, 1.0f, 0.0f }
+    XMMATRIX view = XMMatrixLookToRH( XMLoadFloat3( &camPos ), XMLoadFloat3( &camForward ), { 0.0f, 0.0f, 1.0f, 0.0f } );
+    return view * perspective;
+}
+
+Vec3 worldToScreen(
+    const Vec3 point,
+    const Vec3 camPos, const Vec3 camForward, float fov,
+    float clippingNear, float clippingFar,
+    float viewportWidth, float viewportHeight
+) {
+    float aspect = viewportWidth / viewportHeight;
+    XMMATRIX perspective = XMMatrixPerspectiveFovRH( fov, aspect, clippingNear, clippingFar );
+    XMMATRIX view = XMMatrixLookToRH( XMLoadFloat3( &camPos ), XMLoadFloat3( &camForward ), { 0.0f, 0.0f, 1.0f, 0.0f } );
+    static XMMATRIX world = XMMatrixIdentity();
+    Vec3 result;
+    XMStoreFloat3(
+        &result,
+        XMVector3Project(
+            XMLoadFloat3( &point ),
+            0.0f, 0.0f,
+            viewportWidth, viewportHeight,
+            0.0f, 1.0f,
+            perspective, view, world
+        )
     );
-    return view;
-    // return XMMatrixMultiply( perspective, view );
+    return result;
 }

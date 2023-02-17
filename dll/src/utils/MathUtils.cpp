@@ -12,4 +12,27 @@ namespace MathUtils {
         return (float) rand() / (float) RAND_MAX;
     }
 
+    float _guassianSurplus = 0;
+    bool _guassianHasSurplus = false;
+    float guassian() {
+        if ( _guassianHasSurplus ) {
+            _guassianHasSurplus = false;
+            return _guassianSurplus;
+        }
+
+        float u1 = randf();
+        float u2 = randf();
+
+        float k1 = sqrtf( -2.0f * logf( u1 ) );
+        float k2 = (float) M_PI * 2.0f * u2;
+
+        float z1 = k1 * cosf( k2 );
+        float z2 = k1 * sinf( k2 );
+
+        _guassianHasSurplus = true;
+        _guassianSurplus = z2;
+
+        return z1;
+    }
+
 }

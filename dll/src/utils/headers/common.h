@@ -22,3 +22,5 @@ inline void safeFree( T& ptr ) {
 
 void throwIfFail( const char* taskDescription, HRESULT hr );
 void throwIfFail( HRESULT hr );
+
+void updateFloat( const char* floatName, float& x, float rate, int increaseKey, int decreaseKey );

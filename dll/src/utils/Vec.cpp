@@ -21,7 +21,6 @@ namespace Vec {
                 int index = j * 4 + i;
                 std::cout << std::setfill( ' ' ) << std::setw( 6 ) << std::fixed
                     << std::setprecision( 2 ) << floats[index] << " ";
-                // printf( "%.2f ", floats[index] );
             }
             printf( "\n" );
         }

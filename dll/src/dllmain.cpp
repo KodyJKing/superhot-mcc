@@ -1,23 +1,25 @@
 #include "../pch.h"
-#include "./headers/dllmain.h"
-#include "./headers/Halo1.h"
-#include "./graphics/headers/DX11Hook.h"
-#include "./graphics/headers/DX11Utils.h"
-#include "./graphics/headers/Renderer.h"
-#include "./headers/Hook.h"
-#include "./utils/headers/AllocationUtils.h"
-#include "./utils/headers/MathUtils.h"
-#include "./utils/headers/keypressed.h"
-#include "./utils/headers/Vec.h"
+#include "headers/dllmain.h"
+#include "headers/Halo1.h"
+#include "graphics/headers/DX11Hook.h"
+#include "graphics/headers/DX11Utils.h"
+#include "graphics/headers/Renderer.h"
+#include "headers/Hook.h"
+#include "utils/headers/AllocationUtils.h"
+#include "utils/headers/MathUtils.h"
+#include "utils/headers/keypressed.h"
+#include "utils/headers/Vec.h"
 
 using MathUtils::randf;
+
+const LPCSTR mccWindowName = "Halo: The Master Chief Collection  ";
 
 HMODULE hmSuperHotHack;
 HMODULE hmHalo1;
 UINT_PTR halo1Base;
 HWND mccWindow;
-
 Halo1::DeviceContainer* pDeviceContainer;
+Renderer* renderer;
 
 BOOL APIENTRY DllMain(
     HMODULE hModule,
@@ -38,83 +40,29 @@ BOOL APIENTRY DllMain(
     return TRUE;
 }
 
-BOOL CALLBACK getMCCWindow_enumWindowsProc( HWND hwnd, LPARAM lParam ) {
-    char name[255] = {};
-    auto size = GetWindowTextA( hwnd, name, 255 );
-    if ( size == 0 )
-        return true;
-    if ( strncmp( name, "Halo: The Master Chief Collection  ", size ) == 0 ) {
-        HWND* pHwndResult = (HWND*) lParam;
-        *pHwndResult = hwnd;
-        return false;
-    }
-    return true;
-}
-HWND getMCCWindow() {
-    HWND hwnd;
-    EnumWindows( getMCCWindow_enumWindowsProc, (LONG_PTR) &hwnd );
-    return hwnd;
-}
-
-bool printEntityData( Halo1::EntityRecord* pRecord ) {
-    auto pEntity = Halo1::getEntityPointer( pRecord );
-    if ( !pEntity )
-        return true;
-    if ( pEntity->health <= 0 )
-        return true;
-    std::cout << "Position: ";
-    Vec::print( pEntity->pos );
-    // pEntity->pos.print();
-    std::cout << "\n";
-    std::cout << "Type ID: " << pRecord->typeId;
-    std::cout << ", Health: " << pEntity->health;
-    std::cout << ", Shield: " << pEntity->shield << "\n\n";
-    return true;
-}
-
-void printEntities() {
-    auto pEntityList = Halo1::getEntityListPointer();
-    if ( pEntityList ) {
-        std::cout << "Entity list at: " << pEntityList << "\n";
-        std::cout << "Entities: \n\n";
-        Halo1::foreachEntityRecord( printEntityData );
-    }
-}
-
-float clippingNear = 0.063f;
-float clippingFar = 200.0f;
-HRESULT halo1CameraMatrix( float w, float h, XMMATRIX& result ) {
-    auto pCam = Halo1::getPlayerCameraPointer();
-    if ( !pCam )
-        return E_FAIL;
-    result = cameraMatrix(
-        pCam->pos, pCam->fwd,
-        pCam->fov,
-        clippingNear, clippingFar,
-        w, h
-    );
-    return S_OK;
-}
-
-Renderer* renderer;
-
 bool drawRandomTriangleOnEntity( Halo1::EntityRecord* rec ) {
+    auto entity = Halo1::getEntityPointer( rec );
+
+    if ( entity->health <= 0 )
+        return true;
+
     Vec4 red = { 1.0f, 0.0f, 0.0f, 0.25f };
     Vec4 green = { 0.0f, 1.0f, 0.0f, 0.25f };
     Vec4 blue = { 0.0f, 0.0f, 1.0f, 0.25f };
     Vertex verticies[3] = { {{}, red }, {{}, green}, {{}, blue} };
 
-    auto entity = Halo1::getEntityPointer( rec );
+    // #define RAND ( randf() * 2.0f - 1.0f ) * 0.1f
+#define RAND MathUtils::guassian() * 0.02f
     auto pos = entity->pos;
-    for ( int i = 0; i < 3; i++ ) {
-#define RAND ( randf() * 2.0f - 1.0f )
-        verticies[i].pos.x = pos.x + RAND;
-        verticies[i].pos.y = pos.y + RAND;
-        verticies[i].pos.z = pos.z + RAND;
-#undef RAND
+    for ( int j = 0; j < 100; j++ ) {
+        for ( int i = 0; i < 3; i++ ) {
+            verticies[i].pos.x = pos.x + RAND;
+            verticies[i].pos.y = pos.y + RAND;
+            verticies[i].pos.z = pos.z + RAND;
+        }
+        renderer->pushVerticies( ARRAYSIZE( verticies ), verticies );
     }
-
-    renderer->pushVerticies( ARRAYSIZE( verticies ), verticies );
+#undef RAND
 
     return true;
 }
@@ -136,7 +84,8 @@ void testRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChai
 
     // XMMATRIX transform = XMMatrixScaling( h / w * .5f, 1.0f * .5f, 1.0f );
     XMMATRIX transform;
-    if ( FAILED( halo1CameraMatrix( w, h, transform ) ) )
+    // if ( FAILED( halo1CameraMatrix( w, h, transform ) ) )
+    if ( FAILED( Halo1::getCameraMatrix( w, h, transform ) ) )
         return;
 
     // system( "CLS" );
@@ -148,20 +97,17 @@ void testRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChai
     renderer->setPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
     renderer->begin();
 
-    Vec4 red = { 1.0f, 0.0f, 0.0f, 0.25f };
-    Vec4 green = { 0.0f, 1.0f, 0.0f, 0.25f };
-    Vec4 blue = { 0.0f, 0.0f, 1.0f, 0.25f };
-
-    float t = ( ( GetTickCount() - startTime ) ) / 1000.0f;
-    float angle = (float) M_PI * 2.0f / 3.0f;
-
     // std::cout << t << "\n";
-
-    Vertex verticies[3] = { {{}, red }, {{}, green}, {{}, blue} };
 
     Halo1::foreachEntityRecord( drawRandomTriangleOnEntity );
 
+    // Vec4 red = { 1.0f, 0.0f, 0.0f, 0.5f };
+    // Vec4 green = { 0.0f, 1.0f, 0.0f, 0.5f };
+    // Vec4 blue = { 0.0f, 0.0f, 1.0f, 0.5f };
+    // Vertex verticies[3] = { {{}, red }, {{}, green}, {{}, blue} };
     // int numTris = 5;
+    // float t = ( ( GetTickCount() - startTime ) ) / 1000.0f;
+    // float angle = (float) M_PI * 2.0f / 3.0f;
     // float s = sinf( t );
     // float scale = 1.0f;
     // for ( int j = 0; j < numTris; j++ ) {
@@ -171,8 +117,8 @@ void testRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChai
     //     t += angle / numTris;
     // }
 
-    // Vec4 color = { 1.0f, 1.0f, 1.0f, 0.25f };
-    // renderer->drawText( { 500, 100 }, L"Hello Text!", color, NULL, 100.0f, nullptr );
+    Vec4 color = { 1.0f, 1.0f, 1.0f, 0.25f };
+    renderer->drawText( { 500, 100 }, L"Hello Text!", color, NULL, 100.0f, nullptr );
 
     renderer->flush();
     renderer->end();
@@ -198,7 +144,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
             err |= freopen_s( &pFile_stdin, "CONIN$", "r", stdin );
     }
 
-    mccWindow = getMCCWindow();
+    mccWindow = FindWindowA( nullptr, mccWindowName );
 
     // Bring MCC to front.
     BringWindowToTop( mccWindow );
@@ -219,7 +165,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
         std::cout << "Device container not found!" << std::endl;
     }
 
-    printEntities();
+    // Halo1::printEntities();
 
     DX11Hook::hook( mccWindow );
     DX11Hook::addOnPresentCallback( testRender );
@@ -234,6 +180,10 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
                 std::cout << "Fwd: "; Vec::print( pCam->fwd ); std::cout << "\n";
             }
 
+            // updateFloat( "Near plane", clippingNear, VK_INSERT, VK_DELETE );
+            // updateFloat( "Far plane", clippingFar, VK_PRIOR, VK_NEXT );
+            // updateFloat( "Fov scale", fovScale, 1.01f, VK_INSERT, VK_DELETE );
+
             Sleep( 10 );
         }
     }
@@ -245,6 +195,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     if ( renderer )
         renderer->~Renderer();
 
+    // Give any executing hook code a moment to finish before unloading.
     Sleep( 500 );
 
     if ( useConsole ) {
