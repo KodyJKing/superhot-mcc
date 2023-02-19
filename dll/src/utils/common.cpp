@@ -24,12 +24,20 @@ void updateFloat( const char* floatName, float& x, float rate, int increaseKey, 
         std::cout << floatName << ": " << x << "\n";
 }
 
+
 bool keypressed( char vk ) {
     static bool wasPressed[0xFF] = {};
     int isPressed = GetAsyncKeyState( vk ) != 0;
     int result = !wasPressed[vk] && isPressed;
     wasPressed[vk] = isPressed;
     return result;
+}
+
+void toggleOption( const char* description, bool& option, int key ) {
+    if ( keypressed( key ) ) {
+        std::cout << description << ( option ? " disabled.\n" : " enabled.\n" );
+        option = !option;
+    }
 }
 
 void memcpyExecutable( char* dest, char* source, size_t size ) {

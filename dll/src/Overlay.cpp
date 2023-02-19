@@ -22,15 +22,20 @@ namespace Overlay {
     EntityRecord* selectedEntity;
     const float selectionThreshold = 0.995f;
     const float drawDistance = 50.0f;
+    bool overlayEnabled = true;
 
     void cleanup() {
         if ( renderer )
             delete renderer;
     }
 
+    void onDllThreadUpdate() {
+        toggleOption( "Overlay", overlayEnabled, VK_NUMPAD1 );
+    }
+
     void render( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
 
-        if ( !isCameraLoaded() )
+        if ( !overlayEnabled || !isCameraLoaded() )
             return;
 
         if ( !renderer ) {
@@ -62,21 +67,25 @@ namespace Overlay {
 
     }
 
-    void draw3DText( Vec3 point, Vec2 offset, LPCWSTR text, Vec4 color, uint32_t flags, float fontSize, LPCWSTR fontFamily ) {
-        Vec3 p = Halo1::projectPoint( screenDimensions.x, screenDimensions.y, point );
-        if ( p.z > 0.0f )
-            renderer->drawText( { p.x + offset.x, p.y + offset.y }, text, color, NULL, fontSize, nullptr );
-    }
+    void draw3DTextCentered( Vec3 point, Vec2 offset, LPCWSTR text, Vec4 color, uint32_t flags, float fontSize, bool bordered ) {
 
-    void draw3DText( Vec3 point, LPCWSTR text, Vec4 color, uint32_t flags, float fontSize, LPCWSTR fontFamily ) {
-        draw3DText( point, { 0.0f, 0.0f }, text, color, flags, fontSize, fontFamily );
-    }
-
-    void draw3DTextCentered( Vec3 point, Vec2 offset, LPCWSTR text, Vec4 color, uint32_t flags, float fontSize, LPCWSTR fontFamily ) {
         Vec3 p = Halo1::projectPoint( screenDimensions.x, screenDimensions.y, point );
         if ( p.z > 0.0f ) {
-            auto dims = renderer->measureText( text, fontSize, fontFamily );
-            renderer->drawText( { p.x + offset.x - dims.x * 0.5f, p.y + offset.y }, text, color, NULL, fontSize, nullptr );
+
+            auto dims = renderer->measureText( text, fontSize, nullptr );
+            Vec2 pos = { p.x + offset.x - dims.x * 0.5f, p.y + offset.y };
+
+            if ( bordered ) {
+                Vec4 colorBlack = { 0.0f, 0.0f, 0.0f, color.w };
+                float r = 2.0f;
+                float dx[4] = { 1.0f, 0.0f, -1.0f, 0.0f };
+                float dy[4] = { 0.0f, 1.0f, 0.0f, -1.0f };
+                for ( int i = 0; i < 4; i++ )
+                    renderer->drawText( { pos.x + dx[i] * r, pos.y + dy[i] * r }, text, colorBlack, NULL, fontSize, nullptr );
+            }
+
+            renderer->drawText( pos, text, color, NULL, fontSize, nullptr );
+
         }
     }
 
@@ -116,7 +125,7 @@ namespace Overlay {
         Vec4 color;
         float fontSize;
         if ( isSelected ) {
-            color = { 0.0f, 1.0f, 1.0f, 0.5f };
+            color = { 0.0f, 1.0f, 1.0f, 1.0f };
             fontSize = 20.0f;
         } else {
             if ( pEntity->health > 0 )
@@ -130,7 +139,7 @@ namespace Overlay {
         int lineNum = 0;
         #define LINE(format, ...) { \
             swprintf_s( buf, format, __VA_ARGS__ ); \
-            draw3DTextCentered( pos, { 0, fontSize * ( lineNum++ ) }, buf, color, NULL, fontSize, nullptr ); \
+            draw3DTextCentered( pos, { 0, fontSize * ( lineNum++ ) }, buf, color, NULL, fontSize, isSelected ); \
             if ( printThisEntity ) \
                 std::wcout << buf << "\n";\
         }

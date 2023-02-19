@@ -76,6 +76,12 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     if ( !err ) {
         while ( !GetAsyncKeyState( VK_F9 ) ) {
 
+            TimeHack::onDllThreadUpdate();
+            Overlay::onDllThreadUpdate();
+
+            if ( keypressed( VK_DELETE ) )
+                system( "CLS" );
+
             Sleep( 10 );
 
         }

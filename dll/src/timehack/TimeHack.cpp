@@ -1,6 +1,7 @@
 #include "headers/TimeHack.h"
 #include "../headers/Hook.h"
 #include "../headers/Halo1.h"
+#include "../utils/headers/common.h"
 
 using namespace Halo1;
 
@@ -12,7 +13,12 @@ extern "C" {
     bool entityUpdateHook_shouldUpdate( uint32_t entityHandle );
 }
 
+bool freezeTime = false;
+
 bool entityUpdateHook_shouldUpdate( uint32_t entityHandle ) {
+    if ( !freezeTime )
+        return true;
+
     auto pRec = getEntityRecord( entityHandle );
     if ( !pRec ) return true;
     return pRec->typeId == TypeID_Player;
@@ -35,6 +41,10 @@ namespace TimeHack {
             entityUpdateHook_return
         ) )->hook();
 
+    }
+
+    void onDllThreadUpdate() {
+        toggleOption( "Freeze Time", freezeTime, VK_F2 );
     }
 
 }

@@ -37,4 +37,6 @@ void updateFloat( const char* floatName, float& x, float rate, int increaseKey, 
 
 bool keypressed( char vk );
 
+void toggleOption( const char* description, bool& option, int key );
+
 void memcpyExecutable( char* dest, char* source, size_t size );
