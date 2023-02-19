@@ -1,6 +1,7 @@
 #include "./headers/Hook.h"
 #include "./utils/headers/AllocationUtils.h"
 #include "./utils/headers/MathUtils.h"
+#include "./utils/headers/common.h"
 
 bool isValid32BitOffset( UINT_PTR offset ) {
     return offset >= MININT32 && offset <= MAXINT32;
@@ -8,13 +9,13 @@ bool isValid32BitOffset( UINT_PTR offset ) {
 
 namespace Hook {
 
-    // Byte codes for push rax, push rbx ... push r15.
+    // Byte codes for: push rax, push rbx ... push r15.
     char pusha64[] = { '\x50', '\x53', '\x51', '\x52', '\x56', '\x57', '\x55', '\x54', '\x41', '\x50', '\x41', '\x51', '\x41', '\x52', '\x41', '\x53', '\x41', '\x54', '\x41', '\x55', '\x41', '\x56', '\x41', '\x57' };
-    // Byte codes for pop r15 ... push rbx, pop rax.
+    // Byte codes for: pop r15 ... push rbx, pop rax.
     char popa64[] = { '\x41', '\x5F', '\x41', '\x5E', '\x41', '\x5D', '\x41', '\x5C', '\x41', '\x5B', '\x41', '\x5A', '\x41', '\x59', '\x41', '\x58', '\x5C', '\x5D', '\x5F', '\x5E', '\x5A', '\x59', '\x5B', '\x58' };
-    // sub rsp, 20h
+    // Byte codes for: sub rsp, 20h
     char allocShadow[] = { '\x48', '\x83', '\xEC', '\x20' };
-    // add rsp, 20h
+    // Byte codes for: add rsp, 20h
     char deallocShadow[] = { '\x48', '\x83', '\xC4', '\x20' };
 
     // === Buffer Writing ===
@@ -39,7 +40,7 @@ namespace Hook {
     // === Jump Hook ========
     void JumpHook::allocTrampoline( size_t size ) {
         /*
-            TODO: Write a custom allocator to avoid wasting a memory.
+            TODO: Write a custom allocator to avoid wasting memory.
                   Currently we have to allocate 64KB at a time due to
                   windows' allocation granularity limit.
         */
@@ -86,10 +87,7 @@ namespace Hook {
     }
 
     void JumpHook::restoreStolenBytes() {
-        DWORD oldProtect;
-        VirtualProtect( (void*) address, numStolenBytes, PAGE_EXECUTE_READWRITE, &oldProtect );
-        memcpy( (void*) address, stolenBytes, numStolenBytes );
-        VirtualProtect( (void*) address, numStolenBytes, oldProtect, &oldProtect );
+        memcpyExecutable( (char*) address, stolenBytes, numStolenBytes );
     }
 
     void JumpHook::unhook() {
@@ -127,41 +125,41 @@ namespace Hook {
 
     void JumpHook::writePushState( char** head ) {
         write( head, PUSHF );
-#ifndef _WIN64
+        #ifndef _WIN64
         write( head, PUSHA );
-#else
+        #else
         writeBytes( head, pusha64, ARRAYSIZE( pusha64 ) );
-#endif
+        #endif
     }
 
     void JumpHook::writePopState( char** head ) {
-#ifndef _WIN64
+        #ifndef _WIN64
         write( head, POPA );
-#else
+        #else
         writeBytes( head, popa64, ARRAYSIZE( popa64 ) );
-#endif
+        #endif
         write( head, POPF );
     }
 
     void JumpHook::writeJump( char** head, UINT_PTR hookFunc ) {
-#ifdef _WIN64
+        #ifdef _WIN64
         this->writeAbsoluteJump( head, hookFunc );
-#else
+        #else
         write( head, JMP );
         writeOffset( head, hookFunc );
-#endif
+        #endif
         trampolineReturn = (UINT_PTR) *head;
     }
 
     void JumpHook::writeCall( char** head, UINT_PTR hookFunc ) {
-#ifdef _WIN64
+        #ifdef _WIN64
         writeBytes( head, allocShadow, ARRAYSIZE( allocShadow ) );
         this->writeAbsoluteCall( head, hookFunc );
         writeBytes( head, deallocShadow, ARRAYSIZE( deallocShadow ) );
-#else
+        #else
         write( head, CALL );
         writeOffset( head, hookFunc );
-#endif
+        #endif
     }
 
     void JumpHook::writeAbsoluteJump( char** head, UINT_PTR hookFunc ) {
@@ -220,8 +218,7 @@ namespace Hook {
 
             hook->writeReturnJump( &head );
 
-        }
-        catch ( std::exception& e ) {
+        } catch ( std::exception& e ) {
             std::cout << "An error occured while trying to create trampoline: " << e.what() << std::endl;
             hook->freeTrampoline();
             delete hook;
@@ -248,8 +245,7 @@ namespace Hook {
         try {
             hook->protectTrampoline();
             hook->hook();
-        }
-        catch ( std::exception& e ) {
+        } catch ( std::exception& e ) {
             std::cout << "An error occured while trying to hook function: " << e.what() << std::endl;
             hook->unhook();
             delete hook;
@@ -266,6 +262,7 @@ namespace Hook {
     // ==============================================
 
     std::vector<JumpHook*> jumpHooks;
+    std::vector<SimpleJumpHook*> simpleJumpHooks;
 
     JumpHook* removeBeforeClosing( JumpHook* hook ) {
         jumpHooks.emplace_back( hook );
@@ -273,8 +270,10 @@ namespace Hook {
     }
 
     void cleanupHooks() {
-        // for (uint64_t i = 0; i < jumpHooks.size(); i++)
-        //     jumpHooks[i]->release();
+        for ( SimpleJumpHook* hook : simpleJumpHooks ) {
+            std::cout << "Removing simple jump hook: " << hook->description << std::endl;
+            hook->unhook();
+        }
 
         for ( uint64_t i = 0; i < jumpHooks.size(); i++ ) {
             std::cout << "Removing jump hook: " << jumpHooks[i]->description << std::endl;
@@ -289,6 +288,58 @@ namespace Hook {
             std::cout << "Deleting jump hook: " << jumpHooks[i]->description << std::endl;
             delete jumpHooks[i];
         }
+    }
+
+    // Simple Jump Hooks
+
+    void SimpleJumpHook::saveStolenBytes() {
+        if ( stolenBytes )
+            return;
+        stolenBytes = (char*) malloc( numStolenBytes );
+        memcpy( stolenBytes, (char*) address, numStolenBytes );
+    }
+
+    void SimpleJumpHook::restoreStolenBytes() {
+        if ( !stolenBytes )
+            return;
+        memcpyExecutable( (char*) address, stolenBytes, numStolenBytes );
+    }
+
+    void SimpleJumpHook::hook() {
+        std::cout << "Adding simple jump hook: " << description << std::endl;
+        std::cout << "Trampoline located at: " << std::hex << (UINT_PTR) trampolineAddress << std::endl << std::endl;
+
+        saveStolenBytes();
+
+        DWORD oldProtect;
+        VirtualProtect( (void*) address, numStolenBytes, PAGE_EXECUTE_READWRITE, &oldProtect );
+
+        // Make sure anything not overwritten by jump is a nop
+        memset( (void*) address, NOP, numStolenBytes );
+        char* head = (char*) address;
+
+        // Jump to trampoline
+        write( &head, JMP );
+        writeOffset( &head, (UINT_PTR) trampolineAddress );
+
+        VirtualProtect( (void*) address, numStolenBytes, oldProtect, &oldProtect );
+    }
+
+    void SimpleJumpHook::unhook() {
+        restoreStolenBytes();
+        safeFree( stolenBytes );
+    }
+
+    SimpleJumpHook::SimpleJumpHook(
+        const char* description,
+        UINT_PTR address,
+        size_t numStolenBytes,
+        UINT_PTR trampolineAddress,
+        UINT_PTR& returnAddress
+    ): description( description ), address( address ), numStolenBytes( numStolenBytes ), trampolineAddress( trampolineAddress ) {
+        simpleJumpHooks.emplace_back( this );
+        returnAddress = address + numStolenBytes;
+        stolenBytes = nullptr;
     }
 
 }

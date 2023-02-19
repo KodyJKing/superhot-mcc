@@ -1,19 +1,18 @@
 #include "../pch.h"
-#include "./headers/dllmain.h"
-#include "./headers/Halo1.h"
-#include "./graphics/headers/DX11Hook.h"
-#include "./graphics/headers/DX11HookTest.h"
-#include "./headers/Hook.h"
-#include "./utils/headers/AllocationUtils.h"
-#include "./utils/headers/keypressed.h"
+#include "headers/dllmain.h"
+#include "headers/Halo1.h"
+#include "headers/HaloMCC.h"
+#include "headers/Overlay.h"
+#include "headers/Hook.h"
+#include "utils/headers/common.h"
+#include "utils/headers/Vec.h"
+#include "graphics/headers/DX11Hook.h"
+#include "timehack/headers/TimeHack.h"
 
 HMODULE hmSuperHotHack;
 HMODULE hmHalo1;
 UINT_PTR halo1Base;
-HWND mccWindow;
-
 Halo1::DeviceContainer* pDeviceContainer;
-// Renderer* _renderer;
 
 BOOL APIENTRY DllMain(
     HMODULE hModule,
@@ -34,23 +33,7 @@ BOOL APIENTRY DllMain(
     return TRUE;
 }
 
-BOOL CALLBACK getMCCWindow_enumWindowsProc( HWND hwnd, LPARAM lParam ) {
-    char name[255] = {};
-    auto size = GetWindowTextA( hwnd, name, 255 );
-    if ( size == 0 )
-        return true;
-    if ( strncmp( name, "Halo: The Master Chief Collection  ", size ) == 0 ) {
-        HWND* pHwndResult = (HWND*) lParam;
-        *pHwndResult = hwnd;
-        return false;
-    }
-    return true;
-}
-HWND getMCCWindow() {
-    HWND hwnd;
-    EnumWindows( getMCCWindow_enumWindowsProc, (LONG_PTR) &hwnd );
-    return hwnd;
-}
+void addHooks();
 
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
@@ -71,9 +54,9 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
             err |= freopen_s( &pFile_stdin, "CONIN$", "r", stdin );
     }
 
-    mccWindow = getMCCWindow();
 
     // Bring MCC to front.
+    HWND mccWindow = HaloMCC::getWindow();
     BringWindowToTop( mccWindow );
     SetForegroundWindow( mccWindow );
 
@@ -84,31 +67,27 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     std::cout << "\n\n";
 
     Halo1::init( halo1Base );
-    pDeviceContainer = Halo1::getDeviceContainerPointer();
-    if ( pDeviceContainer ) {
-        std::cout << "Device container at: " << pDeviceContainer << std::endl;
-        std::cout << "Device at: " << pDeviceContainer->pDevice << std::endl;
-    }
-    else {
-        std::cout << "Device container not found!" << std::endl;
-    }
 
-    addHooks();
     DX11Hook::hook( mccWindow );
-    DX11HookTest::init();
+    DX11Hook::addOnPresentCallback( Overlay::render );
+
+    TimeHack::init( halo1Base );
 
     if ( !err ) {
         while ( !GetAsyncKeyState( VK_F9 ) ) {
+
             Sleep( 10 );
+
         }
     }
 
     std::cout << "Exiting..." << std::endl;
 
-    DX11HookTest::cleanup();
     DX11Hook::cleanup();
     Hook::cleanupHooks();
+    Overlay::cleanup();
 
+    // Give any executing hook code a moment to finish before unloading.
     Sleep( 500 );
 
     if ( useConsole ) {
@@ -124,25 +103,5 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     }
 
     FreeLibraryAndExitThread( hmSuperHotHack, 0 );
-
-}
-
-// void onPostRenderWorld() {
-//     if ( pDeviceContainer && pDeviceContainer->pDevice )
-//         DX11HookTest::render( pDeviceContainer->pDevice );
-// }
-
-void addHooks() {
-
-    // auto hook = Hook::ezCreateJumpHook(
-    //     "Post render world hook",
-    //     halo1Base + 0xC41E2BU, 5,
-    //     (UINT_PTR) onPostRenderWorld,
-    //     HK_PUSH_STATE
-    // );
-    // hook->fixStolenOffset( 1 );
-    // hook->protectTrampoline();
-    // Hook::removeBeforeClosing( hook );
-    // hook->hook();
 
 }

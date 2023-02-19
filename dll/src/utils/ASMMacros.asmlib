@@ -37,5 +37,3 @@ popState MACRO
     pop rax
     popfq
 ENDM
-
-END

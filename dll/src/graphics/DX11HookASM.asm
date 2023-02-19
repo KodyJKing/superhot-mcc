@@ -1,4 +1,4 @@
-; INCLUDE <src/utils/ASMMacros.ASM>
+; INCLUDE <src/utils/ASMMacros.asmlib>
 
 ; _DATA SEGMENT
 ; _DATA ENDS

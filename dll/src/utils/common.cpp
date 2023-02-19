@@ -14,3 +14,27 @@ void throwIfFail( const char* taskDescription, HRESULT hr ) {
 void throwIfFail( HRESULT hr ) {
     throwIfFail( nullptr, hr );
 }
+
+void updateFloat( const char* floatName, float& x, float rate, int increaseKey, int decreaseKey ) {
+    int increase = GetAsyncKeyState( increaseKey );
+    int decrease = GetAsyncKeyState( decreaseKey );
+    if ( increase ) x *= rate;
+    if ( decrease ) x /= rate;
+    if ( increase || decrease )
+        std::cout << floatName << ": " << x << "\n";
+}
+
+bool keypressed( char vk ) {
+    static bool wasPressed[0xFF] = {};
+    int isPressed = GetAsyncKeyState( vk ) != 0;
+    int result = !wasPressed[vk] && isPressed;
+    wasPressed[vk] = isPressed;
+    return result;
+}
+
+void memcpyExecutable( char* dest, char* source, size_t size ) {
+    DWORD oldProtect;
+    VirtualProtect( (void*) dest, size, PAGE_EXECUTE_READWRITE, &oldProtect );
+    memcpy( dest, source, size );
+    VirtualProtect( (void*) dest, size, oldProtect, &oldProtect );
+}

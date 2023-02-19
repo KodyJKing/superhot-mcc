@@ -106,6 +106,25 @@ namespace DX11Hook {
         }
     }
 
+    void onResizeBuffersCalled(
+        IDXGISwapChain* pSwapChain,
+        UINT           BufferCount,
+        UINT           Width,
+        UINT           Height,
+        DXGI_FORMAT    NewFormat,
+        UINT           SwapChainFlags
+    ) {
+        /*
+            We need to release renderTargetView before ResizeBuffers runs because
+            it keeps a reference to the swap chain's back buffers alive,
+            which would cause a crash.
+        */
+        std::cout << "Releasing renderTargetView for buffer resize.\n";
+        safeRelease( renderTargetView );
+        hasDoneDeviceInit = false;
+        deviceInitFailed = false;
+    }
+
     // int _onSetRenderTargets_count = 0;
     // void onSetRenderTargets(
     //     ID3D11DeviceContext* pContext,
@@ -131,29 +150,44 @@ namespace DX11Hook {
         ID3D11DeviceContext* pDeviceContext;
         createDummy( &pSwapChain, &pDevice, &featureLevel, &pDeviceContext, hwnd );
 
-        std::cout << "\n";
 
         UINT_PTR* swapChainVTable = *( (UINT_PTR**) pSwapChain );
         UINT_PTR* deviceContextVTable = *( (UINT_PTR**) pDeviceContext );
 
         // Output method locations.
-        std::cout << "SwapChain.Present address: " << swapChainVTable[MO_IDXGISwapChain::Present] << "\n";
-        std::cout << "Context.Draw address: " << deviceContextVTable[MO_ID3D11DeviceContext::Draw] << "\n";
-        std::cout << "Context.DrawIndexed address: " << deviceContextVTable[MO_ID3D11DeviceContext::DrawIndexed] << "\n";
-        std::cout << "Context.OMSetRenderTargets address: " << deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets] << "\n";
-
+        std::cout << "\n";
+        // std::cout << "SwapChain.Present address: " << swapChainVTable[MO_IDXGISwapChain::Present] << "\n";
+        std::cout << "SwapChain.ResizeBuffers address: " << swapChainVTable[MO_IDXGISwapChain::ResizeBuffers] << "\n";
+        // std::cout << "Context.Draw address: " << deviceContextVTable[MO_ID3D11DeviceContext::Draw] << "\n";
+        // std::cout << "Context.DrawIndexed address: " << deviceContextVTable[MO_ID3D11DeviceContext::DrawIndexed] << "\n";
+        // std::cout << "Context.OMSetRenderTargets address: " << deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets] << "\n";
         std::cout << "\n";
 
-        auto presentHook = Hook::ezCreateJumpHook(
-            "Present",
-            swapChainVTable[MO_IDXGISwapChain::Present], 5,
-            (UINT_PTR) onPresentCalled,
-            HK_STOLEN_AFTER | HK_PUSH_STATE
-        );
-        presentHook->fixStolenOffset( 1 );
-        presentHook->protectTrampoline();
-        Hook::removeBeforeClosing( presentHook );
-        presentHook->hook();
+        {
+            auto hook = Hook::ezCreateJumpHook(
+                "Present",
+                swapChainVTable[MO_IDXGISwapChain::Present], 5,
+                (UINT_PTR) onPresentCalled,
+                HK_STOLEN_AFTER | HK_PUSH_STATE
+            );
+            hook->fixStolenOffset( 1 );
+            hook->protectTrampoline();
+            Hook::removeBeforeClosing( hook );
+            hook->hook();
+        }
+
+        {
+            auto hook = Hook::ezCreateJumpHook(
+                "ResizeBuffers",
+                swapChainVTable[MO_IDXGISwapChain::ResizeBuffers], 5,
+                (UINT_PTR) onResizeBuffersCalled,
+                HK_STOLEN_AFTER | HK_PUSH_STATE
+            );
+            hook->fixStolenOffset( 1 );
+            hook->protectTrampoline();
+            Hook::removeBeforeClosing( hook );
+            hook->hook();
+        }
 
         // auto setRTHook = Hook::addJumpHook(
         //     "OMSetRenderTargets",

@@ -19,6 +19,7 @@
 
 namespace Hook {
 
+    // A jump hook to library managed trampoline.
     struct JumpHook {
         const char* description;
         UINT_PTR address;
@@ -71,5 +72,30 @@ namespace Hook {
 
     JumpHook* removeBeforeClosing( JumpHook* hook );
     void cleanupHooks();
+
+    // Simple Jump Hooks
+
+    // A jump hook to a user managed trampoline.
+    struct SimpleJumpHook {
+        const char* description;
+        UINT_PTR address;
+        size_t numStolenBytes;
+        UINT_PTR trampolineAddress;
+
+        char* stolenBytes;
+
+        SimpleJumpHook(
+            const char* description,
+            UINT_PTR address,
+            size_t numStolenBytes,
+            UINT_PTR trampolineAddress,
+            UINT_PTR& returnAddress
+        );
+
+        void saveStolenBytes();
+        void restoreStolenBytes();
+        void hook();
+        void unhook();
+    };
 
 }
