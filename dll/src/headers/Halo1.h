@@ -56,13 +56,25 @@ namespace Halo1 {
         char pad_0064[8]; //0x0064
         int32_t N0000018A; //0x006C
         uint16_t entityCategory; //0x0070
-        char pad_0072[42]; //0x0072
+        char pad_0072[10]; //0x0072
+        uint32_t N0000018C; //0x007C
+        uint32_t controllerHandle; //0x0080
+        char pad_0084[24]; //0x0084
         float health; //0x009C
         float shield; //0x00A0
-        char pad_00A4[600]; //0x00A4
+        char pad_00A4[48]; //0x00A4
+        uint32_t N00000197; //0x00D4
+        uint32_t parentHandle; //0x00D8
+        char pad_00DC[288]; //0x00DC
+        uint32_t N000001BC; //0x01FC
+        uint32_t projectileParentHandle; //0x0200
+        char pad_0204[248]; //0x0204
         uint8_t frags; //0x02FC
         uint8_t plasmas; //0x02FD
-    }; //Size: 0x02FE
+        uint16_t N000001D8; //0x02FE
+        uint32_t N000001FB; //0x0300
+        uint32_t vehicleRiderHandle; //0x0304
+    }; //Size: 0x0308
 
     // =======================================================
 

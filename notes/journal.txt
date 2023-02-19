@@ -1,3 +1,9 @@
 Feb 17 2023
 
-Searching in Ghidra for labels starting with "PTR_PTR_s" (tables of strings) has been pretty fruitful. I found a table of entity category names. By looking at references to this, I found an entity category field on the entity structure. Looking for tables of strings like this might be generally useful for identifying variants of objects.
+    Searching in Ghidra for labels starting with "PTR_PTR_s" (tables of strings) has been pretty fruitful. I found a table of entity category names. By looking at references to this, I found an entity category field on the entity structure. Looking for tables of strings like this might be generally useful for identifying variants of objects.
+
+Feb 19 2023
+
+    I'm looking for the entity handle of the rider on the vehicles structure. There seem to be several fields that point to the rider. One isn't null when there is no rider and two are. Maybe one is gunner and one is driver? For now I'm just going with one of the two, but it might be with figuring out the distinction.
+
+    There seems to be some hidden entity with TypeID 0x0454 that needs to be unfrozen to allow the Shade turret to fire.

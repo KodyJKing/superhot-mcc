@@ -19,6 +19,8 @@ namespace Halo1 {
     Camera* getPlayerCameraPointer() { return (Camera*) ( dllBase + playerCamOffset ); }
 
     EntityRecord* getEntityRecord( EntityList* pEntityList, uint32_t entityHandle ) {
+        if ( entityHandle == 0xFFFFFFFF )
+            return nullptr;
         uint32_t i = entityHandle & 0xFFFF;
         auto recordAddress = (UINT_PTR) pEntityList + pEntityList->entityListOffset + i * sizeof( EntityRecord );
         return (EntityRecord*) recordAddress;

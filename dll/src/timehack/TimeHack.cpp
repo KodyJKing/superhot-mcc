@@ -15,13 +15,36 @@ extern "C" {
 
 bool freezeTime = false;
 
+bool isPlayerHandle( uint32_t entityHandle ) {
+    auto rec = getEntityRecord( entityHandle );
+    return rec && rec->typeId == TypeID_Player;
+}
+
+bool isPlayerControlled( uint32_t entityHandle ) {
+    auto rec = getEntityRecord( entityHandle );
+    if ( !rec ) return false;
+    auto entity = getEntityPointer( rec );
+    if ( !entity ) return false;
+
+    return rec->typeId == TypeID_Player
+        || isPlayerHandle( entity->parentHandle )
+        || isPlayerHandle( entity->vehicleRiderHandle )
+        // || isPlayerHandle( entity->controllerHandle )
+        // || isPlayerHandle( entity->projectileParentHandle )
+        // || rec->typeId == 0x0454
+        ;
+}
+
 bool entityUpdateHook_shouldUpdate( uint32_t entityHandle ) {
     if ( !freezeTime )
         return true;
 
-    auto pRec = getEntityRecord( entityHandle );
-    if ( !pRec ) return true;
-    return pRec->typeId == TypeID_Player;
+    return isPlayerControlled( entityHandle );
+
+    // auto pRec = getEntityRecord( entityHandle );
+    // if ( !pRec ) return true;
+    // return pRec->typeId == TypeID_Player;
+
     // auto pEntity = getEntityPointer( pRec );
     // if ( !pEntity ) return true;
     // return pEntity && pEntity->health <= 0;
