@@ -7,6 +7,7 @@
 #include "utils/headers/common.h"
 #include "utils/headers/Vec.h"
 #include "graphics/headers/DX11Hook.h"
+#include "timehack/headers/TimeHack.h"
 
 HMODULE hmSuperHotHack;
 HMODULE hmHalo1;
@@ -31,6 +32,8 @@ BOOL APIENTRY DllMain(
     }
     return TRUE;
 }
+
+void addHooks();
 
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
@@ -65,30 +68,16 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     Halo1::init( halo1Base );
 
-    // pDeviceContainer = Halo1::getDeviceContainerPointer();
-    // if ( pDeviceContainer ) {
-    //     std::cout << "Device container at: " << pDeviceContainer << std::endl;
-    //     std::cout << "Device at: " << pDeviceContainer->pDevice << std::endl;
-    // } else {
-    //     std::cout << "Device container not found!" << std::endl;
-    // }
-
-    // Halo1::printEntities();
-
     DX11Hook::hook( mccWindow );
     DX11Hook::addOnPresentCallback( Overlay::render );
+
+    TimeHack::init( halo1Base );
 
     if ( !err ) {
         while ( !GetAsyncKeyState( VK_F9 ) ) {
 
-            // if ( keypressed( VK_F4 ) ) {
-            //     auto pCam = Halo1::getPlayerCameraPointer();
-            //     std::cout << "Fov: " << pCam->fov << "\n";
-            //     std::cout << "Pos: "; Vec::print( pCam->pos ); std::cout << "\n";
-            //     std::cout << "Fwd: "; Vec::print( pCam->fwd ); std::cout << "\n";
-            // }
-
             Sleep( 10 );
+
         }
     }
 

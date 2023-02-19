@@ -1,8 +1,10 @@
 #include "../../pch.h"
 
+#define ENTITY_TYPE_MAP std::map<uint16_t, EntityType*>
+
 namespace Halo1 {
 
-    // Created with ReClass.NET 1.2 by KN4CK3R
+    // === Classes created with ReClass.NET 1.2 by KN4CK3R ===
 
     class DeviceContainer {
         public:
@@ -51,13 +53,54 @@ namespace Halo1 {
         Vec3 vel; //0x0024
         char pad_0030[40]; //0x0030
         Vec3 eyePos; //0x0058
-        char pad_0064[56]; //0x0064
+        char pad_0064[8]; //0x0064
+        int32_t N0000018A; //0x006C
+        uint16_t entityCategory; //0x0070
+        char pad_0072[42]; //0x0072
         float health; //0x009C
         float shield; //0x00A0
         char pad_00A4[600]; //0x00A4
         uint8_t frags; //0x02FC
         uint8_t plasmas; //0x02FD
     }; //Size: 0x02FE
+
+    // =======================================================
+
+    enum EntityCategory {
+        EntityCategory_Biped,
+        EntityCategory_Vehicle,
+        EntityCategory_Weapon,
+        EntityCategory_Equipment,
+        EntityCategory_Garbage,
+        EntityCategory_Projectile,
+        EntityCategory_Scenery,
+        EntityCategory_Machine,
+        EntityCategory_Control,
+        EntityCategory_LightFixture,
+        EntityCategory_Placeholder,
+        EntityCategory_SoundScenery,
+    };
+
+    enum TypeID {
+        TypeID_Player = 0x0DE4,
+        TypeID_Marine = 0x0E58,
+        TypeID_Jackal = 0x1184,
+        TypeID_Grunt = 0x0CFC,
+        TypeID_Elite = 0x1110,
+        TypeID_VehicleA = 0x0AF4,
+        TypeID_Projectile = 0x0290
+    };
+
+    struct EntityType {
+        const wchar_t* name;
+        bool living;
+        bool hostile;
+        bool transport;
+        bool unknown;
+    };
+
+    EntityType getEntityType( uint16_t typeId );
+    EntityType getEntityType( TypeID type );
 
     void init( UINT_PTR _dllBase );
 
@@ -69,13 +112,14 @@ namespace Halo1 {
     void foreachEntityRecord( EntityListEntryCallback cb );
 
     Entity* getEntityPointer( EntityRecord* pRecord );
-    EntityRecord* getEntityRecord( uint32_t i );
-    EntityRecord* getEntityRecord( EntityList* pEntityList, uint32_t i );
+    EntityRecord* getEntityRecord( uint32_t entityHandle );
+    EntityRecord* getEntityRecord( EntityList* pEntityList, uint32_t entityHandle );
 
     bool printEntity( EntityRecord* pRecord );
     void printEntities();
 
     HRESULT getCameraMatrix( float w, float h, XMMATRIX& result );
     Vec3 projectPoint( float w, float h, const Vec3 point );
+    bool isCameraLoaded();
 
 }

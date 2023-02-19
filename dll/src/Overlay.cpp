@@ -18,16 +18,20 @@ namespace Overlay {
 
     Renderer* renderer;
     Vec2 screenDimensions;
+    bool printSelectedEntity;
     EntityRecord* selectedEntity;
     const float selectionThreshold = 0.995f;
-    bool printSelectedEntity;
+    const float drawDistance = 50.0f;
 
     void cleanup() {
         if ( renderer )
-            renderer->~Renderer();
+            delete renderer;
     }
 
     void render( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
+
+        if ( !isCameraLoaded() )
+            return;
 
         if ( !renderer ) {
             std::cout << "Constructing new Renderer.\n";
@@ -78,7 +82,24 @@ namespace Overlay {
 
     bool shouldDisplay( EntityRecord* rec ) {
         auto pEntity = getEntityPointer( rec );
-        return pEntity->health > 0;
+
+        auto pCam = getPlayerCameraPointer();
+        auto diff = Vec::sub( pEntity->pos, pCam->pos );
+        if ( Vec::length( diff ) > drawDistance )
+            return false;
+
+        switch ( pEntity->entityCategory ) {
+            case EntityCategory_Biped:
+            case EntityCategory_Vehicle:
+            case EntityCategory_Weapon:
+            case EntityCategory_Projectile:
+                return true;
+            default:
+                return false;
+        }
+
+        // if ( pEntity->health <= 0 )
+        //     return false;
     }
 
     bool drawEntityOverlay( EntityRecord* rec ) {
@@ -86,27 +107,33 @@ namespace Overlay {
             return true;
 
         auto pEntity = getEntityPointer( rec );
+        auto type = getEntityType( rec->typeId );
         auto pos = pEntity->pos;
+
+        bool isSelected = rec == selectedEntity;
+        bool printThisEntity = isSelected && printSelectedEntity;
 
         Vec4 color;
         float fontSize;
-        bool isSelected = rec == selectedEntity;
-        bool printThisEntity = isSelected && printSelectedEntity;
         if ( isSelected ) {
             color = { 0.0f, 1.0f, 1.0f, 0.5f };
             fontSize = 20.0f;
         } else {
-            color = { 1.0f, 1.0f, 1.0f, 0.25f };
+            if ( pEntity->health > 0 )
+                color = { 0.25f, 1.0f, 0.25f, 0.25f };
+            else
+                color = { 1.0f, 1.0f, 1.0f, 0.25f };
             fontSize = 8.0f;
         }
 
         wchar_t buf[100];
         int lineNum = 0;
-#define LINE(format, ...) \
+        #define LINE(format, ...) { \
             swprintf_s( buf, format, __VA_ARGS__ ); \
-            draw3DTextCentered( pos, { 0, fontSize * (lineNum++) }, buf, color, NULL, fontSize, nullptr ); \
-            if (printThisEntity ) \
-                std::wcout << buf << "\n";
+            draw3DTextCentered( pos, { 0, fontSize * ( lineNum++ ) }, buf, color, NULL, fontSize, nullptr ); \
+            if ( printThisEntity ) \
+                std::wcout << buf << "\n";\
+        }
 
         if ( printThisEntity )
             std::cout << "\n";
@@ -115,8 +142,10 @@ namespace Overlay {
         // LINE( L"HP %.2f SP %0.2f", pEntity->health, pEntity->shield );
         LINE( L"%" PRIX64, (uint64_t) pEntity );
         LINE( L"Type %04X", rec->typeId );
+        if ( !type.unknown )
+            LINE( type.name );
 
-#undef LINE
+        #undef LINE
 
         return true;
     }

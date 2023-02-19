@@ -1,6 +1,7 @@
 #include "headers/Halo1.h"
 #include "graphics/headers/DX11Utils.h"
 #include "utils/headers/Vec.h"
+#include "utils/headers/common.h"
 
 namespace Halo1 {
     UINT_PTR dllBase;
@@ -17,11 +18,12 @@ namespace Halo1 {
     UINT_PTR getEntityArrayBase() { return *(UINT_PTR*) ( dllBase + entityArrayOffset ); }
     Camera* getPlayerCameraPointer() { return (Camera*) ( dllBase + playerCamOffset ); }
 
-    EntityRecord* getEntityRecord( EntityList* pEntityList, uint32_t i ) {
+    EntityRecord* getEntityRecord( EntityList* pEntityList, uint32_t entityHandle ) {
+        uint32_t i = entityHandle & 0xFFFF;
         auto recordAddress = (UINT_PTR) pEntityList + pEntityList->entityListOffset + i * sizeof( EntityRecord );
         return (EntityRecord*) recordAddress;
     }
-    EntityRecord* getEntityRecord( uint32_t i ) { return getEntityRecord( getEntityListPointer(), i ); }
+    EntityRecord* getEntityRecord( uint32_t entityHandle ) { return getEntityRecord( getEntityListPointer(), entityHandle ); }
 
     void foreachEntityRecord( EntityListEntryCallback cb ) {
         auto pEntityList = getEntityListPointer();
@@ -42,6 +44,24 @@ namespace Halo1 {
         UINT_PTR entityAddress = getEntityArrayBase() + 0x34 + (INT_PTR) pRecord->entityArrayOffset;
         return (Entity*) entityAddress;
     }
+
+    // === Entity Types ===
+
+    EntityType getEntityType( uint16_t typeId ) { return getEntityType( (TypeID) typeId ); }
+    EntityType getEntityType( TypeID typeId ) {
+        switch ( typeId ) {
+            case TypeID_Player:     return { .name = L"Player", .living = 1, .hostile = 0 };
+            case TypeID_Marine:     return { .name = L"Marine",     .living = 1, .hostile = 0 };
+            case TypeID_Jackal:     return { .name = L"Jackal",     .living = 1, .hostile = 1 };
+            case TypeID_Grunt:      return { .name = L"Grunt",      .living = 1, .hostile = 1 };
+            case TypeID_Elite:      return { .name = L"Elite",      .living = 1, .hostile = 1 };
+            case TypeID_VehicleA:   return { .name = L"VehicleA",   .living = 1, .hostile = 1, .transport = 1 };
+            case TypeID_Projectile: return { .name = L"Projectile", .living = 0, .hostile = 0 };
+        }
+        return { .name = L"Unknown", .unknown = 1 };
+    }
+
+    // ====================
 
     bool printEntity( EntityRecord* pRecord ) {
         auto pEntity = getEntityPointer( pRecord );
@@ -94,6 +114,10 @@ namespace Halo1 {
             clippingNear, clippingFar,
             w, h
         );
+    }
+
+    bool isCameraLoaded() {
+        return !isZero( Halo1::getPlayerCameraPointer() );
     }
 
 }

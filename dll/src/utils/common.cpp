@@ -31,3 +31,10 @@ bool keypressed( char vk ) {
     wasPressed[vk] = isPressed;
     return result;
 }
+
+void memcpyExecutable( char* dest, char* source, size_t size ) {
+    DWORD oldProtect;
+    VirtualProtect( (void*) dest, size, PAGE_EXECUTE_READWRITE, &oldProtect );
+    memcpy( dest, source, size );
+    VirtualProtect( (void*) dest, size, oldProtect, &oldProtect );
+}

@@ -20,9 +20,21 @@ inline void safeFree( T& ptr ) {
     }
 }
 
+template <typename T>
+bool isZero( T* pData ) {
+    const size_t size = sizeof( T );
+    uint8_t* pBytes = (uint8_t*) pData;
+    for ( int i = 0; i < size; i++ )
+        if ( pBytes[i] != 0 )
+            return false;
+    return true;
+}
+
 void throwIfFail( const char* taskDescription, HRESULT hr );
 void throwIfFail( HRESULT hr );
 
 void updateFloat( const char* floatName, float& x, float rate, int increaseKey, int decreaseKey );
 
 bool keypressed( char vk );
+
+void memcpyExecutable( char* dest, char* source, size_t size );
