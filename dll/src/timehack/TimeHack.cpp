@@ -6,68 +6,70 @@
 using namespace Halo1;
 
 extern "C" {
-    void entityUpdateHook();
-    uint64_t entityUpdateHook_return;
-    uint64_t entityUpdateHook_end;
+    void     preEntityUpdate( uint32_t entityHandle );
+    bool     preEntityUpdate_doUpdate;
+    void     preEntityUpdateHook();
+    uint64_t preEntityUpdateHook_return;
+    uint64_t preEntityUpdateHook_end;
 
-    bool entityUpdateHook_shouldUpdate( uint32_t entityHandle );
+    void     postEntityUpdate( uint32_t entityHandle );
+    void     postEntityUpdateHook();
+    uint64_t postEntityUpdateHook_return;
+    uint64_t postEntityUpdateHook_jmp;
 }
 
-bool freezeTime = false;
+bool freezeTimeEnabled = false;
+bool superhotEnabled = false;
 
-bool isPlayerHandle( uint32_t entityHandle ) {
-    auto rec = getEntityRecord( entityHandle );
-    return rec && rec->typeId == TypeID_Player;
-}
-
-bool isPlayerControlled( uint32_t entityHandle ) {
-    auto rec = getEntityRecord( entityHandle );
-    if ( !rec ) return false;
-    auto entity = getEntityPointer( rec );
-    if ( !entity ) return false;
-
-    return rec->typeId == TypeID_Player
-        || isPlayerHandle( entity->parentHandle )
-        || isPlayerHandle( entity->vehicleRiderHandle )
-        // || isPlayerHandle( entity->controllerHandle )
-        // || isPlayerHandle( entity->projectileParentHandle )
-        // || rec->typeId == 0x0454
-        ;
-}
-
-bool entityUpdateHook_shouldUpdate( uint32_t entityHandle ) {
-    if ( !freezeTime )
+bool shouldEntityUpdate( uint32_t entityHandle ) {
+    if ( !freezeTimeEnabled )
         return true;
 
     return isPlayerControlled( entityHandle );
+}
 
-    // auto pRec = getEntityRecord( entityHandle );
-    // if ( !pRec ) return true;
-    // return pRec->typeId == TypeID_Player;
+void preEntityUpdate( uint32_t entityHandle ) {
 
-    // auto pEntity = getEntityPointer( pRec );
-    // if ( !pEntity ) return true;
-    // return pEntity && pEntity->health <= 0;
+    preEntityUpdate_doUpdate = shouldEntityUpdate( entityHandle );
+
+    // Save entity state
+
+}
+
+void postEntityUpdate( uint32_t entityHandle ) {
+
+    // Rewind entity state
+
 }
 
 namespace TimeHack {
 
     void init( uint64_t halo1Base ) {
+
         std::cout << "Initializing time hack.\n";
 
-        entityUpdateHook_end = halo1Base + 0xB898D2U;
+        preEntityUpdateHook_end = halo1Base + 0xB898D2U;
+        postEntityUpdateHook_jmp = halo1Base + 0xB898E0U;
 
         ( new Hook::SimpleJumpHook(
-            "Freeze time",
+            "Pre Entity Update Hook",
             halo1Base + 0xB898A4U, 10,
-            (UINT_PTR) entityUpdateHook,
-            entityUpdateHook_return
+            (UINT_PTR) preEntityUpdateHook,
+            preEntityUpdateHook_return
+        ) )->hook();
+
+        ( new Hook::SimpleJumpHook(
+            "Post Entity Update Hook",
+            preEntityUpdateHook_end, 6,
+            (UINT_PTR) postEntityUpdateHook,
+            postEntityUpdateHook_return
         ) )->hook();
 
     }
 
     void onDllThreadUpdate() {
-        toggleOption( "Freeze Time", freezeTime, VK_F2 );
+        toggleOption( "Freeze Time", freezeTimeEnabled, VK_F2 );
+        toggleOption( "SUPERHOT", superhotEnabled, VK_F3 );
     }
 
 }

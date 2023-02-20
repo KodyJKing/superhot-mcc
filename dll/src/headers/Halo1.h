@@ -127,6 +127,9 @@ namespace Halo1 {
     EntityRecord* getEntityRecord( uint32_t entityHandle );
     EntityRecord* getEntityRecord( EntityList* pEntityList, uint32_t entityHandle );
 
+    bool isPlayerHandle( uint32_t entityHandle );
+    bool isPlayerControlled( uint32_t entityHandle );
+
     bool printEntity( EntityRecord* pRecord );
     void printEntities();
 

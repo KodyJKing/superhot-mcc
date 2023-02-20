@@ -153,10 +153,12 @@ namespace Overlay {
         // LINE( L"HP %.2f SP %0.2f", pEntity->health, pEntity->shield );
         LINE( L"Type %04X", rec->typeId );
         LINE( L"%" PRIX64, (uint64_t) pEntity );
-        LINE( L"Controller %04X", pEntity->controllerHandle );
-        LINE( L"Parent %04X", pEntity->parentHandle );
-        LINE( L"Creator %04X", pEntity->projectileParentHandle );
-        LINE( L"Rider   %04X", pEntity->vehicleRiderHandle );
+        if ( isSelected ) {
+            LINE( L"User    %08X", pEntity->controllerHandle );
+            LINE( L"Parent  %08X", pEntity->parentHandle );
+            LINE( L"Creator %08X", pEntity->projectileParentHandle );
+            LINE( L"Driver  %08X", pEntity->vehicleRiderHandle );
+        }
 
         #undef LINE
 

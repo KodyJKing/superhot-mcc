@@ -6,13 +6,15 @@ _DATA ENDS
 
 _TEXT SEGMENT
 
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-    extern entityUpdateHook_return: qword
-    extern entityUpdateHook_end: qword
-    extern entityUpdateHook_shouldUpdate: proc
-    ;
-    PUBLIC entityUpdateHook
-    entityUpdateHook PROC
+    extern preEntityUpdate: proc
+    extern preEntityUpdate_doUpdate: byte
+    extern preEntityUpdateHook_return: qword
+    extern preEntityUpdateHook_end: qword
+    
+    PUBLIC preEntityUpdateHook
+    preEntityUpdateHook PROC
 
         ; Original:
             mov rax, [rsi+00F0h]
@@ -22,21 +24,52 @@ _TEXT SEGMENT
 
             sub rsp, 20h
             mov rcx, r12
-            call entityUpdateHook_shouldUpdate
+            call preEntityUpdate
             add rsp, 20h
 
-            test rax, rax
-            jnz __else_1
+            cmp byte ptr [preEntityUpdate_doUpdate], 1
+            je __doUpdate
                 popState
-                jmp [entityUpdateHook_end]
-            __else_1:
+                jmp [preEntityUpdateHook_end]
+            __doUpdate:
 
         popState
 
-        jmp [entityUpdateHook_return]
+        jmp [preEntityUpdateHook_return]
 
-    entityUpdateHook ENDP
+    preEntityUpdateHook ENDP
 
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+    extern postEntityUpdate: proc
+    extern postEntityUpdateHook_return: qword
+    extern postEntityUpdateHook_jmp: qword
+    
+    PUBLIC postEntityUpdateHook
+    postEntityUpdateHook PROC
+    
+        ; Original:
+            cmp dword ptr [rbp+7Ch], -01
+
+        pushState
+        
+            sub rsp, 20h
+            mov rcx, r12
+            call postEntityUpdate
+            add rsp, 20h
+
+        popState
+
+        ; Original:
+            jne __dontJump1
+                jmp [postEntityUpdateHook_jmp]
+            __dontJump1:
+        
+        jmp [postEntityUpdateHook_return]
+
+    postEntityUpdateHook ENDP
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 _TEXT ENDS
 

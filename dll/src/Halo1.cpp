@@ -47,7 +47,25 @@ namespace Halo1 {
         return (Entity*) entityAddress;
     }
 
-    // === Entity Types ===
+    bool isPlayerHandle( uint32_t entityHandle ) {
+        auto rec = getEntityRecord( entityHandle );
+        return rec && rec->typeId == TypeID_Player;
+    }
+
+    bool isPlayerControlled( uint32_t entityHandle ) {
+        auto rec = getEntityRecord( entityHandle );
+        if ( !rec ) return false;
+        auto entity = getEntityPointer( rec );
+        if ( !entity ) return false;
+
+        return rec->typeId == TypeID_Player
+            || isPlayerHandle( entity->parentHandle )
+            || isPlayerHandle( entity->vehicleRiderHandle )
+            // || isPlayerHandle( entity->controllerHandle )
+            // || isPlayerHandle( entity->projectileParentHandle )
+            // || rec->typeId == 0x0454
+            ;
+    }
 
     EntityType getEntityType( uint16_t typeId ) { return getEntityType( (TypeID) typeId ); }
     EntityType getEntityType( TypeID typeId ) {
@@ -62,8 +80,6 @@ namespace Halo1 {
         }
         return { .name = L"Unknown", .unknown = 1 };
     }
-
-    // ====================
 
     bool printEntity( EntityRecord* pRecord ) {
         auto pEntity = getEntityPointer( pRecord );

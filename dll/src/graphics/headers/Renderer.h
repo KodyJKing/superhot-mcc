@@ -20,7 +20,8 @@ struct Vertex {
 class Renderer {
 
     public:
-    Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR defaultFontFamily = L"Verdana" );
+    // Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR defaultFontFamily = L"Verdana" );
+    Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR defaultFontFamily = L"Consolas" );
     ~Renderer();
 
     void setTransform( XMMATRIX* pTransform );

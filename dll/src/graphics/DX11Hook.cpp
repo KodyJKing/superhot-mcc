@@ -83,7 +83,11 @@ namespace DX11Hook {
     }
 
     // We're hooking the begining of the Present function so we can use the same positional arguments.
-    void __stdcall onPresentCalled( IDXGISwapChain* pSwapChain ) {
+    void __stdcall onPresentCalled(
+        IDXGISwapChain* pSwapChain,
+        UINT SyncInterval,
+        UINT Flags
+    ) {
         // std::cout << "Swap chain: " << (uint64_t) pSwapChain << std::endl;
         ID3D11Device* pDevice;
         if ( FAILED( pSwapChain->GetDevice( __uuidof( ID3D11Device ), (void**) &pDevice ) ) ) {
@@ -124,24 +128,6 @@ namespace DX11Hook {
         hasDoneDeviceInit = false;
         deviceInitFailed = false;
     }
-
-    // int _onSetRenderTargets_count = 0;
-    // void onSetRenderTargets(
-    //     ID3D11DeviceContext* pContext,
-    //     UINT NumViews,
-    //     ID3D11RenderTargetView* const* ppRenderTargetViews,
-    //     ID3D11DepthStencilView* pDepthStencilView
-    // ) {
-    //     if ( !pDepthStencilView )
-    //         return;
-    //     std::cout << "\n";
-    //     std::cout << "Num views " << NumViews << "\n";
-    //     std::cout << "RT Views at " << ppRenderTargetViews << "\n";
-    //     std::cout << "DST Views at " << pDepthStencilView << "\n";
-
-    //     D3D11_DEPTH_STENCIL_VIEW_DESC desc;
-    //     pDepthStencilView->GetDesc( &desc );
-    // };
 
     void hook( HWND hwnd ) {
         IDXGISwapChain* pSwapChain;
@@ -188,13 +174,6 @@ namespace DX11Hook {
             Hook::removeBeforeClosing( hook );
             hook->hook();
         }
-
-        // auto setRTHook = Hook::addJumpHook(
-        //     "OMSetRenderTargets",
-        //     deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets], 5,
-        //     (UINT_PTR) onSetRenderTargets,
-        //     HK_STOLEN_AFTER | HK_PUSH_STATE
-        // );
 
         pSwapChain->Release();
         pDevice->Release();
