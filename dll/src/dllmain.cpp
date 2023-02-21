@@ -74,7 +74,12 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     TimeHack::init( halo1Base );
 
     if ( !err ) {
-        while ( !GetAsyncKeyState( VK_F9 ) ) {
+        while ( true ) {
+
+            bool exit = GetAsyncKeyState( VK_F9 )
+                || !GetModuleHandleA( "halo1.dll" );
+            if ( exit )
+                break;
 
             TimeHack::onDllThreadUpdate();
             Overlay::onDllThreadUpdate();
@@ -90,8 +95,8 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     std::cout << "Exiting..." << std::endl;
 
     DX11Hook::cleanup();
-    Hook::cleanupHooks();
     Overlay::cleanup();
+    Hook::cleanupHooks();
 
     // Give any executing hook code a moment to finish before unloading.
     Sleep( 500 );

@@ -35,6 +35,16 @@ inline UINT_PTR roundUp( UINT_PTR x, UINT_PTR granularity ) {
 
 namespace AllocationUtils {
 
+    bool isAllocated( UINT_PTR address ) {
+        MEMORY_BASIC_INFORMATION memInfo;
+
+        auto resultBytes = VirtualQuery( (LPVOID) address, &memInfo, _MEM_INFO_SIZE );
+        if ( resultBytes != _MEM_INFO_SIZE )
+            return false;
+
+        return memInfo.State == MEM_COMMIT;
+    }
+
     UINT_PTR scanForFreePage( UINT_PTR address, size_t minSize, int direction ) {
         MEMORY_BASIC_INFORMATION memInfo;
         SYSTEM_INFO sysInfo;
@@ -113,8 +123,7 @@ namespace AllocationUtils {
         if ( !allocAddress ) {
             std::cout << "Could not allocate." << std::endl;
             std::cout << "Error code: " << GetLastError() << std::endl;
-        }
-        else {
+        } else {
             std::cout << "Allocated at: ";
             std::cout << std::uppercase << std::hex << allocAddress << std::endl;
             VirtualFree( (LPVOID) allocAddress, 0, MEM_RELEASE );
