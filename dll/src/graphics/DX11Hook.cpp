@@ -4,7 +4,6 @@
 #include "../headers/Hook.h"
 #include "../../pch.h"
 
-using Hook::JumpHook;
 using DX11Hook::PresentCallback;
 
 extern "C" {
@@ -107,7 +106,7 @@ namespace DX11Hook {
 
         uint64_t presentHook_start = swapChainVTable[MO_IDXGISwapChain::Present];
         presentHook_jmp = Hook::getJumpDestination( presentHook_start );
-        ( new Hook::SimpleJumpHook(
+        ( new Hook::JumpHook(
             "Present",
             presentHook_start, 5,
             (UINT_PTR) presentHook
@@ -116,7 +115,7 @@ namespace DX11Hook {
         uint64_t resizeBuffersHook_start = swapChainVTable[MO_IDXGISwapChain::ResizeBuffers];
         resizeBuffersHook_jmp = Hook::getJumpDestination( resizeBuffersHook_start );
         std::cout << "Resize buffers exit jump " << resizeBuffersHook_jmp << "\n";
-        ( new Hook::SimpleJumpHook(
+        ( new Hook::JumpHook(
             "ResizeBuffers",
             resizeBuffersHook_start, 5,
             (UINT_PTR) resizeBuffersHook

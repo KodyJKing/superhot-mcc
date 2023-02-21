@@ -8,7 +8,7 @@
 using namespace Halo1;
 
 const float walkingSpeed = 0.07f;
-const float speedLimit   = walkingSpeed * 20.0f;
+const float speedLimit = walkingSpeed * 20.0f;
 
 bool freezeTimeEnabled = false;
 bool superhotEnabled = false;
@@ -63,7 +63,7 @@ void preEntityUpdate( uint32_t entityHandle ) {
 void postEntityUpdate( uint32_t entityHandle ) {
 
     EntityRecord* rec = getEntityRecord( entityHandle );
-    Entity* entity= getEntityPointer( rec );
+    Entity* entity = getEntityPointer( rec );
     if ( !entity )
         return;
 
@@ -90,17 +90,17 @@ namespace TimeHack {
         //
         auto preEntityUpdateHook_start = halo1Base + 0xB898A4U;
 
-        preEntityUpdateHook_end        = halo1Base + 0xB898D2U;
-        postEntityUpdateHook_jmp       = halo1Base + 0xB898E0U;
+        preEntityUpdateHook_end = halo1Base + 0xB898D2U;
+        postEntityUpdateHook_jmp = halo1Base + 0xB898E0U;
 
-        ( new Hook::SimpleJumpHook(
+        ( new Hook::JumpHook(
             "Pre Entity Update Hook",
             preEntityUpdateHook_start, 10,
             (UINT_PTR) preEntityUpdateHook,
             preEntityUpdateHook_return
         ) )->hook();
 
-        ( new Hook::SimpleJumpHook(
+        ( new Hook::JumpHook(
             "Post Entity Update Hook",
             preEntityUpdateHook_end, 6,
             (UINT_PTR) postEntityUpdateHook,
