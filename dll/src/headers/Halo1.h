@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../../pch.h"
 
 #define ENTITY_TYPE_MAP std::map<uint16_t, EntityType*>
@@ -59,7 +61,10 @@ namespace Halo1 {
         char pad_0072[10]; //0x0072
         uint32_t N0000018C; //0x007C
         uint32_t controllerHandle; //0x0080
-        char pad_0084[24]; //0x0084
+        char pad_0084[8]; //0x0084
+        uint16_t animId; //0x008C
+        uint16_t animFrame; //0x008E
+        char pad_0090[12]; //0x0090
         float health; //0x009C
         float shield; //0x00A0
         char pad_00A4[48]; //0x00A4
@@ -128,7 +133,7 @@ namespace Halo1 {
     EntityRecord* getEntityRecord( EntityList* pEntityList, uint32_t entityHandle );
 
     bool isPlayerHandle( uint32_t entityHandle );
-    bool isPlayerControlled( uint32_t entityHandle );
+    bool isPlayerControlled( EntityRecord* rec );
 
     bool printEntity( EntityRecord* pRecord );
     void printEntities();

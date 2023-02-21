@@ -1,9 +1,20 @@
 #include "headers/TimeHack.h"
+#include "headers/Rewind.h"
 #include "../headers/Hook.h"
 #include "../headers/Halo1.h"
 #include "../utils/headers/common.h"
+#include "../utils/headers/Vec.h"
 
 using namespace Halo1;
+
+const float walkingSpeed = 0.07f;
+const float speedLimit   = walkingSpeed * 20.0f;
+
+bool freezeTimeEnabled = false;
+bool superhotEnabled = false;
+bool speedLimitEnabled = true;
+
+uint64_t runUntil = 0;
 
 extern "C" {
     void     preEntityUpdate( uint32_t entityHandle );
@@ -18,27 +29,46 @@ extern "C" {
     uint64_t postEntityUpdateHook_jmp;
 }
 
-bool freezeTimeEnabled = false;
-bool superhotEnabled = false;
-
-bool shouldEntityUpdate( uint32_t entityHandle ) {
+bool shouldEntityUpdate( EntityRecord* rec ) {
+    if ( GetTickCount64() < runUntil )
+        return true;
     if ( !freezeTimeEnabled )
         return true;
+    return isPlayerControlled( rec );
+}
 
-    return isPlayerControlled( entityHandle );
+bool shouldRewind( EntityRecord* rec ) {
+    if ( freezeTimeEnabled || !superhotEnabled )
+        return false;
+    return !isPlayerControlled( rec );
 }
 
 void preEntityUpdate( uint32_t entityHandle ) {
 
-    preEntityUpdate_doUpdate = shouldEntityUpdate( entityHandle );
+    EntityRecord* rec = getEntityRecord( entityHandle );
+    Entity* entity = getEntityPointer( rec );
+    if ( !entity )
+        return;
 
-    // Save entity state
+    preEntityUpdate_doUpdate = shouldEntityUpdate( rec );
+
+    if ( speedLimitEnabled )
+        Vec::clampMut( entity->vel, speedLimit );
+
+    if ( shouldRewind( rec ) )
+        Rewind::snapshot( rec );
 
 }
 
 void postEntityUpdate( uint32_t entityHandle ) {
 
-    // Rewind entity state
+    EntityRecord* rec = getEntityRecord( entityHandle );
+    Entity* entity= getEntityPointer( rec );
+    if ( !entity )
+        return;
+
+    if ( shouldRewind( rec ) )
+        Rewind::rewind( rec, 0.3f );
 
 }
 
@@ -48,12 +78,24 @@ namespace TimeHack {
 
         std::cout << "Initializing time hack.\n";
 
-        preEntityUpdateHook_end = halo1Base + 0xB898D2U;
-        postEntityUpdateHook_jmp = halo1Base + 0xB898E0U;
+        // 0FB7 FB           - movzx edi,bx
+        // 48 8B 34 C6       - mov rsi,[rsi+rax*8]
+        //
+        // preEntityUpdateHook_start:
+        // 48 8B 86 F0000000 - mov rax,[rsi+000000F0]
+        // 48 85 C0          - test rax,rax
+        //
+        // 74 22             - je 7FFF465998D2
+        // 48 8B 50 58       - mov rdx,[rax+58]
+        //
+        auto preEntityUpdateHook_start = halo1Base + 0xB898A4U;
+
+        preEntityUpdateHook_end        = halo1Base + 0xB898D2U;
+        postEntityUpdateHook_jmp       = halo1Base + 0xB898E0U;
 
         ( new Hook::SimpleJumpHook(
             "Pre Entity Update Hook",
-            halo1Base + 0xB898A4U, 10,
+            preEntityUpdateHook_start, 10,
             (UINT_PTR) preEntityUpdateHook,
             preEntityUpdateHook_return
         ) )->hook();
@@ -70,6 +112,9 @@ namespace TimeHack {
     void onDllThreadUpdate() {
         toggleOption( "Freeze Time", freezeTimeEnabled, VK_F2 );
         toggleOption( "SUPERHOT", superhotEnabled, VK_F3 );
+        toggleOption( "Speed Limit", speedLimitEnabled, VK_NUMPAD2 );
+        if ( keypressed( VK_F1 ) )
+            runUntil = GetTickCount64() + 100;
     }
 
 }

@@ -52,11 +52,10 @@ namespace Halo1 {
         return rec && rec->typeId == TypeID_Player;
     }
 
-    bool isPlayerControlled( uint32_t entityHandle ) {
-        auto rec = getEntityRecord( entityHandle );
-        if ( !rec ) return false;
+    bool isPlayerControlled( EntityRecord* rec ) {
         auto entity = getEntityPointer( rec );
-        if ( !entity ) return false;
+        if ( !entity )
+            return false;
 
         return rec->typeId == TypeID_Player
             || isPlayerHandle( entity->parentHandle )
@@ -70,7 +69,7 @@ namespace Halo1 {
     EntityType getEntityType( uint16_t typeId ) { return getEntityType( (TypeID) typeId ); }
     EntityType getEntityType( TypeID typeId ) {
         switch ( typeId ) {
-            case TypeID_Player:     return { .name = L"Player", .living = 1, .hostile = 0 };
+            case TypeID_Player:     return { .name = L"Player",     .living = 1, .hostile = 0 };
             case TypeID_Marine:     return { .name = L"Marine",     .living = 1, .hostile = 0 };
             case TypeID_Jackal:     return { .name = L"Jackal",     .living = 1, .hostile = 1 };
             case TypeID_Grunt:      return { .name = L"Grunt",      .living = 1, .hostile = 1 };

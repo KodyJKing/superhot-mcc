@@ -314,7 +314,7 @@ unregistersymbol(CALL_ENTITY_UPDATE_HANDLER)
         <CheatEntry>
           <ID>10</ID>
           <Description>"halo1.dll"</Description>
-          <LastState Value="9460301" RealAddress="7FFF44ED0000"/>
+          <LastState Value="9460301" RealAddress="7FFF45A10000"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>halo1.dll</Address>
@@ -415,49 +415,49 @@ pop rax
                 <CheatEntry>
                   <ID>19</ID>
                   <Description>"Cam0 Fov"</Description>
-                  <LastState Value="1.570796371" RealAddress="7FFF46BB443C"/>
+                  <LastState Value="1.570796371" RealAddress="7FFF476F443C"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+1CE443C</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>24</ID>
                   <Description>"Cam1 Fov"</Description>
-                  <LastState Value="1.570796371" RealAddress="7FFF47DD0D9C"/>
+                  <LastState Value="1.570796371" RealAddress="7FFF48910D9C"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D9C</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>25</ID>
                   <Description>"Cam2 Fov"</Description>
-                  <LastState Value="1.570796371" RealAddress="7FFF47DD0DBC"/>
+                  <LastState Value="1.570796371" RealAddress="7FFF48910DBC"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00DBC</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>20</ID>
                   <Description>"Base Fov"</Description>
-                  <LastState Value="1.570796371" RealAddress="7FFF47B7F8DC"/>
+                  <LastState Value="1.570796371" RealAddress="7FFF486BF8DC"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2CAF8DC</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>21</ID>
                   <Description>"Target Fov"</Description>
-                  <LastState Value="1.570796371" RealAddress="7FFF47DD0908"/>
+                  <LastState Value="1.570796371" RealAddress="7FFF48910908"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00908</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>22</ID>
                   <Description>"Target Fov"</Description>
-                  <LastState Value="1.570796371" RealAddress="7FFF47DD0970"/>
+                  <LastState Value="1.570796371" RealAddress="7FFF48910970"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00970</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>23</ID>
                   <Description>"Target Fov"</Description>
-                  <LastState Value="1.570796371" RealAddress="7FFF47DD0D18"/>
+                  <LastState Value="1.570796371" RealAddress="7FFF48910D18"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D18</Address>
                 </CheatEntry>
@@ -473,70 +473,70 @@ pop rax
                 <CheatEntry>
                   <ID>35</ID>
                   <Description>"pos.x"</Description>
-                  <LastState Value="28.91295433" RealAddress="7FFF47DD0D64"/>
+                  <LastState Value="24.46423721" RealAddress="7FFF48910D64"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>36</ID>
                   <Description>"pos.y"</Description>
-                  <LastState Value="-31.5355587" RealAddress="7FFF47DD0D68"/>
+                  <LastState Value="-16.85153198" RealAddress="7FFF48910D68"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+4</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>37</ID>
                   <Description>"pos.z"</Description>
-                  <LastState Value="88.48365021" RealAddress="7FFF47DD0D6C"/>
+                  <LastState Value="89.91831207" RealAddress="7FFF48910D6C"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+8</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>28</ID>
                   <Description>"fwd.x"</Description>
-                  <LastState Value="-0.7864333391" RealAddress="7FFF47DD0D84"/>
+                  <LastState Value="-0.1171818674" RealAddress="7FFF48910D84"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+20</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>29</ID>
                   <Description>"fwd.y"</Description>
-                  <LastState Value="0.6165212393" RealAddress="7FFF47DD0D88"/>
+                  <LastState Value="-0.9592834115" RealAddress="7FFF48910D88"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+24</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>30</ID>
                   <Description>"fwd.z"</Description>
-                  <LastState Value="0.03773592412" RealAddress="7FFF47DD0D8C"/>
+                  <LastState Value="0.2569899261" RealAddress="7FFF48910D8C"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+28</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>31</ID>
                   <Description>"up.x"</Description>
-                  <LastState Value="0.02969794534" RealAddress="7FFF47DD0D90"/>
+                  <LastState Value="0.0311611332" RealAddress="7FFF48910D90"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+2C</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>32</ID>
                   <Description>"up.y"</Description>
-                  <LastState Value="-0.02328158543" RealAddress="7FFF47DD0D94"/>
+                  <LastState Value="0.2550937235" RealAddress="7FFF48910D94"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+30</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>33</ID>
                   <Description>"up.z"</Description>
-                  <LastState Value="0.9992877245" RealAddress="7FFF47DD0D98"/>
+                  <LastState Value="0.966414094" RealAddress="7FFF48910D98"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+34</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>34</ID>
                   <Description>"fov"</Description>
-                  <LastState Value="1.570796371" RealAddress="7FFF47DD0D9C"/>
+                  <LastState Value="1.570796371" RealAddress="7FFF48910D9C"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+38</Address>
                 </CheatEntry>
@@ -545,6 +545,14 @@ pop rax
           </CheatEntries>
         </CheatEntry>
       </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>43</ID>
+      <Description>"playerLookYaw"</Description>
+      <LastState Value="4.590835571" RealAddress="7FFF48703E50"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>Float</VariableType>
+      <Address>7FFF48703E50</Address>
     </CheatEntry>
   </CheatEntries>
   <CheatCodes>
@@ -1459,6 +1467,56 @@ pop rax
         <Byte>0F</Byte>
       </After>
     </CodeEntry>
+    <CodeEntry>
+      <Description>Increase Entity Animation Frame</Description>
+      <AddressString>halo1.dll+CEBDD9</AddressString>
+      <Before>
+        <Byte>02</Byte>
+        <Byte>66</Byte>
+        <Byte>41</Byte>
+        <Byte>FF</Byte>
+        <Byte>C0</Byte>
+      </Before>
+      <Actual>
+        <Byte>66</Byte>
+        <Byte>44</Byte>
+        <Byte>89</Byte>
+        <Byte>43</Byte>
+        <Byte>02</Byte>
+      </Actual>
+      <After>
+        <Byte>0F</Byte>
+        <Byte>B7</Byte>
+        <Byte>42</Byte>
+        <Byte>22</Byte>
+        <Byte>66</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Write Player Yaw</Description>
+      <AddressString>halo1.dll+A946DD</AddressString>
+      <Before>
+        <Byte>0C</Byte>
+        <Byte>40</Byte>
+        <Byte>48</Byte>
+        <Byte>03</Byte>
+        <Byte>C9</Byte>
+      </Before>
+      <Actual>
+        <Byte>41</Byte>
+        <Byte>0F</Byte>
+        <Byte>11</Byte>
+        <Byte>04</Byte>
+        <Byte>CF</Byte>
+      </Actual>
+      <After>
+        <Byte>0F</Byte>
+        <Byte>10</Byte>
+        <Byte>44</Byte>
+        <Byte>FC</Byte>
+        <Byte>50</Byte>
+      </After>
+    </CodeEntry>
   </CheatCodes>
   <UserdefinedSymbols>
     <SymbolEntry>
@@ -1492,7 +1550,9 @@ pop rax
         <Element Offset="124" Vartype="4 Bytes" Bytesize="4" OffsetHex="0000007C" DisplayMethod="Hexadecimal"/>
         <Element Offset="128" Vartype="4 Bytes" Bytesize="4" OffsetHex="00000080" Description="controllerHandle" DisplayMethod="Hexadecimal"/>
         <Element Offset="132" Vartype="4 Bytes" Bytesize="4" OffsetHex="00000084" DisplayMethod="Unsigned Integer"/>
-        <Element Offset="136" Vartype="4 Bytes" Bytesize="4" RLECount="2" OffsetHex="00000088" DisplayMethod="Hexadecimal"/>
+        <Element Offset="136" Vartype="4 Bytes" Bytesize="4" OffsetHex="00000088" DisplayMethod="Hexadecimal"/>
+        <Element Offset="140" Vartype="2 Bytes" Bytesize="2" OffsetHex="0000008C" Description="animID" DisplayMethod="Hexadecimal"/>
+        <Element Offset="142" Vartype="2 Bytes" Bytesize="2" OffsetHex="0000008E" Description="animFrame" DisplayMethod="Unsigned Integer"/>
         <Element Offset="144" Vartype="4 Bytes" Bytesize="4" OffsetHex="00000090" DisplayMethod="Unsigned Integer"/>
         <Element Offset="148" Vartype="Float" Bytesize="4" RLECount="2" OffsetHex="00000094" DisplayMethod="Unsigned Integer"/>
         <Element Offset="156" Vartype="Float" Bytesize="4" OffsetHex="0000009C" Description="health" DisplayMethod="Unsigned Integer"/>

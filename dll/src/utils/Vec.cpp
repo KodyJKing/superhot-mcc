@@ -39,4 +39,11 @@ namespace Vec {
     float length( Vec3 a ) { return sqrtf( a.x * a.x + a.y * a.y + a.z * a.z ); }
     Vec3 unit( Vec3 a ) { return scale( a, 1 / length( a ) ); }
 
+    void scaleMut( Vec3& a, float scale ) { a.x *= scale; a.y *= scale; a.z *= scale; }
+    void clampMut( Vec3& a, float maxLength ) {
+        float aLength = length( a );
+        if ( aLength > maxLength )
+            scaleMut( a, maxLength / aLength );
+    }
+
 }

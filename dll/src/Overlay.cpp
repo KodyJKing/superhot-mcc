@@ -22,7 +22,7 @@ namespace Overlay {
     EntityRecord* selectedEntity;
     const float selectionThreshold = 0.995f;
     const float drawDistance = 50.0f;
-    bool overlayEnabled = true;
+    bool overlayEnabled = false;
 
     void cleanup() {
         if ( renderer )
@@ -56,7 +56,7 @@ namespace Overlay {
 
         selectedEntity = nullptr;
         foreachEntityRecord( trySelectEntity );
-        printSelectedEntity = keypressed( VK_F4 );
+        printSelectedEntity = keypressed( 'P' );
         foreachEntityRecord( drawEntityOverlay );
 
         // Vec4 color = { 1.0f, 1.0f, 1.0f, 0.25f };
@@ -73,13 +73,13 @@ namespace Overlay {
         if ( p.z > 0.0f ) {
 
             auto dims = renderer->measureText( text, fontSize, nullptr );
-            Vec2 pos = { p.x + offset.x - dims.x * 0.5f, p.y + offset.y };
+            Vec2 pos ={ p.x + offset.x - dims.x * 0.5f, p.y + offset.y };
 
             if ( bordered ) {
-                Vec4 colorBlack = { 0.0f, 0.0f, 0.0f, color.w };
+                Vec4 colorBlack ={ 0.0f, 0.0f, 0.0f, color.w };
                 float r = 2.0f;
-                float dx[4] = { 1.0f, 0.0f, -1.0f, 0.0f };
-                float dy[4] = { 0.0f, 1.0f, 0.0f, -1.0f };
+                float dx[4] ={ 1.0f, 0.0f, -1.0f, 0.0f };
+                float dy[4] ={ 0.0f, 1.0f, 0.0f, -1.0f };
                 for ( int i = 0; i < 4; i++ )
                     renderer->drawText( { pos.x + dx[i] * r, pos.y + dy[i] * r }, text, colorBlack, NULL, fontSize, nullptr );
             }
@@ -125,13 +125,13 @@ namespace Overlay {
         Vec4 color;
         float fontSize;
         if ( isSelected ) {
-            color = { 0.0f, 1.0f, 1.0f, 1.0f };
+            color ={ 0.0f, 1.0f, 1.0f, 1.0f };
             fontSize = 20.0f;
         } else {
             if ( pEntity->health > 0 )
-                color = { 0.25f, 1.0f, 0.25f, 0.25f };
+                color ={ 0.25f, 1.0f, 0.25f, 0.25f };
             else
-                color = { 1.0f, 1.0f, 1.0f, 0.25f };
+                color ={ 1.0f, 1.0f, 1.0f, 0.25f };
             fontSize = 8.0f;
         }
 
@@ -153,12 +153,12 @@ namespace Overlay {
         // LINE( L"HP %.2f SP %0.2f", pEntity->health, pEntity->shield );
         LINE( L"Type %04X", rec->typeId );
         LINE( L"%" PRIX64, (uint64_t) pEntity );
-        if ( isSelected ) {
-            LINE( L"User    %08X", pEntity->controllerHandle );
-            LINE( L"Parent  %08X", pEntity->parentHandle );
-            LINE( L"Creator %08X", pEntity->projectileParentHandle );
-            LINE( L"Driver  %08X", pEntity->vehicleRiderHandle );
-        }
+        // if ( isSelected ) {
+        //     LINE( L"User    %08X", pEntity->controllerHandle );
+        //     LINE( L"Parent  %08X", pEntity->parentHandle );
+        //     LINE( L"Creator %08X", pEntity->projectileParentHandle );
+        //     LINE( L"Driver  %08X", pEntity->vehicleRiderHandle );
+        // }
 
         #undef LINE
 

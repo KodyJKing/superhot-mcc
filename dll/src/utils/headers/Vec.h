@@ -18,4 +18,7 @@ namespace Vec {
     float dot( Vec3 a, Vec3 b );
     float length( Vec3 a );
     Vec3 unit( Vec3 a );
+
+    void scaleMut( Vec3& a, float scale );
+    void clampMut( Vec3& a, float maxLength );
 }
