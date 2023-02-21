@@ -19,6 +19,8 @@
 
 namespace Hook {
 
+    UINT_PTR getJumpDestination( UINT_PTR instructionAddress );
+
     // A jump hook to library managed trampoline.
     struct JumpHook {
         const char* description;
@@ -90,6 +92,13 @@ namespace Hook {
             size_t numStolenBytes,
             UINT_PTR trampolineAddress,
             UINT_PTR& returnAddress
+        );
+
+        SimpleJumpHook(
+            const char* description,
+            UINT_PTR address,
+            size_t numStolenBytes,
+            UINT_PTR trampolineAddress
         );
 
         void saveStolenBytes();

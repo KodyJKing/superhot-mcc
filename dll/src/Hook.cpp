@@ -10,13 +10,13 @@ bool isValid32BitOffset( UINT_PTR offset ) {
 namespace Hook {
 
     // Byte codes for: push rax, push rbx ... push r15.
-    char pusha64[] ={ '\x50', '\x53', '\x51', '\x52', '\x56', '\x57', '\x55', '\x54', '\x41', '\x50', '\x41', '\x51', '\x41', '\x52', '\x41', '\x53', '\x41', '\x54', '\x41', '\x55', '\x41', '\x56', '\x41', '\x57' };
+    char pusha64[] = { '\x50', '\x53', '\x51', '\x52', '\x56', '\x57', '\x55', '\x54', '\x41', '\x50', '\x41', '\x51', '\x41', '\x52', '\x41', '\x53', '\x41', '\x54', '\x41', '\x55', '\x41', '\x56', '\x41', '\x57' };
     // Byte codes for: pop r15 ... push rbx, pop rax.
-    char popa64[] ={ '\x41', '\x5F', '\x41', '\x5E', '\x41', '\x5D', '\x41', '\x5C', '\x41', '\x5B', '\x41', '\x5A', '\x41', '\x59', '\x41', '\x58', '\x5C', '\x5D', '\x5F', '\x5E', '\x5A', '\x59', '\x5B', '\x58' };
+    char popa64[] = { '\x41', '\x5F', '\x41', '\x5E', '\x41', '\x5D', '\x41', '\x5C', '\x41', '\x5B', '\x41', '\x5A', '\x41', '\x59', '\x41', '\x58', '\x5C', '\x5D', '\x5F', '\x5E', '\x5A', '\x59', '\x5B', '\x58' };
     // Byte codes for: sub rsp, 20h
-    char allocShadow[] ={ '\x48', '\x83', '\xEC', '\x20' };
+    char allocShadow[] = { '\x48', '\x83', '\xEC', '\x20' };
     // Byte codes for: add rsp, 20h
-    char deallocShadow[] ={ '\x48', '\x83', '\xC4', '\x20' };
+    char deallocShadow[] = { '\x48', '\x83', '\xC4', '\x20' };
 
     // === Buffer Writing ===
     inline void writeBytes( char** pDest, char* src, size_t count ) {
@@ -36,6 +36,15 @@ namespace Hook {
         write( pDest, (int32_t) offset );
     }
     // ======================
+
+    UINT_PTR getJumpDestination( UINT_PTR instructionAddress ) {
+        char op = *(char*) instructionAddress;
+        if ( op != JMP ) {
+            std::cout << "Expected jump instruction at " << instructionAddress << "\n";
+            return 0;
+        }
+        return instructionAddress + 5 + *(int32_t*) ( instructionAddress + 1 );
+    }
 
     // === Jump Hook ========
     void JumpHook::allocTrampoline( size_t size ) {
@@ -346,6 +355,16 @@ namespace Hook {
     ): description( description ), address( address ), numStolenBytes( numStolenBytes ), trampolineAddress( trampolineAddress ) {
         simpleJumpHooks.emplace_back( this );
         returnAddress = address + numStolenBytes;
+        stolenBytes = nullptr;
+    }
+
+    SimpleJumpHook::SimpleJumpHook(
+        const char* description,
+        UINT_PTR address,
+        size_t numStolenBytes,
+        UINT_PTR trampolineAddress
+    ): description( description ), address( address ), numStolenBytes( numStolenBytes ), trampolineAddress( trampolineAddress ) {
+        simpleJumpHooks.emplace_back( this );
         stolenBytes = nullptr;
     }
 

@@ -95,8 +95,8 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     std::cout << "Exiting..." << std::endl;
 
     DX11Hook::cleanup();
-    Overlay::cleanup();
     Hook::cleanupHooks();
+    Overlay::cleanup();
 
     // Give any executing hook code a moment to finish before unloading.
     Sleep( 500 );

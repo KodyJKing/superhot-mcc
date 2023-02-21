@@ -1,30 +1,34 @@
-; INCLUDE <src/utils/ASMMacros.asmlib>
+INCLUDE <src/utils/ASMMacros.asmlib>
 
-; _DATA SEGMENT
-; _DATA ENDS
+_DATA SEGMENT
+_DATA ENDS
 
-; _TEXT SEGMENT
+_TEXT SEGMENT
 
-; ; Begin: Present Hook
-; ;    ASM Present hook is currently unused, but I'm keeping as an example of ASM/C++ interop.
+    extern onPresentCalled: proc
+    extern presentHook_jmp: qword
+    PUBLIC presentHook
+    presentHook PROC
+        pushState
+        sub rsp, 20h
+        call onPresentCalled
+        add rsp, 20h
+        popState
+        jmp [presentHook_jmp]
+    presentHook ENDP
 
-;     extern onPresentCalled: proc
+    extern onResizeBuffers: proc
+    extern resizeBuffersHook_jmp: qword
+    PUBLIC resizeBuffersHook
+    resizeBuffersHook PROC
+        pushState
+        sub rsp, 20h
+        call onResizeBuffers
+        add rsp, 20h
+        popState
+        jmp [resizeBuffersHook_jmp]
+    resizeBuffersHook ENDP
 
-;     PUBLIC presentHook
-;     presentHook PROC
-
-;         pushState
-;         sub rsp, 20h
-;         ; swapChain pointer is already in rcx
-;         call onPresentCalled
-;         add rsp, 20h
-;         popState
-
-;         ret
-;     presentHook ENDP
-
-; ; End: Present Hook
-
-; _TEXT ENDS
+_TEXT ENDS
 
 END
