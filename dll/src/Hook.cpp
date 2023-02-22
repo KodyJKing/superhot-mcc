@@ -78,22 +78,24 @@ namespace Hook {
         const char* description,
         UINT_PTR address,
         size_t numStolenBytes,
-        UINT_PTR trampolineAddress,
-        UINT_PTR& returnAddress
-    ): description( description ), address( address ), numStolenBytes( numStolenBytes ), trampolineAddress( trampolineAddress ) {
+        UINT_PTR trampolineAddress
+    ):
+        description( description ),
+        address( address ),
+        numStolenBytes( numStolenBytes ),
+        trampolineAddress( trampolineAddress ),
+        stolenBytes( nullptr ) {
         jumpHooks.emplace_back( this );
-        returnAddress = address + numStolenBytes;
-        stolenBytes = nullptr;
     }
 
     JumpHook::JumpHook(
         const char* description,
         UINT_PTR address,
         size_t numStolenBytes,
-        UINT_PTR trampolineAddress
-    ): description( description ), address( address ), numStolenBytes( numStolenBytes ), trampolineAddress( trampolineAddress ) {
-        jumpHooks.emplace_back( this );
-        stolenBytes = nullptr;
+        UINT_PTR trampolineAddress,
+        UINT_PTR& returnAddress
+    ): JumpHook( description, address, numStolenBytes, trampolineAddress ) {
+        returnAddress = address + numStolenBytes;
     }
 
     UINT_PTR getJumpDestination( UINT_PTR instructionAddress ) {

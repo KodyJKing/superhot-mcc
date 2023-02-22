@@ -182,8 +182,7 @@ void Renderer::pushVerticies( uint32_t pushCount, Vertex* pVertices ) {
 }
 
 // FW1
-void Renderer::drawText( Vec2 pos, LPCWSTR text, Vec4 color, uint32_t flags,
-    float fontSize, LPCWSTR fontFamily ) {
+void Renderer::drawText( Vec2 pos, LPCWSTR text, Vec4 color, uint32_t flags, float fontSize, LPCWSTR fontFamily ) {
 
     if ( !fontFamily ) fontFamily = defaultFontFamily;
 
@@ -195,6 +194,12 @@ void Renderer::drawText( Vec2 pos, LPCWSTR text, Vec4 color, uint32_t flags,
 
     hasTextToFlush = true;
 
+}
+
+void Renderer::drawText( Vec2 pos, LPCSTR text, Vec4 color, uint32_t flags, float fontSize, LPCWSTR fontFamily ) {
+    std::wstringstream strm;
+    strm << text;
+    drawText( pos, strm.str().c_str(), color, flags, fontSize, fontFamily );
 }
 
 Vec2 Renderer::measureText( LPCWSTR text, float fontSize, LPCWSTR fontFamily ) {

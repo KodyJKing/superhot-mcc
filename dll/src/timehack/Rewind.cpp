@@ -10,7 +10,7 @@ namespace Rewind {
 
     #define REWIND(field, type) \
         { auto delta_##field = entity->field - old_##field; \
-        entity->field = old_##field + (type)(delta_##field * timescale) }
+        entity->field = old_##field + (type)(delta_##field * timescale); }
 
     #define REWIND_VEC(field, type) \
         { type delta_##field = Vec::sub(entity->field, old_##field); \
@@ -19,17 +19,18 @@ namespace Rewind {
     #define REWIND_INCREASES(field, type) \
         { auto delta_##field = entity->field - old_##field; \
         if (delta_##field > (type) 0) \
-            entity->field = old_##field + (type)(delta_##field * timescale) }
+            entity->field = old_##field + (type)(delta_##field * timescale); }
 
     #define REWIND_DECREASES(field, type) \
         { auto delta_##field = entity->field - old_##field; \
         if (delta_##field < (type) 0) \
-            entity->field = old_##field + (type)(delta_##field * timescale) }
+            entity->field = old_##field + (type)(delta_##field * timescale); }
 
     #define SAVE(field) old_##field = entity->field
 
     // Fields
     Vec3 old_pos, old_vel;
+    float old_fuse, old_heat, old_projectileAge;
     uint32_t old_parentHandle;
     uint16_t old_animFrame;
 
@@ -43,6 +44,54 @@ namespace Rewind {
         SAVE( vel );
         SAVE( parentHandle );
         SAVE( animFrame );
+
+        switch ( (EntityCategory) entity->entityCategory ) {
+            case EntityCategory_Weapon: {
+                SAVE( heat );
+                break;
+            }
+            case EntityCategory_Projectile: {
+                SAVE( projectileAge );
+                SAVE( fuse );
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+
+    }
+
+    void rewindAnimFrame( Entity* entity, float timescale );
+
+    void rewind( EntityRecord* rec, float timescale ) {
+
+        Entity* entity = getEntityPointer( rec );
+        if ( !entity )
+            return;
+
+        // Position isn't updated when an entity is mounted, so don't rewind position on unmount.
+        if ( entity->parentHandle == old_parentHandle )
+            REWIND_VEC( pos, Vec3 );
+
+        REWIND_VEC( vel, Vec3 );
+
+        rewindAnimFrame( entity, timescale );
+
+        switch ( (EntityCategory) entity->entityCategory ) {
+            case EntityCategory_Weapon: {
+                REWIND_DECREASES( heat, float );
+                break;
+            }
+            case EntityCategory_Projectile: {
+                REWIND( projectileAge, float );
+                REWIND( fuse, float );
+                break;
+            }
+            default: {
+                break;
+            }
+        }
 
     }
 
@@ -65,21 +114,5 @@ namespace Rewind {
 
     }
 
-    void rewind( EntityRecord* rec, float timescale ) {
-
-        Entity* entity = getEntityPointer( rec );
-        if ( !entity )
-            return;
-
-        // Position isn't updated when an entity is mounted,
-        // so don't rewind position on unmount.
-        if ( entity->parentHandle == old_parentHandle )
-            REWIND_VEC( pos, Vec3 );
-
-        REWIND_VEC( vel, Vec3 );
-
-        rewindAnimFrame( entity, timescale );
-
-    }
 
 }

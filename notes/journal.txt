@@ -7,3 +7,7 @@ Feb 19 2023
     I'm looking for the entity handle of the rider on the vehicles structure. There seem to be several fields that point to the rider. One isn't null when there is no rider and two are. Maybe one is gunner and one is driver? For now I'm just going with one of the two, but it might be with figuring out the distinction.
 
     There seems to be some hidden entity with TypeID 0x0454 that needs to be unfrozen to allow the Shade turret to fire.
+
+Feb 21 2023
+
+    I removed the old JumpHook in favor of a simpler version that just responsible for installing / removing jump hooks. If I need the convenience of assembly-free hooking, I can add a separate utility for creating trampolines.

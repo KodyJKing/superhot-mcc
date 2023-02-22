@@ -8,12 +8,14 @@
 #include "graphics/headers/DX11Utils.h"
 #include "graphics/headers/Colors.h"
 
+using namespace DirectX;
 using namespace MathUtils;
 using namespace Halo1;
 
 namespace Overlay {
 
     bool drawEntityOverlay( EntityRecord* rec );
+    void drawPlayerTransformHUD( ID3D11DeviceContext* pCtx );
     bool trySelectEntity( EntityRecord* rec );
 
     Renderer* renderer;
@@ -56,24 +58,25 @@ namespace Overlay {
 
         selectedEntity = nullptr;
         foreachEntityRecord( trySelectEntity );
+
         printSelectedEntity = keypressed( 'P' );
         foreachEntityRecord( drawEntityOverlay );
 
-        // Vec4 color = { 1.0f, 1.0f, 1.0f, 0.25f };
-        // renderer->drawText( { 500, 100 }, L"Hello Text!", color, NULL, 100.0f, nullptr );
-
         renderer->flush();
+
+        drawPlayerTransformHUD( pCtx );
+
         renderer->end();
 
     }
 
-    void draw3DTextCentered( Vec3 point, Vec2 offset, LPCWSTR text, Vec4 color, uint32_t flags, float fontSize, bool bordered ) {
+    void draw3DTextCentered( Vec3 point, Vec2 offset, LPCWSTR text, Vec4 color, float fontSize, bool bordered ) {
+        static uint32_t _flags = FW1_CENTER | FW1_TOP;
 
         Vec3 p = Halo1::projectPoint( screenDimensions.x, screenDimensions.y, point );
         if ( p.z > 0.0f ) {
 
-            auto dims = renderer->measureText( text, fontSize, nullptr );
-            Vec2 pos = { p.x + offset.x - dims.x * 0.5f, p.y + offset.y };
+            Vec2 pos = { p.x + offset.x, p.y + offset.y };
 
             if ( bordered ) {
                 Vec4 colorBlack = { 0.0f, 0.0f, 0.0f, color.w };
@@ -81,10 +84,10 @@ namespace Overlay {
                 float dx[4] = { 1.0f, 0.0f, -1.0f, 0.0f };
                 float dy[4] = { 0.0f, 1.0f, 0.0f, -1.0f };
                 for ( int i = 0; i < 4; i++ )
-                    renderer->drawText( { pos.x + dx[i] * r, pos.y + dy[i] * r }, text, colorBlack, NULL, fontSize, nullptr );
+                    renderer->drawText( { pos.x + dx[i] * r, pos.y + dy[i] * r }, text, colorBlack, _flags, fontSize, nullptr );
             }
 
-            renderer->drawText( pos, text, color, NULL, fontSize, nullptr );
+            renderer->drawText( pos, text, color, _flags, fontSize, nullptr );
 
         }
     }
@@ -139,7 +142,7 @@ namespace Overlay {
         int lineNum = 0;
         #define LINE(format, ...) { \
             swprintf_s( buf, format, __VA_ARGS__ ); \
-            draw3DTextCentered( pos, { 0, fontSize * ( lineNum++ ) }, buf, color, NULL, fontSize, isSelected ); \
+            draw3DTextCentered( pos, { 0, fontSize * ( lineNum++ ) }, buf, color, fontSize, isSelected ); \
             if ( printThisEntity ) \
                 std::wcout << buf << "\n";\
         }
@@ -149,22 +152,18 @@ namespace Overlay {
 
         if ( !type.unknown )
             LINE( type.name );
-        // LINE( L"%.2f, %.2f, %.2f", pos.x, pos.y, pos.z );
-        // LINE( L"HP %.2f SP %0.2f", pEntity->health, pEntity->shield );
+
         LINE( L"Type %04X", rec->typeId );
         LINE( L"%" PRIX64, (uint64_t) pEntity );
-        // if ( isSelected ) {
-        //     LINE( L"User    %08X", pEntity->controllerHandle );
-        //     LINE( L"Parent  %08X", pEntity->parentHandle );
-        //     LINE( L"Creator %08X", pEntity->projectileParentHandle );
-        //     LINE( L"Driver  %08X", pEntity->vehicleRiderHandle );
-        // }
+
+        if ( pEntity->entityCategory == EntityCategory_Projectile ) {
+            LINE( L"Age %.4f", pEntity->projectileAge );
+        }
 
         #undef LINE
 
         return true;
     }
-
 
     float getSelectionScore( EntityRecord* rec ) {
         auto pEntity = getEntityPointer( rec );
@@ -193,6 +192,50 @@ namespace Overlay {
             selectedEntity = rec;
 
         return true;
+    }
+
+    void drawPlayerTransformHUD( ID3D11DeviceContext* pCtx ) {
+        static Vec3 vecZero = { 0.0f, 0.0f, 0.0f };
+        static Vec3 vecX = { 1.0f, 0.0f, 0.0f };
+        static Vec3 vecY = { 0.0f, 1.0f, 0.0f };
+        static Vec3 vecZ = { 0.0f, 0.0f, 1.0f };
+
+        D3D11_VIEWPORT viewport;
+        float w = screenDimensions.y * 0.1f;
+        float pad = 20.0f;
+        viewport.Width = w;
+        viewport.Height = w;
+        viewport.TopLeftX = screenDimensions.x - w - pad;
+        viewport.TopLeftY = screenDimensions.y - w - pad;
+        viewport.MaxDepth = 1.0f;
+        viewport.MinDepth = 0.0f;
+
+        auto pCam = Halo1::getPlayerCameraPointer();
+        auto pos = pCam->pos;
+
+        char text[100];
+        sprintf_s( text, "%.2f, %.2f, %.2f", pos.x, pos.y, pos.z );
+        Vec2 textPos = { viewport.TopLeftX + 0.5f * w, screenDimensions.y };
+        renderer->drawText( textPos, text, Colors::white, FW1_CENTER | FW1_BOTTOM, 10.0f, nullptr );
+        renderer->flush();
+
+        pCtx->RSSetViewports( 1, &viewport );
+
+        XMMATRIX scaling = XMMatrixScaling( 1.0f, 1.0f, 0.5f );
+        XMMATRIX translate = XMMatrixTranslation( 0.0f, 0.0f, 1.0f );
+        XMMATRIX view = XMMatrixLookToRH( XMLoadFloat3( &vecZero ), XMLoadFloat3( &pCam->fwd ), { 0.0f, 0.0f, 1.0f, 0.0f } );
+        XMMATRIX transform = view * translate * scaling;
+        renderer->setTransform( &transform );
+
+        renderer->setPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_LINELIST );
+        Vertex vertices[] = {
+            { vecZero, Colors::red }, { vecX, Colors::red },
+            { vecZero, Colors::green }, { vecY, Colors::green },
+            { vecZero, Colors::blue }, { vecZ, Colors::blue },
+        };
+        renderer->pushVerticies( ARRAYSIZE( vertices ), vertices );
+        renderer->flush();
+
     }
 
 }

@@ -38,7 +38,7 @@ bool shouldEntityUpdate( EntityRecord* rec ) {
 }
 
 bool shouldRewind( EntityRecord* rec ) {
-    if ( freezeTimeEnabled || !superhotEnabled )
+    if ( !superhotEnabled ) // !superhotEnabled|| freezeTimeEnabled )
         return false;
     return !isPlayerControlled( rec );
 }
@@ -68,7 +68,7 @@ void postEntityUpdate( uint32_t entityHandle ) {
         return;
 
     if ( shouldRewind( rec ) )
-        Rewind::rewind( rec, 0.3f );
+        Rewind::rewind( rec, 0.1f );
 
 }
 

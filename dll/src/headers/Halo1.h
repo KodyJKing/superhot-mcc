@@ -50,16 +50,15 @@ namespace Halo1 {
 
     class Entity {
         public:
-        char pad_0000[24]; //0x0000
+        char pad_0000[20]; //0x0000
+        uint32_t ageMilis; //0x0014
         Vec3 pos; //0x0018
         Vec3 vel; //0x0024
         char pad_0030[40]; //0x0030
         Vec3 eyePos; //0x0058
-        char pad_0064[8]; //0x0064
-        int32_t N0000018A; //0x006C
+        char pad_0064[12]; //0x0064
         uint16_t entityCategory; //0x0070
-        char pad_0072[10]; //0x0072
-        uint32_t N0000018C; //0x007C
+        char pad_0072[14]; //0x0072
         uint32_t controllerHandle; //0x0080
         char pad_0084[8]; //0x0084
         uint16_t animId; //0x008C
@@ -68,16 +67,19 @@ namespace Halo1 {
         float health; //0x009C
         float shield; //0x00A0
         char pad_00A4[48]; //0x00A4
-        uint32_t N00000197; //0x00D4
+        uint32_t childHandle; //0x00D4
         uint32_t parentHandle; //0x00D8
-        char pad_00DC[288]; //0x00DC
-        uint32_t N000001BC; //0x01FC
+        char pad_00DC[292]; //0x00DC
         uint32_t projectileParentHandle; //0x0200
-        char pad_0204[248]; //0x0204
+        float heat; //0x0204
+        float plasmaUsed; //0x0208
+        float fuse; //0x020C
+        char pad_0210[12]; //0x0210
+        float projectileAge; //0x021C
+        char pad_0220[220]; //0x0220
         uint8_t frags; //0x02FC
         uint8_t plasmas; //0x02FD
-        uint16_t N000001D8; //0x02FE
-        uint32_t N000001FB; //0x0300
+        char pad_02FE[6]; //0x02FE
         uint32_t vehicleRiderHandle; //0x0304
     }; //Size: 0x0308
 
