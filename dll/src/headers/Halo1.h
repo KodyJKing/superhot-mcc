@@ -54,9 +54,12 @@ namespace Halo1 {
         uint32_t ageMilis; //0x0014
         Vec3 pos; //0x0018
         Vec3 vel; //0x0024
-        char pad_0030[40]; //0x0030
-        Vec3 eyePos; //0x0058
-        char pad_0064[12]; //0x0064
+        Vec3 fwd; //0x0030
+        Vec3 up; //0x003C
+        Vec3 angularVelocity; //0x0048
+        char pad_0054[8]; //0x0054
+        Vec3 eyePos; //0x005C
+        char pad_0068[8]; //0x0068
         uint16_t entityCategory; //0x0070
         char pad_0072[14]; //0x0072
         uint32_t controllerHandle; //0x0080

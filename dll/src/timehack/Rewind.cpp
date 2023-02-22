@@ -29,7 +29,7 @@ namespace Rewind {
     #define SAVE(field) old_##field = entity->field
 
     // Fields
-    Vec3 old_pos, old_vel;
+    Vec3 old_pos, old_vel, old_fwd, old_up, old_angularVelocity;
     float old_fuse, old_heat, old_projectileAge;
     uint32_t old_parentHandle;
     uint16_t old_animFrame;
@@ -55,6 +55,11 @@ namespace Rewind {
                 SAVE( fuse );
                 break;
             }
+            case EntityCategory_Vehicle: {
+                SAVE( angularVelocity );
+                SAVE( fwd );
+                SAVE( up );
+            }
             default: {
                 break;
             }
@@ -63,6 +68,7 @@ namespace Rewind {
     }
 
     void rewindAnimFrame( Entity* entity, float timescale );
+    void rewindRotation( Entity* entity, float timescale );
 
     void rewind( EntityRecord* rec, float timescale ) {
 
@@ -87,6 +93,10 @@ namespace Rewind {
                 REWIND( projectileAge, float );
                 REWIND( fuse, float );
                 break;
+            }
+            case EntityCategory_Vehicle: {
+                REWIND_VEC( angularVelocity, Vec3 );
+                rewindRotation( entity, timescale );
             }
             default: {
                 break;
@@ -114,5 +124,14 @@ namespace Rewind {
 
     }
 
+    void rewindRotation( Entity* entity, float timescale ) {
+        entity->fwd = Vec::lerp( old_fwd, entity->fwd, timescale );
+        entity->up = Vec::unit(
+            Vec::rejection(
+                Vec::lerp( old_up, entity->up, timescale ),
+                entity->fwd
+            )
+        );
+    }
 
 }

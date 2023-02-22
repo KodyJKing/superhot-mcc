@@ -1,4 +1,5 @@
 #include "./headers/Vec.h"
+#include "./headers/MathUtils.h"
 
 namespace Vec {
 
@@ -38,6 +39,10 @@ namespace Vec {
     float dot( Vec3 a, Vec3 b ) { return a.x * b.x + a.y * b.y + a.z * b.z; }
     float length( Vec3 a ) { return sqrtf( a.x * a.x + a.y * a.y + a.z * a.z ); }
     Vec3 unit( Vec3 a ) { return scale( a, 1 / length( a ) ); }
+    Vec3 lerp( Vec3 a, Vec3 b, float t ) { return { MathUtils::lerp( a.x, b.x, t ), MathUtils::lerp( a.y, b.y, t ), MathUtils::lerp( a.z, b.z, t ) }; }
+    Vec3 rejection( Vec3 v, Vec3 axis ) {
+        return sub( v, scale( axis, dot( v, axis ) ) );
+    }
 
     void scaleMut( Vec3& a, float scale ) { a.x *= scale; a.y *= scale; a.z *= scale; }
     void clampMut( Vec3& a, float maxLength ) {
