@@ -59,7 +59,8 @@ namespace Overlay {
         selectedEntity = nullptr;
         foreachEntityRecord( trySelectEntity );
 
-        printSelectedEntity = keypressed( 'P' );
+        if ( HaloMCC::isInForeground() )
+            printSelectedEntity = keypressed( 'P' );
         foreachEntityRecord( drawEntityOverlay );
 
         renderer->flush();
@@ -128,7 +129,7 @@ namespace Overlay {
         Vec4 color;
         float fontSize;
         if ( isSelected ) {
-            color = { 0.0f, 1.0f, 1.0f, 1.0f };
+            color = { 1.0f, 1.0f, 0.0f, 1.0f };
             fontSize = 20.0f;
         } else {
             if ( pEntity->health > 0 )
@@ -138,13 +139,13 @@ namespace Overlay {
             fontSize = 8.0f;
         }
 
-        wchar_t buf[100];
+        wchar_t wbuf[100];
         int lineNum = 0;
         #define LINE(format, ...) { \
-            swprintf_s( buf, format, __VA_ARGS__ ); \
-            draw3DTextCentered( pos, { 0, fontSize * ( lineNum++ ) }, buf, color, fontSize, isSelected ); \
+            swprintf_s( wbuf, format, __VA_ARGS__ ); \
+            draw3DTextCentered( pos, { 0, fontSize * ( lineNum++ ) }, wbuf, color, fontSize, isSelected ); \
             if ( printThisEntity ) \
-                std::wcout << buf << "\n";\
+                std::wcout << wbuf << "\n";\
         }
 
         if ( printThisEntity )
@@ -161,6 +162,12 @@ namespace Overlay {
         }
 
         #undef LINE
+
+        if ( printThisEntity ) {
+            std::stringstream pointerText;
+            pointerText << std::uppercase << std::hex << (uint64_t) pEntity;
+            copyANSITextToClipboard( pointerText.str().c_str() );
+        }
 
         return true;
     }

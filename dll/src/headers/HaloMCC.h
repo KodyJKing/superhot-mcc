@@ -8,4 +8,5 @@
 namespace HaloMCC {
     HWND getWindow();
     Vec2 getWindowSize();
+    bool isInForeground();
 }

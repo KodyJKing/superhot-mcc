@@ -12,11 +12,13 @@ namespace Halo1 {
     UINT_PTR entityArrayOffset = 0x2F01D80;
     UINT_PTR pEntityListOffset = 0x1DBE628;
     UINT_PTR playerCamOffset = 0x2F00D64;
+    UINT_PTR playerHandleOffset = 0x1DD27D0;
 
     DeviceContainer* getDeviceContainerPointer() { return *(DeviceContainer**) ( dllBase + pDeviceContainerOffset ); }
     EntityList* getEntityListPointer() { return *(EntityList**) ( dllBase + pEntityListOffset ); }
     UINT_PTR getEntityArrayBase() { return *(UINT_PTR*) ( dllBase + entityArrayOffset ); }
     Camera* getPlayerCameraPointer() { return (Camera*) ( dllBase + playerCamOffset ); }
+    uint32_t getPlayerHandle() { return *(uint32_t*) ( dllBase + playerHandleOffset ); }
 
     EntityRecord* getEntityRecord( EntityList* pEntityList, uint32_t entityHandle ) {
         if ( entityHandle == 0xFFFFFFFF )
@@ -105,7 +107,7 @@ namespace Halo1 {
     // === Camera helpers ===
 
     // For some reason, Halo 1's camera stores a different fov value than it actually uses and must be scaled. 
-    // This value was found by trial and error using updateFloat function.
+    // This value was found by trial and error using the updateFloat function.
     float fovScale = 0.643564f;
     float clippingNear = 0.1f;
     float clippingFar = 100.0f;

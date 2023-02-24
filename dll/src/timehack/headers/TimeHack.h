@@ -4,5 +4,6 @@ namespace TimeHack {
 
     void init( uint64_t halo1Base );
     void onDllThreadUpdate();
+    void onGameThreadUpdate();
 
 }

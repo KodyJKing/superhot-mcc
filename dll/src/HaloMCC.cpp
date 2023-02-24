@@ -19,4 +19,8 @@ namespace HaloMCC {
         };
     }
 
+    bool isInForeground() {
+        return getWindow() == GetForegroundWindow();
+    }
+
 }

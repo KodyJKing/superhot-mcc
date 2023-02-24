@@ -186,7 +186,7 @@ void Renderer::drawText( Vec2 pos, LPCWSTR text, Vec4 color, uint32_t flags, flo
 
     if ( !fontFamily ) fontFamily = defaultFontFamily;
 
-    uint32_t color32 = PackedVector::XMCOLOR( color.x, color.y, color.z, color.w );
+    uint32_t color32 = PackedVector::XMCOLOR( color.z, color.y, color.x, color.w );
 
     FW1_RECTF rect = { pos.x, pos.y, pos.x, pos.y };
     fontWrapper->AnalyzeString( nullptr, text, fontFamily, fontSize, &rect, color32,

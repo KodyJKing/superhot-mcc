@@ -11,6 +11,13 @@ namespace MathUtils {
         return ( x - start ) / ( end - start );
     }
 
+    float clamp( float x, float min, float max ) { return x < min ? min : ( x > max ? max : x ); }
+
+    float smoothstep( float edge0, float edge1, float x ) {
+        x = clamp( ( x - edge0 ) / ( edge1 - edge0 ), 0.0f, 1.0f );
+        return x * x * ( 3 - 2 * x );
+    }
+
     INT_PTR signedDifference( UINT_PTR a, UINT_PTR b ) {
         if ( a > b ) return (INT_PTR) ( a - b );
         return -(INT_PTR) ( b - a );

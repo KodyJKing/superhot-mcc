@@ -33,7 +33,10 @@ BOOL APIENTRY DllMain(
     return TRUE;
 }
 
-void addHooks();
+void onPresent( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
+    Overlay::render( pCtx, pDevice, pSwapChain );
+    TimeHack::onGameThreadUpdate();
+}
 
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
@@ -69,7 +72,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     Halo1::init( halo1Base );
 
     DX11Hook::hook( mccWindow );
-    DX11Hook::addOnPresentCallback( Overlay::render );
+    DX11Hook::addOnPresentCallback( onPresent );
 
     TimeHack::init( halo1Base );
 
@@ -83,6 +86,9 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
             TimeHack::onDllThreadUpdate();
             Overlay::onDllThreadUpdate();
+
+            if ( keypressed( 'H' ) )
+                std::cout << "Player handle: " << Halo1::getPlayerHandle() << "\n";
 
             if ( keypressed( VK_DELETE ) )
                 system( "CLS" );

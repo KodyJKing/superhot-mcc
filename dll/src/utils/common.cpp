@@ -46,3 +46,21 @@ void memcpyExecutable( char* dest, char* source, size_t size ) {
     memcpy( dest, source, size );
     VirtualProtect( (void*) dest, size, oldProtect, &oldProtect );
 }
+
+void copyANSITextToClipboard( const char* text, size_t maxLength ) {
+    auto length = strnlen( text, maxLength );
+    if ( length >= maxLength ) {
+        std::cout << "Tried to copy too many chars to clipboard. Null terminator was not found.\n";
+        return;
+    }
+
+    auto byteCount = length + 1;
+    HGLOBAL hMem = GlobalAlloc( GMEM_MOVEABLE, byteCount );
+    memcpy( GlobalLock( hMem ), text, byteCount );
+    GlobalUnlock( hMem );
+
+    OpenClipboard( NULL );
+    EmptyClipboard();
+    SetClipboardData( CF_TEXT, hMem );
+    CloseClipboard();
+}

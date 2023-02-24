@@ -20,6 +20,7 @@ namespace Vec {
     Vec3 unit( Vec3 a );
     Vec3 lerp( Vec3 a, Vec3 b, float t );
     Vec3 rejection( Vec3 v, Vec3 axis );
+    Vec3 cross( Vec3 a, Vec3 b );
 
     void scaleMut( Vec3& a, float scale );
     void clampMut( Vec3& a, float maxLength );

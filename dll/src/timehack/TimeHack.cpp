@@ -1,4 +1,5 @@
 #include "headers/TimeHack.h"
+#include "headers/TimeScale.h"
 #include "headers/Rewind.h"
 #include "../headers/Hook.h"
 #include "../headers/Halo1.h"
@@ -7,11 +8,11 @@
 
 using namespace Halo1;
 
-const float walkingSpeed = 0.07f;
-const float speedLimit = walkingSpeed * 20.0f;
+const float speedLimit = 1.4f;
+const float timescaleUpdateDeadzone = 0.05f;
 
 bool freezeTimeEnabled = false;
-bool superhotEnabled = false;
+bool superhotEnabled = true;
 bool speedLimitEnabled = true;
 
 uint64_t runUntil = 0;
@@ -30,11 +31,16 @@ extern "C" {
 }
 
 bool shouldEntityUpdate( EntityRecord* rec ) {
-    if ( GetTickCount64() < runUntil )
-        return true;
-    if ( !freezeTimeEnabled )
-        return true;
-    return isPlayerControlled( rec );
+    auto entity = getEntityPointer( rec );
+
+    uint16_t cat = entity->entityCategory;
+    bool canDeadzone = cat != EntityCategory_Projectile && cat != EntityCategory_Vehicle;
+
+    bool canFreeze = !isPlayerControlled( rec );
+    bool shouldFreeze =
+        ( freezeTimeEnabled && GetTickCount64() >= runUntil ) ||
+        ( superhotEnabled && canDeadzone && TimeScale::timescale <= timescaleUpdateDeadzone );
+    return !canFreeze || !shouldFreeze;
 }
 
 bool shouldRewind( EntityRecord* rec ) {
@@ -68,7 +74,8 @@ void postEntityUpdate( uint32_t entityHandle ) {
         return;
 
     if ( shouldRewind( rec ) )
-        Rewind::rewind( rec, 0.1f );
+        Rewind::rewind( rec, TimeScale::timescale );
+    // Rewind::rewind( rec, 0.1f );
 
 }
 
@@ -107,6 +114,8 @@ namespace TimeHack {
             postEntityUpdateHook_return
         ) )->hook();
 
+        TimeScale::init();
+
     }
 
     void onDllThreadUpdate() {
@@ -115,6 +124,11 @@ namespace TimeHack {
         toggleOption( "Speed Limit", speedLimitEnabled, VK_NUMPAD2 );
         if ( keypressed( VK_F1 ) )
             runUntil = GetTickCount64() + 100;
+    }
+
+    void onGameThreadUpdate() {
+        TimeScale::update();
+        // std::cout << std::setprecision( 4 ) << TimeScale::timescale << "\n";
     }
 
 }

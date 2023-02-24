@@ -2,7 +2,7 @@
 
 #include "../../pch.h"
 
-#define ENTITY_TYPE_MAP std::map<uint16_t, EntityType*>
+#define NULL_HANDLE 0xFFFFFFFF
 
 namespace Halo1 {
 
@@ -69,7 +69,8 @@ namespace Halo1 {
         char pad_0090[12]; //0x0090
         float health; //0x009C
         float shield; //0x00A0
-        char pad_00A4[48]; //0x00A4
+        char pad_00A4[44]; //0x00A4
+        uint32_t vehicleHandle; //0x00D0
         uint32_t childHandle; //0x00D4
         uint32_t parentHandle; //0x00D8
         char pad_00DC[292]; //0x00DC
@@ -79,7 +80,13 @@ namespace Halo1 {
         float fuse; //0x020C
         char pad_0210[12]; //0x0210
         float projectileAge; //0x021C
-        char pad_0220[220]; //0x0220
+        char pad_0220[32]; //0x0220
+        float plasmaCharge; //0x0240
+        char pad_0244[66]; //0x0244
+        uint16_t ammo; //0x0286
+        char pad_0288[2]; //0x0288
+        uint16_t clipAmmo; //0x028A
+        char pad_028C[112]; //0x028C
         uint8_t frags; //0x02FC
         uint8_t plasmas; //0x02FD
         char pad_02FE[6]; //0x02FE
@@ -129,6 +136,7 @@ namespace Halo1 {
     DeviceContainer* getDeviceContainerPointer();
     EntityList* getEntityListPointer();
     Camera* getPlayerCameraPointer();
+    uint32_t getPlayerHandle();
 
     typedef bool( __stdcall* EntityListEntryCallback ) ( EntityRecord* );
     void foreachEntityRecord( EntityListEntryCallback cb );
