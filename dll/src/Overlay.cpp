@@ -159,6 +159,7 @@ namespace Overlay {
 
         if ( pEntity->entityCategory == EntityCategory_Projectile ) {
             LINE( L"Age %.4f", pEntity->projectileAge );
+            LINE( L"Speed %.4f", Vec::length( pEntity->vel ) );
         }
 
         #undef LINE

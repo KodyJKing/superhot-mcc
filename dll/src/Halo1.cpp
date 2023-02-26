@@ -68,6 +68,9 @@ namespace Halo1 {
             ;
     }
 
+    bool isReloading( Entity* entity ) { return entity->weaponAnim == 0x05; }
+    bool isDoingMelee( Entity* entity ) { return entity->weaponAnim == 0x07; }
+
     EntityType getEntityType( uint16_t typeId ) { return getEntityType( (TypeID) typeId ); }
     EntityType getEntityType( TypeID typeId ) {
         switch ( typeId ) {
@@ -77,6 +80,7 @@ namespace Halo1 {
             case TypeID_Grunt:      return { .name = L"Grunt",      .living = 1, .hostile = 1 };
             case TypeID_Elite:      return { .name = L"Elite",      .living = 1, .hostile = 1 };
             case TypeID_VehicleA:   return { .name = L"VehicleA",   .living = 1, .hostile = 1, .transport = 1 };
+            case TypeID_VehicleB:   return { .name = L"VehicleB",   .living = 1, .hostile = 1, .transport = 1 };
             case TypeID_Projectile: return { .name = L"Projectile", .living = 0, .hostile = 0 };
         }
         return { .name = L"Unknown", .unknown = 1 };

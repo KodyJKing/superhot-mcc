@@ -3,13 +3,21 @@
 #include "headers/Rewind.h"
 #include "../headers/Hook.h"
 #include "../headers/Halo1.h"
+#include "../utils/headers/MathUtils.h"
 #include "../utils/headers/common.h"
 #include "../utils/headers/Vec.h"
 
 using namespace Halo1;
 
+// Speed limiting is a hackish solution to projectiles linecasting too far and hitting a wall before they actually should.
+// Preemptively scaling back velocity works for some projectile types, but not for projectiles which despawn when they reach their end speed (like plasma bolts).
 const float speedLimit = 1.4f;
+
+// Deadzoning is intended to prevent discrete actions (like spawning projectiles) from being spammed when an entity should be nearly frozen.
 const float timescaleUpdateDeadzone = 0.05f;
+
+// To allow for some discrete updates to still happen when deadzoned, we can update with a probability equal to the current timescale.
+const bool allowRandomUpdatesInDeadzone = true;
 
 bool freezeTimeEnabled = false;
 bool superhotEnabled = true;
@@ -27,7 +35,6 @@ extern "C" {
     void     postEntityUpdate( uint32_t entityHandle );
     void     postEntityUpdateHook();
     uint64_t postEntityUpdateHook_return;
-    uint64_t postEntityUpdateHook_jmp;
 }
 
 bool shouldEntityUpdate( EntityRecord* rec ) {
@@ -35,6 +42,12 @@ bool shouldEntityUpdate( EntityRecord* rec ) {
 
     uint16_t cat = entity->entityCategory;
     bool canDeadzone = cat != EntityCategory_Projectile && cat != EntityCategory_Vehicle;
+
+    if ( canDeadzone && allowRandomUpdatesInDeadzone ) {
+        float u = MathUtils::randf();
+        if ( u < TimeScale::timescale )
+            canDeadzone = false;
+    }
 
     bool canFreeze = !isPlayerControlled( rec );
     bool shouldFreeze =
@@ -49,7 +62,14 @@ bool shouldRewind( EntityRecord* rec ) {
     return !isPlayerControlled( rec );
 }
 
+int updateDepth = 0;
+bool warnedRecursiveUpdate;
 void preEntityUpdate( uint32_t entityHandle ) {
+
+    if ( updateDepth++ > 0 && !warnedRecursiveUpdate ) {
+        std::cout << "Warning, recursive update detected!\n";
+        warnedRecursiveUpdate = true;
+    }
 
     EntityRecord* rec = getEntityRecord( entityHandle );
     Entity* entity = getEntityPointer( rec );
@@ -61,21 +81,22 @@ void preEntityUpdate( uint32_t entityHandle ) {
     if ( speedLimitEnabled )
         Vec::clampMut( entity->vel, speedLimit );
 
-    if ( shouldRewind( rec ) )
-        Rewind::snapshot( rec );
+    Rewind::snapshot( rec );
 
 }
 
 void postEntityUpdate( uint32_t entityHandle ) {
+
+    updateDepth--;
 
     EntityRecord* rec = getEntityRecord( entityHandle );
     Entity* entity = getEntityPointer( rec );
     if ( !entity )
         return;
 
-    if ( shouldRewind( rec ) )
-        Rewind::rewind( rec, TimeScale::timescale );
-    // Rewind::rewind( rec, 0.1f );
+    float globalTimescale = TimeScale::timescale;
+    float personalTimescale = shouldRewind( rec ) ? globalTimescale : 1.0f;
+    Rewind::rewind( rec, personalTimescale, globalTimescale );
 
 }
 
@@ -85,21 +106,9 @@ namespace TimeHack {
 
         std::cout << "Initializing time hack.\n";
 
-        // 0FB7 FB           - movzx edi,bx
-        // 48 8B 34 C6       - mov rsi,[rsi+rax*8]
-        //
-        // preEntityUpdateHook_start:
-        // 48 8B 86 F0000000 - mov rax,[rsi+000000F0]
-        // 48 85 C0          - test rax,rax
-        //
-        // 74 22             - je 7FFF465998D2
-        // 48 8B 50 58       - mov rdx,[rax+58]
-        //
         auto preEntityUpdateHook_start = halo1Base + 0xB898A4U;
-
         preEntityUpdateHook_end = halo1Base + 0xB898D2U;
-        postEntityUpdateHook_jmp = halo1Base + 0xB898E0U;
-
+        //
         ( new Hook::JumpHook(
             "Pre Entity Update Hook",
             preEntityUpdateHook_start, 10,
@@ -107,9 +116,11 @@ namespace TimeHack {
             preEntityUpdateHook_return
         ) )->hook();
 
+        auto posEntityUpdateHook_start = halo1Base + 0xB89A3BU;
+        //
         ( new Hook::JumpHook(
             "Post Entity Update Hook",
-            preEntityUpdateHook_end, 6,
+            posEntityUpdateHook_start, 5,
             (UINT_PTR) postEntityUpdateHook,
             postEntityUpdateHook_return
         ) )->hook();

@@ -43,13 +43,12 @@ _TEXT SEGMENT
 
     extern postEntityUpdate: proc
     extern postEntityUpdateHook_return: qword
-    extern postEntityUpdateHook_jmp: qword
     
     PUBLIC postEntityUpdateHook
     postEntityUpdateHook PROC
     
         ; Original:
-            cmp dword ptr [rbp+7Ch], -01
+            mov rax,[rsp+30h]
 
         pushState
         
@@ -59,11 +58,6 @@ _TEXT SEGMENT
             add rsp, 20h
 
         popState
-
-        ; Original:
-            jne __dontJump1
-                jmp [postEntityUpdateHook_jmp]
-            __dontJump1:
         
         jmp [postEntityUpdateHook_return]
 

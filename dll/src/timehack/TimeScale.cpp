@@ -7,31 +7,38 @@ using namespace MathUtils;
 
 namespace TimeScale {
 
+    const float minTimescale = 0.05f;
     const float walkingSpeed = 0.07f;
-    const float timescaleDeadzone = 0.05f;
-    const float rotationActivityCoefficient = 100.0f;
-    const DWORD unpauseAfterFireMilis = 100;
-    const DWORD unpauseReloadMilis = 250;
     const float activityDecayRate = 0.05f;
-    const float maxTimescaleDueToTurning = 0.5f;
+
+    const float rotationActivityCoefficient = 100.0f;
+    const float rotationSpeedSmoothing = 0.75f;
+    const float maxTimescaleDueToTurning = 0.25f;
+
+    const DWORD unpauseAfterFireMilis = 100;
+    const DWORD unpauseReloadMilis = 750;
+    const DWORD unpauseMeleeMilis = 250;
+    const DWORD unpauseWeaponSwapMilis = 250;
 
     float activityLevel, timescale;
     uint64_t playerIsActingUntil = 0;
     Vec3 previousLook;
     float lookSpeed, lookSpeedSmoothed;
 
+    void unpauseForNMilis( uint64_t milis ) { playerIsActingUntil = GetTickCount() + milis; }
+
     void updateLookSpeed() {
         auto pCam = getPlayerCameraPointer();
         float sinRot = Vec::length( Vec::cross( previousLook, pCam->fwd ) );
         lookSpeed = asinf( sinRot );
-        lookSpeedSmoothed = lerp( lookSpeedSmoothed, lookSpeed, 0.5f );
+        lookSpeedSmoothed = lerp( lookSpeedSmoothed, lookSpeed, 1.0f - rotationSpeedSmoothing );
         previousLook = pCam->fwd;
     }
 
-    uint16_t previousClipAmmo;
-    uint32_t previousWeaponHandle;
-    float previousPlasmaUsed;
-    float previousPlasmaCharge;
+    uint8_t old_weaponAim;
+    uint16_t old_clipAmmo;
+    uint32_t old_weaponHandle;
+    float old_plasmaUsed, old_plasmaCharge;
     bool isActing( Entity* pPlayer ) {
 
         bool isThrowingGrenade = pPlayer->animId == 0xBC && pPlayer->animFrame < 18;
@@ -44,16 +51,24 @@ namespace TimeScale {
         if ( weapon ) {
             auto clipAmmo = weapon->clipAmmo;
             auto plasmaUsed = weapon->plasmaUsed;
-            if ( weaponHandle == previousWeaponHandle ) {
-                if ( plasmaUsed > previousPlasmaUsed || clipAmmo < previousClipAmmo ) {
-                    // std::cout << "Player fired.\n";
-                    playerIsActingUntil = GetTickCount() + unpauseAfterFireMilis;
-                }
+            if ( weaponHandle != old_weaponHandle ) {
+                unpauseForNMilis( unpauseWeaponSwapMilis );
+            } else if ( plasmaUsed > old_plasmaUsed || clipAmmo < old_clipAmmo ) {
+                unpauseForNMilis( unpauseAfterFireMilis );
             }
-            previousClipAmmo = clipAmmo;
-            previousPlasmaUsed = plasmaUsed;
-            previousWeaponHandle = weaponHandle;
+            old_clipAmmo = clipAmmo;
+            old_plasmaUsed = plasmaUsed;
+            old_weaponHandle = weaponHandle;
         }
+
+        auto weaponAnim = pPlayer->weaponAnim;
+        if ( weaponAnim != old_weaponAim ) {
+            if ( isReloading( pPlayer ) )
+                unpauseForNMilis( unpauseReloadMilis );
+            if ( isDoingMelee( pPlayer ) )
+                unpauseForNMilis( unpauseMeleeMilis );
+        }
+        old_weaponAim = weaponAnim;
 
         uint64_t now = GetTickCount64();
         bool isActing = playerIsActingUntil > now || isThrowingGrenade;
@@ -67,9 +82,9 @@ namespace TimeScale {
         // Check if charging plasma bolt.
         if ( weapon ) {
             float plasmaCharge = weapon->plasmaCharge;
-            if ( plasmaCharge > previousPlasmaCharge )
+            if ( plasmaCharge > old_plasmaCharge )
                 isActing = true;
-            previousPlasmaCharge = plasmaCharge;
+            old_plasmaCharge = plasmaCharge;
         }
 
         return isActing;
@@ -92,7 +107,7 @@ namespace TimeScale {
         updateLookSpeed();
         float lookSpeedLevel = smoothstep( 0.0f, 1.0f, lookSpeedSmoothed * rotationActivityCoefficient ) * maxTimescaleDueToTurning;
 
-        float netLevel = lookSpeedLevel + activityLevel;
+        float netLevel = lookSpeedLevel + activityLevel + minTimescale;
         if ( pPlayer->vehicleHandle == NULL_HANDLE )
             netLevel += speedLevel;
 

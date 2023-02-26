@@ -82,7 +82,12 @@ namespace Halo1 {
         float projectileAge; //0x021C
         char pad_0220[32]; //0x0220
         float plasmaCharge; //0x0240
-        char pad_0244[66]; //0x0244
+        char pad_0244[61]; //0x0244
+        uint8_t weaponIndex; //0x0281
+        char pad_0282[1]; //0x0282
+        uint8_t grenadeAnim; //0x0283
+        uint8_t weaponAnim; //0x0284
+        char pad_0285[1]; //0x0285
         uint16_t ammo; //0x0286
         char pad_0288[2]; //0x0288
         uint16_t clipAmmo; //0x028A
@@ -117,6 +122,7 @@ namespace Halo1 {
         TypeID_Grunt = 0x0CFC,
         TypeID_Elite = 0x1110,
         TypeID_VehicleA = 0x0AF4,
+        TypeID_VehicleB = 0x06E0,
         TypeID_Projectile = 0x0290
     };
 
@@ -147,6 +153,9 @@ namespace Halo1 {
 
     bool isPlayerHandle( uint32_t entityHandle );
     bool isPlayerControlled( EntityRecord* rec );
+
+    bool isReloading( Entity* entity );
+    bool isDoingMelee( Entity* entity );
 
     bool printEntity( EntityRecord* pRecord );
     void printEntities();
