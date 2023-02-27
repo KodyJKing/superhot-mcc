@@ -71,7 +71,7 @@ namespace Overlay {
 
     }
 
-    void draw3DTextCentered( Vec3 point, Vec2 offset, LPCWSTR text, Vec4 color, float fontSize, bool bordered ) {
+    void draw3DTextCentered( Vec3 point, Vec2 offset, LPCSTR text, Vec4 color, float fontSize, bool bordered ) {
         static uint32_t _flags = FW1_CENTER | FW1_TOP;
 
         Vec3 p = Halo1::projectPoint( screenDimensions.x, screenDimensions.y, point );
@@ -139,28 +139,35 @@ namespace Overlay {
             fontSize = 8.0f;
         }
 
-        wchar_t wbuf[100];
+        char wbuf[100];
         int lineNum = 0;
         #define LINE(format, ...) { \
-            swprintf_s( wbuf, format, __VA_ARGS__ ); \
+            sprintf_s( wbuf, format, __VA_ARGS__ ); \
             draw3DTextCentered( pos, { 0, fontSize * ( lineNum++ ) }, wbuf, color, fontSize, isSelected ); \
             if ( printThisEntity ) \
-                std::wcout << wbuf << "\n";\
+                std::cout << wbuf << "\n";\
         }
 
         if ( printThisEntity )
             std::cout << "\n";
 
-        if ( !type.unknown )
-            LINE( type.name );
-
-        LINE( L"Type %04X", rec->typeId );
-        LINE( L"%" PRIX64, (uint64_t) pEntity );
-
-        if ( pEntity->entityCategory == EntityCategory_Projectile ) {
-            LINE( L"Age %.4f", pEntity->projectileAge );
-            LINE( L"Speed %.4f", Vec::length( pEntity->vel ) );
+        auto tag = pEntity->getTag();
+        if ( tag ) {
+            auto resourceName = tag->getPath();
+            if ( resourceName )
+                LINE( resourceName );
         }
+
+        // if ( !type.unknown )
+        //     LINE( type.name );
+
+        LINE( "Type %04X", rec->typeId );
+        LINE( "%" PRIX64, (uint64_t) pEntity );
+
+        // if ( pEntity->entityCategory == EntityCategory_Projectile ) {
+        //     LINE( "Age %.4f", pEntity->projectileAge );
+        //     LINE( "Speed %.4f", Vec::length( pEntity->vel ) );
+        // }
 
         #undef LINE
 
@@ -224,7 +231,7 @@ namespace Overlay {
         char text[100];
         sprintf_s( text, "%.2f, %.2f, %.2f", pos.x, pos.y, pos.z );
         Vec2 textPos = { viewport.TopLeftX + 0.5f * w, screenDimensions.y };
-        renderer->drawText( textPos, text, Colors::white, FW1_CENTER | FW1_BOTTOM, 10.0f, nullptr );
+        renderer->drawText( textPos, text, Colors::white, FW1_CENTER | FW1_BOTTOM, 12.0f, nullptr );
         renderer->flush();
 
         pCtx->RSSetViewports( 1, &viewport );

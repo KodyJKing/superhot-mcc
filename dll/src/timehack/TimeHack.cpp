@@ -37,29 +37,53 @@ extern "C" {
     uint64_t postEntityUpdateHook_return;
 }
 
+float globalTimescale() {
+    if ( !superhotEnabled )
+        return 1.0f;
+    return TimeScale::timescale;
+}
+
+float timescaleForEntity( EntityRecord* rec ) {
+    // Don't timescale player's 
+    if ( isPlayerControlled( rec ) )
+        return 1.0f;
+
+    // Don't timescale transports until we find their path interpolation values.
+    auto type = getEntityType( rec->typeId );
+    if ( type.transport )
+        return 1.0f;
+
+    // Don't timescale passengers either.
+    auto entity = getEntityPointer( rec );
+    auto vehicleRec = getEntityRecord( entity->parentHandle );
+    if ( vehicleRec ) {
+        auto vehicleType = getEntityType( vehicleRec->typeId );
+        if ( vehicleType.transport )
+            return 1.0f;
+    }
+
+    return globalTimescale();
+}
+
 bool shouldEntityUpdate( EntityRecord* rec ) {
     auto entity = getEntityPointer( rec );
+
+    auto personalTimescale = timescaleForEntity( rec );
 
     uint16_t cat = entity->entityCategory;
     bool canDeadzone = cat != EntityCategory_Projectile && cat != EntityCategory_Vehicle;
 
     if ( canDeadzone && allowRandomUpdatesInDeadzone ) {
         float u = MathUtils::randf();
-        if ( u < TimeScale::timescale )
+        if ( u < personalTimescale )
             canDeadzone = false;
     }
 
     bool canFreeze = !isPlayerControlled( rec );
     bool shouldFreeze =
         ( freezeTimeEnabled && GetTickCount64() >= runUntil ) ||
-        ( superhotEnabled && canDeadzone && TimeScale::timescale <= timescaleUpdateDeadzone );
+        ( superhotEnabled && canDeadzone && personalTimescale <= timescaleUpdateDeadzone );
     return !canFreeze || !shouldFreeze;
-}
-
-bool shouldRewind( EntityRecord* rec ) {
-    if ( !superhotEnabled ) // !superhotEnabled|| freezeTimeEnabled )
-        return false;
-    return !isPlayerControlled( rec );
 }
 
 int updateDepth = 0;
@@ -94,9 +118,7 @@ void postEntityUpdate( uint32_t entityHandle ) {
     if ( !entity )
         return;
 
-    float globalTimescale = TimeScale::timescale;
-    float personalTimescale = shouldRewind( rec ) ? globalTimescale : 1.0f;
-    Rewind::rewind( rec, personalTimescale, globalTimescale );
+    Rewind::rewind( rec, timescaleForEntity( rec ), globalTimescale() );
 
 }
 
@@ -124,8 +146,6 @@ namespace TimeHack {
             (UINT_PTR) postEntityUpdateHook,
             postEntityUpdateHook_return
         ) )->hook();
-
-        TimeScale::init();
 
     }
 

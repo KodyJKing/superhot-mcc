@@ -64,3 +64,16 @@ void copyANSITextToClipboard( const char* text, size_t maxLength ) {
     SetClipboardData( CF_TEXT, hMem );
     CloseClipboard();
 }
+
+bool debounceCheck( uint64_t& unblockTime, uint64_t blockMilis ) {
+    uint64_t t = GetTickCount64();
+    if ( t < unblockTime )
+        return false;
+    unblockTime = t + blockMilis;
+    return true;
+}
+
+void printDebounced( uint64_t& unblockTime, uint64_t blockMilis, const char* text ) {
+    if ( debounceCheck( unblockTime, blockMilis ) )
+        std::cout << text;
+}

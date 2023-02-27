@@ -30,6 +30,20 @@ namespace Halo1 {
         float fov; //0x0038
     }; //Size: 0x003C
 
+    // Thanks to Kavawuvi / Snowy Mouse for documentation on map format and Tag structure.
+    class Tag {
+        public:
+        uint32_t fourCC_A; //0x0000
+        uint32_t fourCC_B; //0x0004
+        uint32_t fourCC_C; //0x0008
+        uint32_t tagID; //0x000C
+        uint32_t tagPathAddress; //0x0010
+        uint32_t tagDataAddress; //0x0014
+        char pad_0018[8]; //0x0018
+
+        char* getPath();
+    }; //Size: 0x0020
+
     class EntityRecord {
         public:
         uint16_t id;
@@ -50,7 +64,8 @@ namespace Halo1 {
 
     class Entity {
         public:
-        char pad_0000[20]; //0x0000
+        uint32_t tagID; //0x0000
+        char pad_0004[16]; //0x0004
         uint32_t ageMilis; //0x0014
         Vec3 pos; //0x0018
         Vec3 vel; //0x0024
@@ -96,6 +111,8 @@ namespace Halo1 {
         uint8_t plasmas; //0x02FD
         char pad_02FE[6]; //0x02FE
         uint32_t vehicleRiderHandle; //0x0304
+
+        Tag* getTag();
     }; //Size: 0x0308
 
     // =======================================================
@@ -123,11 +140,11 @@ namespace Halo1 {
         TypeID_Elite = 0x1110,
         TypeID_VehicleA = 0x0AF4,
         TypeID_VehicleB = 0x06E0,
-        TypeID_Projectile = 0x0290
+        TypeID_Projectile = 0x0290,
     };
 
     struct EntityType {
-        const wchar_t* name;
+        const char* name;
         bool living;
         bool hostile;
         bool transport;
@@ -143,6 +160,10 @@ namespace Halo1 {
     EntityList* getEntityListPointer();
     Camera* getPlayerCameraPointer();
     uint32_t getPlayerHandle();
+
+    Tag* getTag( uint32_t tagID );
+
+    uint64_t translateMapAddress( uint32_t address );
 
     typedef bool( __stdcall* EntityListEntryCallback ) ( EntityRecord* );
     void foreachEntityRecord( EntityListEntryCallback cb );

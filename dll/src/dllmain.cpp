@@ -87,8 +87,8 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
             TimeHack::onDllThreadUpdate();
             Overlay::onDllThreadUpdate();
 
-            if ( keypressed( 'H' ) )
-                std::cout << "Player handle: " << Halo1::getPlayerHandle() << "\n";
+            // if ( keypressed( 'H' ) )
+            //     std::cout << "Player handle: " << Halo1::getPlayerHandle() << "\n";
 
             if ( keypressed( VK_DELETE ) )
                 system( "CLS" );

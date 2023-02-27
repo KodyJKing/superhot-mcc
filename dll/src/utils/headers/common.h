@@ -42,3 +42,6 @@ void toggleOption( const char* description, bool& option, int key );
 void memcpyExecutable( char* dest, char* source, size_t size );
 
 void copyANSITextToClipboard( const char* text, size_t maxLength = 500 );
+
+bool debounceCheck( uint64_t& unblockTime, uint64_t blockMilis );
+void printDebounced( uint64_t& unblockTime, uint64_t blockMilis, const char* text );

@@ -114,9 +114,4 @@ namespace TimeScale {
         timescale = smoothstep( 0.0f, 1.0f, netLevel );
     }
 
-
-    void init() {
-
-    }
-
 }

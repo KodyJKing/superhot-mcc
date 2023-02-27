@@ -8,6 +8,10 @@ namespace Halo1 {
 
     void init( UINT_PTR _dllBase ) { dllBase = _dllBase; }
 
+    char* Tag::getPath() { return (char*) translateMapAddress( tagPathAddress ); }
+
+    Tag* Entity::getTag() { return Halo1::getTag( tagID ); }
+
     UINT_PTR pDeviceContainerOffset = 0x2FA0D68;
     UINT_PTR entityArrayOffset = 0x2F01D80;
     UINT_PTR pEntityListOffset = 0x1DBE628;
@@ -19,6 +23,17 @@ namespace Halo1 {
     UINT_PTR getEntityArrayBase() { return *(UINT_PTR*) ( dllBase + entityArrayOffset ); }
     Camera* getPlayerCameraPointer() { return (Camera*) ( dllBase + playerCamOffset ); }
     uint32_t getPlayerHandle() { return *(uint32_t*) ( dllBase + playerHandleOffset ); }
+
+    uint64_t translateMapAddress( uint32_t address ) {
+        uint64_t relocatedMapBase = *(uint64_t*) ( dllBase + 0x2F01D98U );
+        uint64_t mapBase = *(uint64_t*) ( dllBase + 0x3008370U );
+        return address + ( relocatedMapBase - mapBase );
+    }
+
+    Tag* getTag( uint32_t tagID ) {
+        Tag* tagArray = *(Tag**) ( dllBase + 0x1DB1390U );
+        return &tagArray[tagID & 0xFFFF];
+    }
 
     EntityRecord* getEntityRecord( EntityList* pEntityList, uint32_t entityHandle ) {
         if ( entityHandle == 0xFFFFFFFF )
@@ -74,16 +89,16 @@ namespace Halo1 {
     EntityType getEntityType( uint16_t typeId ) { return getEntityType( (TypeID) typeId ); }
     EntityType getEntityType( TypeID typeId ) {
         switch ( typeId ) {
-            case TypeID_Player:     return { .name = L"Player",     .living = 1, .hostile = 0 };
-            case TypeID_Marine:     return { .name = L"Marine",     .living = 1, .hostile = 0 };
-            case TypeID_Jackal:     return { .name = L"Jackal",     .living = 1, .hostile = 1 };
-            case TypeID_Grunt:      return { .name = L"Grunt",      .living = 1, .hostile = 1 };
-            case TypeID_Elite:      return { .name = L"Elite",      .living = 1, .hostile = 1 };
-            case TypeID_VehicleA:   return { .name = L"VehicleA",   .living = 1, .hostile = 1, .transport = 1 };
-            case TypeID_VehicleB:   return { .name = L"VehicleB",   .living = 1, .hostile = 1, .transport = 1 };
-            case TypeID_Projectile: return { .name = L"Projectile", .living = 0, .hostile = 0 };
+            case TypeID_Player:     return { .name = "Player",     .living = 1, .hostile = 0 };
+            case TypeID_Marine:     return { .name = "Marine",     .living = 1, .hostile = 0 };
+            case TypeID_Jackal:     return { .name = "Jackal",     .living = 1, .hostile = 1 };
+            case TypeID_Grunt:      return { .name = "Grunt",      .living = 1, .hostile = 1 };
+            case TypeID_Elite:      return { .name = "Elite",      .living = 1, .hostile = 1 };
+            case TypeID_VehicleA:   return { .name = "VehicleA",   .living = 1, .hostile = 1, .transport = 1 };
+            case TypeID_VehicleB:   return { .name = "VehicleB",   .living = 1, .hostile = 1, .transport = 1 };
+            case TypeID_Projectile: return { .name = "Projectile", .living = 0, .hostile = 0 };
         }
-        return { .name = L"Unknown", .unknown = 1 };
+        return { .name = "Unknown", .unknown = 1 };
     }
 
     bool printEntity( EntityRecord* pRecord ) {
