@@ -37,21 +37,12 @@ namespace Halo1 {
         uint32_t fourCC_B; //0x0004
         uint32_t fourCC_C; //0x0008
         uint32_t tagID; //0x000C
-        uint32_t tagPathAddress; //0x0010
-        uint32_t tagDataAddress; //0x0014
+        uint32_t resourcePathAddress; //0x0010
+        uint32_t dataAddress; //0x0014
         char pad_0018[8]; //0x0018
 
-        char* getPath();
+        char* getResourcePath();
     }; //Size: 0x0020
-
-    class EntityRecord {
-        public:
-        uint16_t id;
-        uint16_t unknown_1;
-        uint16_t unknown_2;
-        uint16_t typeId;
-        int32_t entityArrayOffset;
-    };
 
     class EntityList {
         public:
@@ -112,8 +103,21 @@ namespace Halo1 {
         char pad_02FE[6]; //0x02FE
         uint32_t vehicleRiderHandle; //0x0304
 
-        Tag* getTag();
+        Tag* tag();
+        char* getTagResourcePath();
+        bool fromResourcePath( const char* str );
     }; //Size: 0x0308
+
+    class EntityRecord {
+        public:
+        uint16_t id;
+        uint16_t unknown_1;
+        uint16_t unknown_2;
+        uint16_t typeId;
+        int32_t entityArrayOffset;
+
+        Entity* entity();
+    };
 
     // =======================================================
 
@@ -143,17 +147,6 @@ namespace Halo1 {
         TypeID_Projectile = 0x0290,
     };
 
-    struct EntityType {
-        const char* name;
-        bool living;
-        bool hostile;
-        bool transport;
-        bool unknown;
-    };
-
-    EntityType getEntityType( uint16_t typeId );
-    EntityType getEntityType( TypeID type );
-
     void init( UINT_PTR _dllBase );
 
     DeviceContainer* getDeviceContainerPointer();
@@ -177,6 +170,8 @@ namespace Halo1 {
 
     bool isReloading( Entity* entity );
     bool isDoingMelee( Entity* entity );
+
+    bool isTransport( Entity* entity );
 
     bool printEntity( EntityRecord* pRecord );
     void printEntities();

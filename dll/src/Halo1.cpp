@@ -4,19 +4,37 @@
 #include "utils/headers/common.h"
 
 namespace Halo1 {
-    UINT_PTR dllBase;
+
+    static UINT_PTR dllBase;
 
     void init( UINT_PTR _dllBase ) { dllBase = _dllBase; }
 
-    char* Tag::getPath() { return (char*) translateMapAddress( tagPathAddress ); }
+    // === Methods ===
 
-    Tag* Entity::getTag() { return Halo1::getTag( tagID ); }
+    Entity* EntityRecord::entity() { return getEntityPointer( this ); }
 
-    UINT_PTR pDeviceContainerOffset = 0x2FA0D68;
-    UINT_PTR entityArrayOffset = 0x2F01D80;
-    UINT_PTR pEntityListOffset = 0x1DBE628;
-    UINT_PTR playerCamOffset = 0x2F00D64;
-    UINT_PTR playerHandleOffset = 0x1DD27D0;
+    char* Tag::getResourcePath() { return (char*) translateMapAddress( resourcePathAddress ); }
+
+    Tag* Entity::tag() { return Halo1::getTag( tagID ); }
+    char* Entity::getTagResourcePath() {
+        auto pTag = tag();
+        if ( !pTag ) return nullptr;
+        return pTag->getResourcePath();
+    };
+    bool Entity::fromResourcePath( const char* str ) {
+        auto resourcePath = getTagResourcePath();
+        return resourcePath && strncmp( resourcePath, str, 1024 ) == 0;
+    }
+
+    // ===============
+
+    // === Pointers ===
+
+    static const UINT_PTR pDeviceContainerOffset = 0x2FA0D68;
+    static const UINT_PTR entityArrayOffset = 0x2F01D80;
+    static const UINT_PTR pEntityListOffset = 0x1DBE628;
+    static const UINT_PTR playerCamOffset = 0x2F00D64;
+    static const UINT_PTR playerHandleOffset = 0x1DD27D0;
 
     DeviceContainer* getDeviceContainerPointer() { return *(DeviceContainer**) ( dllBase + pDeviceContainerOffset ); }
     EntityList* getEntityListPointer() { return *(EntityList**) ( dllBase + pEntityListOffset ); }
@@ -64,6 +82,8 @@ namespace Halo1 {
         return (Entity*) entityAddress;
     }
 
+    // ================
+
     bool isPlayerHandle( uint32_t entityHandle ) {
         auto rec = getEntityRecord( entityHandle );
         return rec && rec->typeId == TypeID_Player;
@@ -86,20 +106,13 @@ namespace Halo1 {
     bool isReloading( Entity* entity ) { return entity->weaponAnim == 0x05; }
     bool isDoingMelee( Entity* entity ) { return entity->weaponAnim == 0x07; }
 
-    EntityType getEntityType( uint16_t typeId ) { return getEntityType( (TypeID) typeId ); }
-    EntityType getEntityType( TypeID typeId ) {
-        switch ( typeId ) {
-            case TypeID_Player:     return { .name = "Player",     .living = 1, .hostile = 0 };
-            case TypeID_Marine:     return { .name = "Marine",     .living = 1, .hostile = 0 };
-            case TypeID_Jackal:     return { .name = "Jackal",     .living = 1, .hostile = 1 };
-            case TypeID_Grunt:      return { .name = "Grunt",      .living = 1, .hostile = 1 };
-            case TypeID_Elite:      return { .name = "Elite",      .living = 1, .hostile = 1 };
-            case TypeID_VehicleA:   return { .name = "VehicleA",   .living = 1, .hostile = 1, .transport = 1 };
-            case TypeID_VehicleB:   return { .name = "VehicleB",   .living = 1, .hostile = 1, .transport = 1 };
-            case TypeID_Projectile: return { .name = "Projectile", .living = 0, .hostile = 0 };
-        }
-        return { .name = "Unknown", .unknown = 1 };
+    bool isTransport( Entity* entity ) {
+        return
+            entity->fromResourcePath( "vehicles\\pelican\\pelican" ) ||
+            entity->fromResourcePath( "vehicles\\c_dropship\\c_dropship" );
     }
+
+    // ======================
 
     bool printEntity( EntityRecord* pRecord ) {
         auto pEntity = getEntityPointer( pRecord );
@@ -123,7 +136,9 @@ namespace Halo1 {
         }
     }
 
-    // === Camera helpers ===
+    // ======================
+
+    // === Camera Helpers ===
 
     // For some reason, Halo 1's camera stores a different fov value than it actually uses and must be scaled. 
     // This value was found by trial and error using the updateFloat function.
@@ -157,5 +172,7 @@ namespace Halo1 {
     bool isCameraLoaded() {
         return !isZero( Halo1::getPlayerCameraPointer() );
     }
+
+    // =======================
 
 }

@@ -15,18 +15,22 @@ using namespace Halo1;
 
 namespace Overlay {
 
+    // Declarations
     bool drawEntityOverlay( EntityRecord* rec );
     void drawPlayerTransformHUD( ID3D11DeviceContext* pCtx );
     bool trySelectEntity( EntityRecord* rec );
 
-    Renderer* renderer;
-    Vec2 screenDimensions;
-    bool printSelectedEntity;
-    EntityRecord* selectedEntity;
-    const float selectionThreshold = 0.995f;
-    const float drawDistance = 50.0f;
-    bool overlayEnabled = true;
-    bool onlyShowSelected = false;
+    // Constants
+    static const float selectionThreshold = 0.995f;
+    static const float drawDistance = 50.0f;
+    // State
+    static Renderer* renderer;
+    static Vec2 screenDimensions;
+    static bool printSelectedEntity;
+    static EntityRecord* selectedEntity;
+    // Options
+    static bool overlayEnabled = true;
+    static bool onlyShowSelected = false;
 
     void cleanup() {
         if ( renderer )
@@ -121,7 +125,6 @@ namespace Overlay {
             return true;
 
         auto pEntity = getEntityPointer( rec );
-        auto type = getEntityType( rec->typeId );
         auto pos = pEntity->pos;
 
         bool isSelected = rec == selectedEntity;

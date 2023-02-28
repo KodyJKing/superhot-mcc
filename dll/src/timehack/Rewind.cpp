@@ -33,10 +33,10 @@ using namespace Halo1;
 namespace Rewind {
 
     // Fields
-    Vec3 old_pos, old_vel, old_fwd, old_up, old_angularVelocity;
-    float old_fuse, old_heat, old_projectileAge, old_shield;
-    uint32_t old_parentHandle, old_ageMilis;
-    uint16_t old_animFrame;
+    static Vec3 old_pos, old_vel, old_fwd, old_up, old_angularVelocity;
+    static float old_fuse, old_heat, old_projectileAge, old_shield;
+    static uint32_t old_parentHandle, old_ageMilis;
+    static uint16_t old_animFrame;
 
     void snapshot( EntityRecord* rec ) {
 

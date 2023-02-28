@@ -9,10 +9,9 @@
 #include "graphics/headers/DX11Hook.h"
 #include "timehack/headers/TimeHack.h"
 
-HMODULE hmSuperHotHack;
-HMODULE hmHalo1;
-UINT_PTR halo1Base;
-Halo1::DeviceContainer* pDeviceContainer;
+static HMODULE hmSuperHotHack;
+static HMODULE hmHalo1;
+static UINT_PTR halo1Base;
 
 BOOL APIENTRY DllMain(
     HMODULE hModule,
@@ -57,7 +56,6 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
             err |= freopen_s( &pFile_stdin, "CONIN$", "r", stdin );
     }
 
-
     // Bring MCC to front.
     HWND mccWindow = HaloMCC::getWindow();
     BringWindowToTop( mccWindow );
@@ -79,16 +77,11 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     if ( !err ) {
         while ( true ) {
 
-            bool exit = GetAsyncKeyState( VK_F9 )
-                || !GetModuleHandleA( "halo1.dll" );
-            if ( exit )
+            if ( GetAsyncKeyState( VK_F9 ) || !GetModuleHandleA( "halo1.dll" ) )
                 break;
 
             TimeHack::onDllThreadUpdate();
             Overlay::onDllThreadUpdate();
-
-            // if ( keypressed( 'H' ) )
-            //     std::cout << "Player handle: " << Halo1::getPlayerHandle() << "\n";
 
             if ( keypressed( VK_DELETE ) )
                 system( "CLS" );

@@ -7,23 +7,24 @@ using namespace MathUtils;
 
 namespace TimeScale {
 
-    const float minTimescale = 0.05f;
-    const float walkingSpeed = 0.07f;
-    const float activityDecayRate = 0.05f;
+    static const float minTimescale = 0.05f;
+    static const float walkingSpeed = 0.07f;
+    static const float activityDecayRate = 0.05f;
 
-    const float rotationActivityCoefficient = 100.0f;
-    const float rotationSpeedSmoothing = 0.75f;
-    const float maxTimescaleDueToTurning = 0.25f;
+    static const float rotationActivityCoefficient = 100.0f;
+    static const float rotationSpeedSmoothing = 0.75f;
+    static const float maxTimescaleDueToTurning = 0.25f;
 
-    const DWORD unpauseAfterFireMilis = 100;
-    const DWORD unpauseReloadMilis = 750;
-    const DWORD unpauseMeleeMilis = 250;
-    const DWORD unpauseWeaponSwapMilis = 250;
+    static const DWORD unpauseAfterFireMilis = 100;
+    static const DWORD unpauseReloadMilis = 750;
+    static const DWORD unpauseMeleeMilis = 250;
+    static const DWORD unpauseWeaponSwapMilis = 250;
 
-    float activityLevel, timescale;
-    uint64_t playerIsActingUntil = 0;
-    Vec3 previousLook;
-    float lookSpeed, lookSpeedSmoothed;
+    float timescale;
+    static float activityLevel;
+    static uint64_t playerIsActingUntil = 0;
+    static Vec3 previousLook;
+    static float lookSpeed, lookSpeedSmoothed;
 
     void unpauseForNMilis( uint64_t milis ) { playerIsActingUntil = GetTickCount() + milis; }
 
@@ -35,11 +36,12 @@ namespace TimeScale {
         previousLook = pCam->fwd;
     }
 
-    uint8_t old_weaponAim;
-    uint16_t old_clipAmmo;
-    uint32_t old_weaponHandle;
-    float old_plasmaUsed, old_plasmaCharge;
     bool isActing( Entity* pPlayer ) {
+
+        static uint8_t old_weaponAim;
+        static uint16_t old_clipAmmo;
+        static uint32_t old_weaponHandle;
+        static float old_plasmaUsed, old_plasmaCharge;
 
         bool isThrowingGrenade = pPlayer->animId == 0xBC && pPlayer->animFrame < 18;
 

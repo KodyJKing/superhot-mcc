@@ -27,10 +27,11 @@ extern "C" {
     );
 }
 
-const D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0 };
-
-std::vector<PresentCallback> onPresentCallbacks;
-std::mutex onPresentCallbacks_mutex;
+static std::vector<PresentCallback> onPresentCallbacks;
+static std::mutex onPresentCallbacks_mutex;
+static bool hasDoneDeviceInit;
+static bool deviceInitFailed;
+static ID3D11RenderTargetView* renderTargetView;
 
 void createDummy(
     IDXGISwapChain** ppSwapChain,
@@ -40,9 +41,6 @@ void createDummy(
     HWND hwnd
 );
 
-bool hasDoneDeviceInit;
-bool deviceInitFailed;
-ID3D11RenderTargetView* renderTargetView;
 bool initDevice( ID3D11Device* pDevice, IDXGISwapChain* pSwapChain );
 
 // We're hooking the begining of the Present function so we can use the same positional arguments.
@@ -121,14 +119,14 @@ namespace DX11Hook {
             (UINT_PTR) resizeBuffersHook
         ) )->hook();
 
-        // Output method locations.
-        std::cout << "\n";
-        std::cout << "SwapChain.Present address: " << swapChainVTable[MO_IDXGISwapChain::Present] << "\n";
-        std::cout << "SwapChain.ResizeBuffers address: " << swapChainVTable[MO_IDXGISwapChain::ResizeBuffers] << "\n";
-        // std::cout << "Context.Draw address: " << deviceContextVTable[MO_ID3D11DeviceContext::Draw] << "\n";
-        // std::cout << "Context.DrawIndexed address: " << deviceContextVTable[MO_ID3D11DeviceContext::DrawIndexed] << "\n";
-        // std::cout << "Context.OMSetRenderTargets address: " << deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets] << "\n";
-        std::cout << "\n";
+        // // Output method locations.
+        // std::cout << "\n";
+        // std::cout << "SwapChain.Present address: " << swapChainVTable[MO_IDXGISwapChain::Present] << "\n";
+        // std::cout << "SwapChain.ResizeBuffers address: " << swapChainVTable[MO_IDXGISwapChain::ResizeBuffers] << "\n";
+        // // std::cout << "Context.Draw address: " << deviceContextVTable[MO_ID3D11DeviceContext::Draw] << "\n";
+        // // std::cout << "Context.DrawIndexed address: " << deviceContextVTable[MO_ID3D11DeviceContext::DrawIndexed] << "\n";
+        // // std::cout << "Context.OMSetRenderTargets address: " << deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets] << "\n";
+        // std::cout << "\n";
 
         pSwapChain->Release();
         pDevice->Release();
@@ -154,6 +152,8 @@ void createDummy(
     ID3D11DeviceContext** ppDeviceContext,
     HWND hwnd
 ) {
+
+    static const D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0 };
 
     DXGI_SWAP_CHAIN_DESC sd = {};
     sd.BufferCount = 1;

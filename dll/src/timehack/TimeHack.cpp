@@ -11,19 +11,19 @@ using namespace Halo1;
 
 // Speed limiting is a hackish solution to projectiles linecasting too far and hitting a wall before they actually should.
 // Preemptively scaling back velocity works for some projectile types, but not for projectiles which despawn when they reach their end speed (like plasma bolts).
-const float speedLimit = 1.4f;
+static const float speedLimit = 1.4f;
 
 // Deadzoning is intended to prevent discrete actions (like spawning projectiles) from being spammed when an entity should be nearly frozen.
-const float timescaleUpdateDeadzone = 0.05f;
+static const float timescaleUpdateDeadzone = 0.05f;
 
 // To allow for some discrete updates to still happen when deadzoned, we can update with a probability equal to the current timescale.
-const bool allowRandomUpdatesInDeadzone = true;
+static const bool allowRandomUpdatesInDeadzone = true;
 
-bool freezeTimeEnabled = false;
-bool superhotEnabled = true;
-bool speedLimitEnabled = true;
+static bool freezeTimeEnabled = false;
+static bool superhotEnabled = true;
+static bool speedLimitEnabled = true;
 
-uint64_t runUntil = 0;
+static uint64_t runUntil = 0;
 
 extern "C" {
     void     preEntityUpdate( uint32_t entityHandle );
@@ -48,17 +48,15 @@ float timescaleForEntity( EntityRecord* rec ) {
     if ( isPlayerControlled( rec ) )
         return 1.0f;
 
-    // Don't timescale transports until we find their path interpolation values.
-    auto type = getEntityType( rec->typeId );
-    if ( type.transport )
+    auto entity = getEntityPointer( rec );
+
+    if ( isTransport( entity ) )
         return 1.0f;
 
-    // Don't timescale passengers either.
-    auto entity = getEntityPointer( rec );
     auto vehicleRec = getEntityRecord( entity->parentHandle );
     if ( vehicleRec ) {
-        auto vehicleType = getEntityType( vehicleRec->typeId );
-        if ( vehicleType.transport )
+        auto vehicle = getEntityPointer( vehicleRec );
+        if ( isTransport( vehicle ) )
             return 1.0f;
     }
 
@@ -152,7 +150,7 @@ namespace TimeHack {
     void onDllThreadUpdate() {
         toggleOption( "Freeze Time", freezeTimeEnabled, VK_F2 );
         toggleOption( "SUPERHOT", superhotEnabled, VK_F3 );
-        toggleOption( "Speed Limit", speedLimitEnabled, VK_NUMPAD2 );
+        toggleOption( "Speed Limit", speedLimitEnabled, VK_NUMPAD4 );
         if ( keypressed( VK_F1 ) )
             runUntil = GetTickCount64() + 100;
     }
