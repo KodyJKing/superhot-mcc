@@ -129,47 +129,30 @@ namespace Overlay {
         Vec4 color;
         float fontSize;
         if ( isSelected ) {
-            color = { 1.0f, 1.0f, 0.0f, 1.0f };
             fontSize = 20.0f;
+            color = { 1.0f, 1.0f, 0.0f, 1.0f };
         } else {
-            if ( pEntity->health > 0 )
-                color = { 0.25f, 1.0f, 0.25f, 0.25f };
-            else
-                color = { 1.0f, 1.0f, 1.0f, 0.25f };
             fontSize = 8.0f;
+            color = pEntity->health > 0 ?
+                Vec4{ 0.25f, 1.0f, 0.25f, 0.25f } :
+                Vec4{ 1.0f, 1.0f, 1.0f, 0.25f };
         }
 
-        char wbuf[100];
-        int lineNum = 0;
-        #define LINE(format, ...) { \
-            sprintf_s( wbuf, format, __VA_ARGS__ ); \
-            draw3DTextCentered( pos, { 0, fontSize * ( lineNum++ ) }, wbuf, color, fontSize, isSelected ); \
-            if ( printThisEntity ) \
-                std::cout << wbuf << "\n";\
-        }
-
-        if ( printThisEntity )
-            std::cout << "\n";
+        std::stringstream overlayText;
 
         auto tag = pEntity->getTag();
         if ( tag ) {
             auto resourceName = tag->getPath();
             if ( resourceName )
-                LINE( resourceName );
+                overlayText << resourceName << "\n";
         }
 
-        // if ( !type.unknown )
-        //     LINE( type.name );
+        overlayText << std::uppercase << std::hex << (uint64_t) pEntity << "\n";
 
-        LINE( "Type %04X", rec->typeId );
-        LINE( "%" PRIX64, (uint64_t) pEntity );
-
-        // if ( pEntity->entityCategory == EntityCategory_Projectile ) {
-        //     LINE( "Age %.4f", pEntity->projectileAge );
-        //     LINE( "Speed %.4f", Vec::length( pEntity->vel ) );
-        // }
-
-        #undef LINE
+        std::string overlayStr = overlayText.str();
+        draw3DTextCentered( pos, {}, overlayStr.c_str(), color, fontSize, isSelected );
+        if ( printThisEntity )
+            std::cout << "\n" << overlayStr.c_str();
 
         if ( printThisEntity ) {
             std::stringstream pointerText;
