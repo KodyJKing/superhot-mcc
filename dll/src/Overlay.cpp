@@ -4,6 +4,7 @@
 #include "utils/headers/common.h"
 #include "utils/headers/Vec.h"
 #include "utils/headers/MathUtils.h"
+#include "utils/headers/StringUtils.h"
 #include "graphics/headers/Renderer.h"
 #include "graphics/headers/DX11Utils.h"
 #include "graphics/headers/Colors.h"
@@ -25,6 +26,7 @@ namespace Overlay {
     const float selectionThreshold = 0.995f;
     const float drawDistance = 50.0f;
     bool overlayEnabled = true;
+    bool onlyShowSelected = false;
 
     void cleanup() {
         if ( renderer )
@@ -33,6 +35,7 @@ namespace Overlay {
 
     void onDllThreadUpdate() {
         toggleOption( "Overlay", overlayEnabled, VK_NUMPAD1 );
+        toggleOption( "Only show selected", onlyShowSelected, VK_NUMPAD2 );
     }
 
     void render( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
@@ -106,13 +109,11 @@ namespace Overlay {
             case EntityCategory_Vehicle:
             case EntityCategory_Weapon:
             case EntityCategory_Projectile:
+            case EntityCategory_Machine:
                 return true;
             default:
                 return false;
         }
-
-        // if ( pEntity->health <= 0 )
-        //     return false;
     }
 
     bool drawEntityOverlay( EntityRecord* rec ) {
@@ -125,6 +126,9 @@ namespace Overlay {
 
         bool isSelected = rec == selectedEntity;
         bool printThisEntity = isSelected && printSelectedEntity;
+
+        if ( onlyShowSelected && !isSelected )
+            return true;
 
         Vec4 color;
         float fontSize;
@@ -140,13 +144,18 @@ namespace Overlay {
 
         std::stringstream overlayText;
 
-        auto tag = pEntity->getTag();
+        auto tag = pEntity->tag();
         if ( tag ) {
-            auto resourceName = tag->getPath();
-            if ( resourceName )
+            auto resourceName = tag->getResourcePath();
+            if ( StringUtils::checkCStr( resourceName, 256 ) ) {
                 overlayText << resourceName << "\n";
+                // auto parts = StringUtils::split( resourceName, "\\" );
+                // if ( parts.size() >= 3 )
+                //     overlayText << parts[2] << "\n";
+            }
         }
 
+        overlayText << std::uppercase << std::hex << rec->typeId << " ";
         overlayText << std::uppercase << std::hex << (uint64_t) pEntity << "\n";
 
         std::string overlayStr = overlayText.str();
