@@ -12,6 +12,7 @@
 static HMODULE hmSuperHotHack;
 static HMODULE hmHalo1;
 static UINT_PTR halo1Base;
+static std::mutex onRenderMutex;
 
 BOOL APIENTRY DllMain(
     HMODULE hModule,
@@ -33,8 +34,11 @@ BOOL APIENTRY DllMain(
 }
 
 void onPresent( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
-    Overlay::render( pCtx, pDevice, pSwapChain );
-    TimeHack::onGameThreadUpdate();
+    if ( onRenderMutex.try_lock() ) {
+        Overlay::render( pCtx, pDevice, pSwapChain );
+        TimeHack::onGameThreadUpdate();
+        onRenderMutex.unlock();
+    }
 }
 
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
@@ -95,9 +99,13 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     DX11Hook::cleanup();
     Hook::cleanupHooks();
+
+    // Wait until we're don rendereing before freeing overlay resources.
+    onRenderMutex.lock();
     Overlay::cleanup();
 
-    // Give any executing hook code a moment to finish before unloading.
+    // Give any other executing hook code a moment to finish before unloading.
+    // It might be smart to eventually wrap all hooks with mutex lock / unlock.
     Sleep( 500 );
 
     if ( useConsole ) {
@@ -112,6 +120,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
         FreeConsole();
     }
 
+    onRenderMutex.unlock();
     FreeLibraryAndExitThread( hmSuperHotHack, 0 );
 
 }
