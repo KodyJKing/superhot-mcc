@@ -31,6 +31,7 @@ namespace Overlay {
     // Options
     static bool overlayEnabled = true;
     static bool onlyShowSelected = false;
+    static bool showAllObjectTypes = false;
 
     void cleanup() {
         if ( renderer )
@@ -40,6 +41,7 @@ namespace Overlay {
     void onDllThreadUpdate() {
         toggleOption( "Overlay", overlayEnabled, VK_NUMPAD1 );
         toggleOption( "Only show selected", onlyShowSelected, VK_NUMPAD2 );
+        toggleOption( "Show all object types", showAllObjectTypes, VK_NUMPAD3 );
     }
 
     void render( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
@@ -116,7 +118,7 @@ namespace Overlay {
             case EntityCategory_Machine:
                 return true;
             default:
-                return false;
+                return showAllObjectTypes;
         }
     }
 
@@ -158,6 +160,16 @@ namespace Overlay {
             }
         }
 
+        uint32_t fourccs[] = { tag->fourCC_C, tag->fourCC_B, tag->fourCC_A };
+        uint8_t parts = 0;
+        for ( uint8_t i = 0; i < ARRAYSIZE( fourccs ); ++i ) {
+            uint32_t fourcc = fourccs[i];
+            if ( fourcc != 0xFFFFFFFF ) {
+                if ( parts++ > 0 ) overlayText << ".";
+                overlayText << StringUtils::fourccToString( fourcc );
+            }
+        }
+        overlayText << " ";
         overlayText << std::uppercase << std::hex << rec->typeId << " ";
         overlayText << std::uppercase << std::hex << (uint64_t) pEntity << "\n";
 

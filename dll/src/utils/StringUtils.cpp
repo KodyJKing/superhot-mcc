@@ -24,4 +24,11 @@ namespace StringUtils {
         return result;
     }
 
+    string fourccToString( uint32_t fourcc ) {
+        string result;
+        uint32_t reversed = _byteswap_ulong( fourcc );
+        result.append( (char*) &reversed, 4 );
+        return result;
+    }
+
 }

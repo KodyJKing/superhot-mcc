@@ -30,7 +30,7 @@ namespace Halo1 {
         float fov; //0x0038
     }; //Size: 0x003C
 
-    // Thanks to Kavawuvi / Snowy Mouse for documentation on map format and Tag structure.
+    // Thanks to Kavawuvi for documentation on the map format and Tag structure.
     class Tag {
         public:
         uint32_t fourCC_A; //0x0000
@@ -146,6 +146,8 @@ namespace Halo1 {
         TypeID_VehicleB = 0x06E0,
         TypeID_Projectile = 0x0290,
     };
+
+    // =======================================================
 
     void init( UINT_PTR _dllBase );
 
