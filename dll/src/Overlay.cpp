@@ -5,7 +5,6 @@
 #include "utils/headers/Vec.h"
 #include "utils/headers/MathUtils.h"
 #include "utils/headers/StringUtils.h"
-#include "graphics/headers/Renderer.h"
 #include "graphics/headers/DX11Utils.h"
 #include "graphics/headers/Colors.h"
 
@@ -16,15 +15,14 @@ using namespace Halo1;
 namespace Overlay {
 
     // Declarations
-    bool drawEntityOverlay( EntityRecord* rec );
-    void drawPlayerTransformHUD( ID3D11DeviceContext* pCtx );
+    bool drawEntityOverlay( Renderer* renderer, EntityRecord* rec );
+    void drawPlayerTransformHUD( Renderer* renderer, ID3D11DeviceContext* pCtx );
     bool trySelectEntity( EntityRecord* rec );
 
     // Constants
     static const float selectionThreshold = 0.995f;
     static const float drawDistance = 50.0f;
     // State
-    static Renderer* renderer;
     static Vec2 screenDimensions;
     static bool printSelectedEntity;
     static EntityRecord* selectedEntity;
@@ -33,11 +31,6 @@ namespace Overlay {
     static bool onlyShowSelected = false;
     static bool showAllObjectTypes = false;
     static bool entityBeacons = false;
-
-    void cleanup() {
-        if ( renderer )
-            delete renderer;
-    }
 
     void onDllThreadUpdate() {
         toggleOption( "Overlay", overlayEnabled, VK_NUMPAD1 );
@@ -50,15 +43,9 @@ namespace Overlay {
         // updateFloat( "Clipping far", Halo1::clippingFar, 1.005f, VK_HOME, VK_END );
     }
 
-    void render( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
-
+    void render( Renderer* renderer, ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
         if ( !overlayEnabled || !isCameraLoaded() )
             return;
-
-        if ( !renderer ) {
-            std::cout << "Constructing new Renderer.\n";
-            renderer = new Renderer( pDevice, 4096 );
-        }
 
         XMMATRIX transform;
         screenDimensions = HaloMCC::getWindowSize();
@@ -71,21 +58,20 @@ namespace Overlay {
         renderer->begin();
 
         selectedEntity = nullptr;
-        foreachEntityRecord( trySelectEntity );
+        foreachEntityRecord( []( EntityRecord* rec ) { trySelectEntity( rec ); } );
 
         if ( HaloMCC::isInForeground() )
             printSelectedEntity = keypressed( 'P' );
 
-        foreachEntityRecord( drawEntityOverlay );
+        foreachEntityRecord( [&]( EntityRecord* rec ) { drawEntityOverlay( renderer, rec ); } );
         renderer->flush();
 
-        drawPlayerTransformHUD( pCtx );
+        drawPlayerTransformHUD( renderer, pCtx );
 
         renderer->end();
-
     }
 
-    void draw3DTextCentered( Vec3 point, Vec2 offset, LPCSTR text, Vec4 color, float fontSize, bool bordered ) {
+    void draw3DTextCentered( Renderer* renderer, Vec3 point, Vec2 offset, LPCSTR text, Vec4 color, float fontSize, bool bordered ) {
         static uint32_t _flags = FW1_CENTER | FW1_TOP;
 
         Vec3 p = Halo1::projectPoint( screenDimensions.x, screenDimensions.y, point );
@@ -127,7 +113,7 @@ namespace Overlay {
         }
     }
 
-    bool drawEntityOverlay( EntityRecord* rec ) {
+    bool drawEntityOverlay( Renderer* renderer, EntityRecord* rec ) {
         if ( !shouldDisplay( rec ) )
             return true;
 
@@ -175,7 +161,7 @@ namespace Overlay {
         overlayText << std::uppercase << std::hex << (uint64_t) pEntity << "\n";
 
         std::string overlayStr = overlayText.str();
-        draw3DTextCentered( pos, {}, overlayStr.c_str(), color, fontSize, isSelected );
+        draw3DTextCentered( renderer, pos, {}, overlayStr.c_str(), color, fontSize, isSelected );
         if ( printThisEntity )
             std::cout << "\n" << overlayStr.c_str();
 
@@ -228,7 +214,7 @@ namespace Overlay {
         return true;
     }
 
-    void drawPlayerTransformHUD( ID3D11DeviceContext* pCtx ) {
+    void drawPlayerTransformHUD( Renderer* renderer, ID3D11DeviceContext* pCtx ) {
         static Vec3 vecZero = { 0.0f, 0.0f, 0.0f };
         static Vec3 vecX = { 1.0f, 0.0f, 0.0f };
         static Vec3 vecY = { 0.0f, 1.0f, 0.0f };

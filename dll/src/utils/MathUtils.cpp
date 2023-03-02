@@ -27,12 +27,14 @@ namespace MathUtils {
         return (float) rand() / (float) RAND_MAX;
     }
 
-    float _guassianSurplus = 0;
-    bool _guassianHasSurplus = false;
     float guassian() {
-        if ( _guassianHasSurplus ) {
-            _guassianHasSurplus = false;
-            return _guassianSurplus;
+
+        static float surplus = 0;
+        static bool hasSurplus = false;
+
+        if ( hasSurplus ) {
+            hasSurplus = false;
+            return surplus;
         }
 
         float u1 = randf();
@@ -44,8 +46,8 @@ namespace MathUtils {
         float z1 = k1 * cosf( k2 );
         float z2 = k1 * sinf( k2 );
 
-        _guassianHasSurplus = true;
-        _guassianSurplus = z2;
+        hasSurplus = true;
+        surplus = z2;
 
         return z1;
     }

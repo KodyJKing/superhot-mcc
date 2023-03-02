@@ -10,8 +10,6 @@
 #include "FW1FontWrapper.h"
 #pragma comment(lib, "FW1FontWrapper.lib")
 
-using namespace DirectX;
-
 struct Vertex {
     Vec3 pos;
     Vec4 color;
@@ -20,7 +18,6 @@ struct Vertex {
 class Renderer {
 
     public:
-    // Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR defaultFontFamily = L"Verdana" );
     Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR defaultFontFamily = L"Consolas" );
     ~Renderer();
 

@@ -15,6 +15,8 @@
 #include <filesystem>
 #include <string>
 #include <sstream>
+#include <fstream>
+#include <functional>
 #include <unordered_map>
 #include <mutex>
 #include <set>

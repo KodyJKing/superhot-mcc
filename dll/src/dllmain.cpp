@@ -35,23 +35,15 @@ BOOL APIENTRY DllMain(
 }
 
 void onPresent( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
-
-    // static bool init;
-    // static std::unique_ptr<Renderer> renderer;
-
     if ( onRenderMutex.try_lock() ) {
 
-        // if ( !init ) {
-        //     std::make_unique<Renderer>( pDevice, 4096 );
-        //     init = true;
-        // }
+        static std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>( pDevice, 4096 );
 
-        Overlay::render( pCtx, pDevice, pSwapChain );
+        Overlay::render( renderer.get(), pCtx, pDevice, pSwapChain );
         TimeHack::onGameThreadUpdate();
 
         onRenderMutex.unlock();
     }
-
 }
 
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
@@ -113,12 +105,11 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     DX11Hook::cleanup();
     Hook::cleanupHooks();
 
-    // Wait until we're don rendereing before freeing overlay resources.
+    // Wait until we're done rendereing before freeing overlay resources.
     onRenderMutex.lock();
-    Overlay::cleanup();
 
     // Give any other executing hook code a moment to finish before unloading.
-    // It might be smart to eventually wrap all hooks with mutex lock / unlock.
+    // It might be smart to eventually wrap all hooks with a mutex lock / unlock.
     Sleep( 500 );
 
     if ( useConsole ) {

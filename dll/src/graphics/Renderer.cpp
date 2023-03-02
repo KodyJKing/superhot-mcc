@@ -118,7 +118,6 @@ Renderer::Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR default
 }
 
 Renderer::~Renderer() {
-    std::cout << "Cleaning up Renderer.\n";
     safeRelease( pTransformBuffer );
     safeRelease( pVertexBuffer );
     safeRelease( vertLayout );

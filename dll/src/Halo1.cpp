@@ -62,7 +62,7 @@ namespace Halo1 {
     }
     EntityRecord* getEntityRecord( uint32_t entityHandle ) { return getEntityRecord( getEntityListPointer(), entityHandle ); }
 
-    void foreachEntityRecord( EntityListEntryCallback cb ) {
+    void foreachEntityRecord( std::function<void( EntityRecord* )> cb ) {
         auto pEntityList = getEntityListPointer();
         if ( !pEntityList )
             return;
@@ -70,8 +70,7 @@ namespace Halo1 {
             auto pRecord = getEntityRecord( pEntityList, i );
             if ( pRecord->entityArrayOffset == -1 )
                 continue;
-            if ( !cb( pRecord ) )
-                break;
+            cb( pRecord );
         }
     }
 
@@ -132,7 +131,7 @@ namespace Halo1 {
         if ( pEntityList ) {
             std::cout << "Entity list at: " << pEntityList << "\n";
             std::cout << "Entities: \n\n";
-            foreachEntityRecord( printEntity );
+            foreachEntityRecord( []( EntityRecord* rec ) { printEntity( rec ); } );
         }
     }
 

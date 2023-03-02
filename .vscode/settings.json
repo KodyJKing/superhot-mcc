@@ -9,6 +9,7 @@
         "dll/x64": true,
     },
     "files.associations": {
+        "*.asmlib": "asm-intel-x86-generic",
         "iomanip": "cpp",
         "string": "cpp",
         "ostream": "cpp",
@@ -77,7 +78,9 @@
         "xstddef": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "fstream": "cpp",
+        "functional": "cpp"
     },
     "Lua.diagnostics.disable": [
         "lowercase-global",
