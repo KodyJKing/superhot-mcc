@@ -29,6 +29,23 @@ _TEXT SEGMENT
         jmp [resizeBuffersHook_jmp]
     resizeBuffersHook ENDP
 
+    extern onResizeBuffers: proc
+    extern setRenderTargetsHook_return: qword
+    extern setRenderTargetsHook_depthStencilView: qword
+    PUBLIC setRenderTargetsHook
+    setRenderTargetsHook PROC
+        ; Original code:
+            push rbx
+            push rbp
+            push rsi
+            push rdi
+        cmp [setRenderTargetsHook_depthStencilView], 0
+        jne dont_save
+            mov [setRenderTargetsHook_depthStencilView], r9
+        dont_save:
+        jmp [setRenderTargetsHook_return]
+    setRenderTargetsHook ENDP
+
 _TEXT ENDS
 
 END

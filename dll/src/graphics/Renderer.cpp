@@ -85,8 +85,25 @@ Renderer::Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR default
         desc.DepthClipEnable = true;
         desc.ScissorEnable = false;
         desc.MultisampleEnable = false;
-        desc.AntialiasedLineEnable = false;
+        // desc.AntialiasedLineEnable = false;
+        desc.AntialiasedLineEnable = true;
         throwIfFail( pDevice->CreateRasterizerState( &desc, &noCullRasterState ) );
+    }
+
+    { // Create reverse depth-stencil state
+        D3D11_DEPTH_STENCIL_DESC desc{};
+        desc.DepthEnable = true;
+        desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+        desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+        throwIfFail( pDevice->CreateDepthStencilState( &desc, &depthStencilState ) );
+    }
+
+    { // Create reverse depth-stencil state
+        D3D11_DEPTH_STENCIL_DESC desc{};
+        desc.DepthEnable = true;
+        desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+        desc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;
+        throwIfFail( pDevice->CreateDepthStencilState( &desc, &reverseDepthStencilState ) );
     }
 
     auto ident = XMMatrixIdentity();
@@ -108,6 +125,9 @@ Renderer::~Renderer() {
     safeRelease( VS );
     safeRelease( PS );
     safeRelease( blendState );
+    safeRelease( reverseDepthStencilState );
+    safeRelease( depthStencilState );
+    safeRelease( noCullRasterState );
     safeFree( pCpuVertexBuffer );
 
     // FW1
@@ -122,9 +142,14 @@ void Renderer::setTransform( XMMATRIX* pTransform ) {
 }
 
 void Renderer::setPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY topology ) {
-    if ( topology != this->topology )
+    if ( topology != this->topology ) {
         this->flush();
-    this->topology = topology;
+        this->topology = topology;
+    }
+}
+
+void Renderer::setDepthReverse( bool reverse ) {
+    pCtx->OMSetDepthStencilState( reverse ? reverseDepthStencilState : depthStencilState, 0 );
 }
 
 void Renderer::begin() {
@@ -181,7 +206,16 @@ void Renderer::pushVerticies( uint32_t pushCount, Vertex* pVertices ) {
     vertexCount += pushCount;
 }
 
-// FW1
+// === Drawing Helpers ===
+
+void Renderer::drawLine( Vertex a, Vertex b ) {
+    setPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_LINELIST );
+    pushVerticies( 1, &a );
+    pushVerticies( 1, &b );
+}
+
+// === FW1 ===
+
 void Renderer::drawText( Vec2 pos, LPCWSTR text, Vec4 color, uint32_t flags, float fontSize, LPCWSTR fontFamily ) {
 
     if ( !fontFamily ) fontFamily = defaultFontFamily;

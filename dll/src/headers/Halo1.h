@@ -178,6 +178,9 @@ namespace Halo1 {
     bool printEntity( EntityRecord* pRecord );
     void printEntities();
 
+    extern float fovScale;
+    extern float clippingNear;
+    extern float clippingFar;
     HRESULT getCameraMatrix( float w, float h, XMMATRIX& result );
     Vec3 projectPoint( float w, float h, const Vec3 point );
     bool isCameraLoaded();

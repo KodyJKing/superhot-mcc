@@ -352,63 +352,63 @@ createTimer(1, function() memrec.Active = false end)
                 <CheatEntry>
                   <ID>35</ID>
                   <Description>"pos.x"</Description>
-                  <LastState Value="33.55003357" RealAddress="7FFCFE570D64"/>
+                  <LastState Value="33.14093399" RealAddress="7FFCFE570D64"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>36</ID>
                   <Description>"pos.y"</Description>
-                  <LastState Value="-100.7682877" RealAddress="7FFCFE570D68"/>
+                  <LastState Value="-99.59375763" RealAddress="7FFCFE570D68"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+4</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>37</ID>
                   <Description>"pos.z"</Description>
-                  <LastState Value="59.73435974" RealAddress="7FFCFE570D6C"/>
+                  <LastState Value="59.53423309" RealAddress="7FFCFE570D6C"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+8</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>28</ID>
                   <Description>"fwd.x"</Description>
-                  <LastState Value="-0.8046739697" RealAddress="7FFCFE570D84"/>
+                  <LastState Value="-0.8771901131" RealAddress="7FFCFE570D84"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+20</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>29</ID>
                   <Description>"fwd.y"</Description>
-                  <LastState Value="0.5937156081" RealAddress="7FFCFE570D88"/>
+                  <LastState Value="0.4272243977" RealAddress="7FFCFE570D88"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+24</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>30</ID>
                   <Description>"fwd.z"</Description>
-                  <LastState Value="-0.001241242397" RealAddress="7FFCFE570D8C"/>
+                  <LastState Value="-0.2191272378" RealAddress="7FFCFE570D8C"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+28</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>31</ID>
                   <Description>"up.x"</Description>
-                  <LastState Value="-0.0009987963131" RealAddress="7FFCFE570D90"/>
+                  <LastState Value="-0.1970041841" RealAddress="7FFCFE570D90"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+2C</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>32</ID>
                   <Description>"up.y"</Description>
-                  <LastState Value="0.0007369455998" RealAddress="7FFCFE570D94"/>
+                  <LastState Value="0.09594840556" RealAddress="7FFCFE570D94"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+30</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>33</ID>
                   <Description>"up.z"</Description>
-                  <LastState Value="0.9999992847" RealAddress="7FFCFE570D98"/>
+                  <LastState Value="0.9756962061" RealAddress="7FFCFE570D98"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+34</Address>
                 </CheatEntry>
@@ -575,7 +575,7 @@ dealloc(newmem)
             <CheatEntry>
               <ID>54</ID>
               <Description>"TagArray"</Description>
-              <LastState Value="000001BCB46F0028" RealAddress="7FFCFD421390"/>
+              <LastState Value="000001E580000028" RealAddress="7FFCFD421390"/>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>8 Bytes</VariableType>
@@ -593,7 +593,7 @@ dealloc(newmem)
             <CheatEntry>
               <ID>53</ID>
               <Description>"RelocatedMapBase"</Description>
-              <LastState Value="000001BCB46F0000" RealAddress="7FFCFE571D98"/>
+              <LastState Value="000001E580000000" RealAddress="7FFCFE571D98"/>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>8 Bytes</VariableType>
@@ -1795,6 +1795,28 @@ pop rax
         <Byte>74</Byte>
         <Byte>11</Byte>
         <Byte>4C</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>SetRenderTargets function</Description>
+      <AddressString>d3d11.dll+1292C0</AddressString>
+      <Before>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+      </Before>
+      <Actual>
+        <Byte>40</Byte>
+        <Byte>53</Byte>
+      </Actual>
+      <After>
+        <Byte>55</Byte>
+        <Byte>56</Byte>
+        <Byte>57</Byte>
+        <Byte>41</Byte>
+        <Byte>54</Byte>
       </After>
     </CodeEntry>
   </CheatCodes>
@@ -5440,12 +5462,11 @@ function translateMapAddress(addr)
     return addr + (relocatedTagsBase - tagsBase)
 end
 
---[[
 function onOpenProcess(pid)
-  pause()
-  print(pid)
+  --pause()
+  --print(pid)
 end
-]]--
+
 </LuaScript>
   <DisassemblerComments>
     <DisassemblerComment>
@@ -5469,6 +5490,11 @@ entity's tag
       <Address>"halo1.dll"+D00060</Address>
       <Comment>draw non static radar
 </Comment>
+    </DisassemblerComment>
+    <DisassemblerComment>
+      <Address>"d3d11.dll"+1292C0</Address>
+      <Header>SetRenderTargets function
+</Header>
     </DisassemblerComment>
   </DisassemblerComments>
 </CheatTable>

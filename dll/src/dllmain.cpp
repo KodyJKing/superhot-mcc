@@ -7,6 +7,7 @@
 #include "utils/headers/common.h"
 #include "utils/headers/Vec.h"
 #include "graphics/headers/DX11Hook.h"
+#include "graphics/headers/Renderer.h"
 #include "timehack/headers/TimeHack.h"
 
 static HMODULE hmSuperHotHack;
@@ -34,11 +35,23 @@ BOOL APIENTRY DllMain(
 }
 
 void onPresent( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
+
+    // static bool init;
+    // static std::unique_ptr<Renderer> renderer;
+
     if ( onRenderMutex.try_lock() ) {
+
+        // if ( !init ) {
+        //     std::make_unique<Renderer>( pDevice, 4096 );
+        //     init = true;
+        // }
+
         Overlay::render( pCtx, pDevice, pSwapChain );
         TimeHack::onGameThreadUpdate();
+
         onRenderMutex.unlock();
     }
+
 }
 
 DWORD __stdcall mainThread( LPVOID lpParameter ) {

@@ -26,6 +26,7 @@ class Renderer {
 
     void setTransform( XMMATRIX* pTransform );
     void setPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY topology );
+    void setDepthReverse( bool reverse );
 
     void begin();
     void end();
@@ -33,7 +34,10 @@ class Renderer {
     void pushVerticies( uint32_t pushCount, Vertex* pVertices );
     void flush();
 
-    // FW1
+    // === Drawing Helpers ===
+    void drawLine( Vertex a, Vertex b );
+
+    // === FW1 ===
     void drawText( Vec2 pos, LPCWSTR text, Vec4 color, uint32_t flags, float fontSize, LPCWSTR fontFamily );
     void drawText( Vec2 pos, LPCSTR text, Vec4 color, uint32_t flags, float fontSize, LPCWSTR fontFamily );
     Vec2 measureText( LPCWSTR text, float fontSize, LPCWSTR fontFamily );
@@ -57,6 +61,8 @@ class Renderer {
     ID3D11PixelShader* PS;
 
     ID3D11BlendState* blendState;
+    ID3D11DepthStencilState* depthStencilState;
+    ID3D11DepthStencilState* reverseDepthStencilState;
     ID3D11RasterizerState* noCullRasterState;
 
     // FW1

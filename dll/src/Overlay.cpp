@@ -32,6 +32,7 @@ namespace Overlay {
     static bool overlayEnabled = true;
     static bool onlyShowSelected = false;
     static bool showAllObjectTypes = false;
+    static bool entityBeacons = false;
 
     void cleanup() {
         if ( renderer )
@@ -42,6 +43,11 @@ namespace Overlay {
         toggleOption( "Overlay", overlayEnabled, VK_NUMPAD1 );
         toggleOption( "Only show selected", onlyShowSelected, VK_NUMPAD2 );
         toggleOption( "Show all object types", showAllObjectTypes, VK_NUMPAD3 );
+        toggleOption( "Entity beacons", entityBeacons, VK_NUMPAD4 );
+
+        // updateFloat( "Fov Scale", Halo1::fovScale, 1.005f, VK_INSERT, VK_DELETE );
+        // updateFloat( "Clipping near", Halo1::clippingNear, 1.005f, VK_PRIOR, VK_NEXT );
+        // updateFloat( "Clipping far", Halo1::clippingFar, 1.005f, VK_HOME, VK_END );
     }
 
     void render( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
@@ -58,11 +64,10 @@ namespace Overlay {
         screenDimensions = HaloMCC::getWindowSize();
         if ( FAILED( Halo1::getCameraMatrix( screenDimensions.x, screenDimensions.y, transform ) ) )
             return;
-
         renderer->setTransform( &transform );
 
         fitViewportToWindow( pCtx, HaloMCC::getWindow() );
-        renderer->setPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+        renderer->setDepthReverse( true );
         renderer->begin();
 
         selectedEntity = nullptr;
@@ -70,8 +75,8 @@ namespace Overlay {
 
         if ( HaloMCC::isInForeground() )
             printSelectedEntity = keypressed( 'P' );
-        foreachEntityRecord( drawEntityOverlay );
 
+        foreachEntityRecord( drawEntityOverlay );
         renderer->flush();
 
         drawPlayerTransformHUD( pCtx );
@@ -152,12 +157,8 @@ namespace Overlay {
         auto tag = pEntity->tag();
         if ( tag ) {
             auto resourceName = tag->getResourcePath();
-            if ( StringUtils::checkCStr( resourceName, 256 ) ) {
+            if ( StringUtils::checkCStr( resourceName, 256 ) )
                 overlayText << resourceName << "\n";
-                // auto parts = StringUtils::split( resourceName, "\\" );
-                // if ( parts.size() >= 3 )
-                //     overlayText << parts[2] << "\n";
-            }
         }
 
         uint32_t fourccs[] = { tag->fourCC_C, tag->fourCC_B, tag->fourCC_A };
@@ -182,6 +183,17 @@ namespace Overlay {
             std::stringstream pointerText;
             pointerText << std::uppercase << std::hex << (uint64_t) pEntity;
             copyANSITextToClipboard( pointerText.str().c_str() );
+        }
+
+        // Draw beacon
+        if ( entityBeacons && rec->typeId != TypeID_Player ) {
+            const float h = isSelected ? 20.0f : 4.0f; // Height
+            const float f = h / 2;                     // Fade distance
+            float x = pos.x, y = pos.y, z = pos.z;
+            Vec4 col1 = color;
+            Vec4 col2 = Colors::withAlpha( Colors::red, 0.0f );
+            renderer->drawLine( { { x, y, z }, col1 }, { { x, y, z + h - f }, col1 } );
+            renderer->drawLine( { { x, y, z + h - f }, col1 }, { { x, y, z + h }, col2 } );
         }
 
         return true;
@@ -249,15 +261,10 @@ namespace Overlay {
         XMMATRIX transform = view * translate * scaling;
         renderer->setTransform( &transform );
 
-        renderer->setPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_LINELIST );
-        Vertex vertices[] = {
-            { vecZero, Colors::red }, { vecX, Colors::red },
-            { vecZero, Colors::green }, { vecY, Colors::green },
-            { vecZero, Colors::blue }, { vecZ, Colors::blue },
-        };
-        renderer->pushVerticies( ARRAYSIZE( vertices ), vertices );
+        renderer->drawLine( { vecZero, Colors::red }, { vecX, Colors::red } );
+        renderer->drawLine( { vecZero, Colors::green }, { vecY, Colors::green } );
+        renderer->drawLine( { vecZero, Colors::blue }, { vecZ, Colors::blue } );
         renderer->flush();
-
     }
 
 }

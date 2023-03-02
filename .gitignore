@@ -5,3 +5,6 @@ dll/*/Debug
 dll/x64
 tmp
 pointerScans
+
+# RenderDoc captures
+data/*.rdc

@@ -140,18 +140,20 @@ namespace Halo1 {
 
     // === Camera Helpers ===
 
+    // Theses values were found by trial and error using the updateFloat function (common.cpp).
     // For some reason, Halo 1's camera stores a different fov value than it actually uses and must be scaled. 
-    // This value was found by trial and error using the updateFloat function.
     float fovScale = 0.643564f;
-    float clippingNear = 0.1f;
-    float clippingFar = 100.0f;
+    float clippingNear = 0.00782943f;
+    float clippingFar = 386.369f;
+
     HRESULT getCameraMatrix( float w, float h, XMMATRIX& result ) {
         auto pCam = Halo1::getPlayerCameraPointer();
         if ( !pCam )
             return E_FAIL;
         result = cameraMatrix(
             pCam->pos, pCam->fwd, pCam->fov * fovScale,
-            clippingNear, clippingFar,
+            // clippingNear, clippingFar,
+            clippingFar, clippingNear, // We have to swap the near and far plane to cooperate with Halo's reversed depth buffers.
             w, h
         );
         return S_OK;

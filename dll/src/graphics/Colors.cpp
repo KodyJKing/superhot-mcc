@@ -8,4 +8,6 @@ namespace Colors {
         black{ 0.0f, 0.0f, 0.0f, 1.0f },
         white{ 1.0f, 1.0f, 1.0f, 1.0f },
         clear{ 0.0f, 0.0f, 0.0f, 0.0f };
+
+    Vec4 withAlpha( Vec4 color, float alpha ) { return { color.x, color.y, color.z, alpha }; }
 }

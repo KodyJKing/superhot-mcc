@@ -150,7 +150,7 @@ namespace TimeHack {
     void onDllThreadUpdate() {
         toggleOption( "Freeze Time", freezeTimeEnabled, VK_F2 );
         toggleOption( "SUPERHOT", superhotEnabled, VK_F3 );
-        toggleOption( "Speed Limit", speedLimitEnabled, VK_NUMPAD4 );
+        toggleOption( "Speed Limit", speedLimitEnabled, VK_NUMPAD9 );
         if ( keypressed( VK_F1 ) )
             runUntil = GetTickCount64() + 100;
     }

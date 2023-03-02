@@ -25,6 +25,10 @@ extern "C" {
         DXGI_FORMAT    NewFormat,
         UINT           SwapChainFlags
     );
+
+    uint64_t setRenderTargetsHook_return;
+    uint64_t setRenderTargetsHook_depthStencilView;
+    void setRenderTargetsHook();
 }
 
 static std::vector<PresentCallback> onPresentCallbacks;
@@ -58,15 +62,19 @@ void __stdcall onPresentCalled(
     if ( !hasDoneDeviceInit )
         initDevice( pDevice, pSwapChain );
 
+    auto depthStencilView = (ID3D11DepthStencilView*) setRenderTargetsHook_depthStencilView;
+
     ID3D11DeviceContext* pCtx;
     pDevice->GetImmediateContext( &pCtx );
-    pCtx->OMSetRenderTargets( 1, &renderTargetView, NULL );
+    pCtx->OMSetRenderTargets( 1, &renderTargetView, depthStencilView );
 
     if ( onPresentCallbacks_mutex.try_lock() ) {
         for ( PresentCallback cb : onPresentCallbacks )
             cb( pCtx, pDevice, pSwapChain );
         onPresentCallbacks_mutex.unlock();
     }
+
+    setRenderTargetsHook_depthStencilView = 0;
 }
 
 void onResizeBuffers(
@@ -112,20 +120,26 @@ namespace DX11Hook {
 
         uint64_t resizeBuffersHook_start = swapChainVTable[MO_IDXGISwapChain::ResizeBuffers];
         resizeBuffersHook_jmp = Hook::getJumpDestination( resizeBuffersHook_start );
-        std::cout << "Resize buffers exit jump " << resizeBuffersHook_jmp << "\n";
         ( new Hook::JumpHook(
             "ResizeBuffers",
             resizeBuffersHook_start, 5,
             (UINT_PTR) resizeBuffersHook
         ) )->hook();
 
+        ( new Hook::JumpHook(
+            "SetRenderTargets",
+            deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets], 5,
+            (UINT_PTR) setRenderTargetsHook,
+            setRenderTargetsHook_return
+        ) )->hook();
+
         // // Output method locations.
         // std::cout << "\n";
-        // std::cout << "SwapChain.Present address: " << swapChainVTable[MO_IDXGISwapChain::Present] << "\n";
-        // std::cout << "SwapChain.ResizeBuffers address: " << swapChainVTable[MO_IDXGISwapChain::ResizeBuffers] << "\n";
+        // // std::cout << "SwapChain.Present address: " << swapChainVTable[MO_IDXGISwapChain::Present] << "\n";
+        // // std::cout << "SwapChain.ResizeBuffers address: " << swapChainVTable[MO_IDXGISwapChain::ResizeBuffers] << "\n";
         // // std::cout << "Context.Draw address: " << deviceContextVTable[MO_ID3D11DeviceContext::Draw] << "\n";
         // // std::cout << "Context.DrawIndexed address: " << deviceContextVTable[MO_ID3D11DeviceContext::DrawIndexed] << "\n";
-        // // std::cout << "Context.OMSetRenderTargets address: " << deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets] << "\n";
+        // std::cout << "Context.OMSetRenderTargets address: " << deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets] << "\n";
         // std::cout << "\n";
 
         pSwapChain->Release();
