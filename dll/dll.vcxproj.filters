@@ -81,6 +81,69 @@
     <ClInclude Include="**\*.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="**\*.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -131,8 +194,62 @@
     <ClCompile Include="**\*.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="**\*.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <MASM Include="**\*.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
     <MASM Include="**\*.asm">
       <Filter>Source Files</Filter>
     </MASM>

@@ -16,7 +16,7 @@
           <AssemblerScript>[ENABLE]
 {$lua}
 if syntaxcheck then return end
-tryInjectDll(memrec, "dll")
+tryInjectDll(memrec, "SUPERHOTMCC")
 {$asm}
 [DISABLE]
 
