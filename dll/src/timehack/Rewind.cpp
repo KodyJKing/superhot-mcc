@@ -109,6 +109,14 @@ namespace Rewind {
             case EntityCategory_Projectile: {
                 REWIND( projectileAge, float );
                 REWIND( fuse, float );
+
+                // Do not allow these projectiles to accelerate/decelerate.
+                if (
+                    entity->fromResourcePath( "vehicles\\warthog\\bullet" ) ||
+                    entity->fromResourcePath( "weapons\\plasma rifle\\bolt" )
+                    )
+                    entity->vel = old_vel;
+
                 break;
             }
             case EntityCategory_Vehicle: {

@@ -27,7 +27,7 @@ namespace Overlay {
     static bool printSelectedEntity;
     static EntityRecord* selectedEntity;
     // Options
-    static bool overlayEnabled = true;
+    static bool overlayEnabled = false;
     static bool onlyShowSelected = false;
     static bool showAllObjectTypes = false;
     static bool entityBeacons = false;
@@ -44,7 +44,7 @@ namespace Overlay {
     }
 
     void render( Renderer* renderer, ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
-        if ( !overlayEnabled || !isCameraLoaded() )
+        if ( !overlayEnabled )
             return;
 
         XMMATRIX transform;
@@ -66,7 +66,7 @@ namespace Overlay {
         foreachEntityRecord( [&]( EntityRecord* rec ) { drawEntityOverlay( renderer, rec ); } );
         renderer->flush();
 
-        // drawPlayerTransformHUD( renderer, pCtx );
+        drawPlayerTransformHUD( renderer, pCtx );
 
         renderer->end();
     }

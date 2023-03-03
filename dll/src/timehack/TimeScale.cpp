@@ -113,7 +113,10 @@ namespace TimeScale {
         if ( pPlayer->vehicleHandle == NULL_HANDLE )
             netLevel += speedLevel;
 
-        timescale = smoothstep( 0.0f, 1.0f, netLevel );
+        if ( isRidingTransport( pPlayer ) )
+            timescale = 1.0f;
+        else
+            timescale = smoothstep( 0.0f, 1.0f, netLevel );
     }
 
 }

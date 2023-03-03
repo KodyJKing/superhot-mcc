@@ -40,9 +40,9 @@ void onPresent( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain
 
         static std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>( pDevice, 4096 );
 
-        if ( GetModuleHandleA( "halo1.dll" ) && Halo1::isCameraLoaded() ) {
+        if ( Halo1::isGameLoaded() ) {
             Overlay::render( renderer.get(), pCtx, pDevice, pSwapChain );
-            Tracers::render( renderer.get(), pCtx, pDevice, pSwapChain );
+            Tracers::render( renderer.get(), TimeHack::timeElapsed, pCtx, pDevice, pSwapChain );
             TimeHack::onGameThreadUpdate();
         }
 
@@ -100,7 +100,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
             if ( GetAsyncKeyState( VK_F9 ) || !GetModuleHandleA( "halo1.dll" ) )
                 break;
 
-            if ( Halo1::isCameraLoaded() ) {
+            if ( Halo1::isGameLoaded() ) {
                 TimeHack::onDllThreadUpdate();
                 Overlay::onDllThreadUpdate();
             }
@@ -115,7 +115,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     DX11Hook::cleanup();
     Hook::cleanupHooks();
 
-    // Wait until we're done rendereing before freeing overlay resources.
+    // Wait until we're done rendereing before exiting and letting renderer destruct.
     onRenderMutex.lock();
 
     // Give any other executing hook code a moment to finish before unloading.

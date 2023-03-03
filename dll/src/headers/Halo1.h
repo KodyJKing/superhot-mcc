@@ -174,6 +174,7 @@ namespace Halo1 {
     bool isDoingMelee( Entity* entity );
 
     bool isTransport( Entity* entity );
+    bool isRidingTransport( Entity* entity );
 
     bool printEntity( EntityRecord* pRecord );
     void printEntities();
@@ -183,6 +184,8 @@ namespace Halo1 {
     extern float clippingFar;
     HRESULT getCameraMatrix( float w, float h, XMMATRIX& result );
     Vec3 projectPoint( float w, float h, const Vec3 point );
+
     bool isCameraLoaded();
+    bool isGameLoaded();
 
 }

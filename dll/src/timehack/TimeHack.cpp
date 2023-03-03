@@ -155,8 +155,15 @@ namespace TimeHack {
             runUntil = GetTickCount64() + 100;
     }
 
+    float timeElapsed = 0.0f;
+
     void onGameThreadUpdate() {
         TimeScale::update();
+        float dt = superhotEnabled ? TimeScale::timescale : 1.0f;
+        timeElapsed += dt * 1000 / 60.0f;
+        // static auto i = 0u;
+        // if ( i++ % 60 == 0 )
+        //     std::cout << "Time elapsed: " << timeElapsed << "\n";
         // std::cout << std::setprecision( 4 ) << TimeScale::timescale << "\n";
     }
 

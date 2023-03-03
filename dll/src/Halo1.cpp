@@ -2,6 +2,7 @@
 #include "graphics/headers/DX11Utils.h"
 #include "utils/headers/Vec.h"
 #include "utils/headers/common.h"
+#include "utils/headers/AllocationUtils.h"
 
 namespace Halo1 {
 
@@ -108,7 +109,7 @@ namespace Halo1 {
 
         return rec->typeId == TypeID_Player
             || isPlayerHandle( entity->parentHandle )
-            || isPlayerHandle( entity->vehicleRiderHandle )
+            // || isPlayerHandle( entity->vehicleRiderHandle )
             // || isPlayerHandle( entity->controllerHandle )
             // || isPlayerHandle( entity->projectileParentHandle )
             // || rec->typeId == 0x0454
@@ -122,6 +123,16 @@ namespace Halo1 {
         return
             entity->fromResourcePath( "vehicles\\pelican\\pelican" ) ||
             entity->fromResourcePath( "vehicles\\c_dropship\\c_dropship" );
+    }
+
+    bool isRidingTransport( Entity* entity ) {
+        if ( !entity )
+            return false;
+        auto vehicleRec = getEntityRecord( entity->parentHandle );
+        if ( !vehicleRec )
+            return false;
+        auto vehicle = getEntityPointer( vehicleRec );
+        return isTransport( vehicle );
     }
 
     // ======================
@@ -183,10 +194,11 @@ namespace Halo1 {
         );
     }
 
-    bool isCameraLoaded() {
-        return !isZero( Halo1::getPlayerCameraPointer() );
-    }
-
     // =======================
+
+    bool isCameraLoaded() { return !isZero( Halo1::getPlayerCameraPointer() ); }
+    bool isEntityListLoaded() { return AllocationUtils::isAllocated( (UINT_PTR) getEntityListPointer() ); }
+    bool isEntityArrayLoaded() { return AllocationUtils::isAllocated( (UINT_PTR) getEntityArrayBase() ); }
+    bool isGameLoaded() { return GetModuleHandleA( "halo1.dll" ) && Halo1::isCameraLoaded() && isEntityListLoaded() && isEntityArrayLoaded(); }
 
 }
