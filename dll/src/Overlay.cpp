@@ -49,12 +49,12 @@ namespace Overlay {
 
         XMMATRIX transform;
         screenDimensions = HaloMCC::getWindowSize();
-        if ( FAILED( Halo1::getCameraMatrix( screenDimensions.x, screenDimensions.y, transform ) ) )
-            return;
+        if ( FAILED( Halo1::getCameraMatrix( screenDimensions.x, screenDimensions.y, transform ) ) ) return;
         renderer->setTransform( &transform );
 
         fitViewportToWindow( pCtx, HaloMCC::getWindow() );
         renderer->setDepthReverse( true );
+
         renderer->begin();
 
         selectedEntity = nullptr;
@@ -66,7 +66,7 @@ namespace Overlay {
         foreachEntityRecord( [&]( EntityRecord* rec ) { drawEntityOverlay( renderer, rec ); } );
         renderer->flush();
 
-        drawPlayerTransformHUD( renderer, pCtx );
+        // drawPlayerTransformHUD( renderer, pCtx );
 
         renderer->end();
     }

@@ -172,8 +172,8 @@ void Renderer::begin() {
 }
 
 void Renderer::end() {
+    flush();
     vertexCount = 0;
-
     // FW1
     textGeometry->Clear();
 }

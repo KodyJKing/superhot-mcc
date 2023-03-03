@@ -161,6 +161,7 @@ namespace Halo1 {
     uint64_t translateMapAddress( uint32_t address );
 
     void foreachEntityRecord( std::function<void( EntityRecord* )> cb );
+    void foreachEntityRecordIndexed( std::function<void( EntityRecord*, uint32_t i )> cb );
 
     Entity* getEntityPointer( EntityRecord* pRecord );
     EntityRecord* getEntityRecord( uint32_t entityHandle );

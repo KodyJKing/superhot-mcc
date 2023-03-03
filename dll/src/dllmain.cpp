@@ -3,6 +3,7 @@
 #include "headers/Halo1.h"
 #include "headers/HaloMCC.h"
 #include "headers/Overlay.h"
+#include "headers/Tracers.h"
 #include "headers/Hook.h"
 #include "utils/headers/common.h"
 #include "utils/headers/Vec.h"
@@ -39,8 +40,11 @@ void onPresent( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain
 
         static std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>( pDevice, 4096 );
 
-        Overlay::render( renderer.get(), pCtx, pDevice, pSwapChain );
-        TimeHack::onGameThreadUpdate();
+        if ( GetModuleHandleA( "halo1.dll" ) && Halo1::isCameraLoaded() ) {
+            Overlay::render( renderer.get(), pCtx, pDevice, pSwapChain );
+            Tracers::render( renderer.get(), pCtx, pDevice, pSwapChain );
+            TimeHack::onGameThreadUpdate();
+        }
 
         onRenderMutex.unlock();
     }
@@ -53,13 +57,16 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     const bool pressKeyToExit = false;
 
     const char* logFile = "C:\\Users\\Kody\\Desktop\\log.txt";
+    const bool printToLog = false;
 
     errno_t err = 0;
     FILE* pFile_stdout, * pFile_stderr, * pFile_stdin;
     if ( useConsole ) {
         AllocConsole();
-        // err = freopen_s( &pFile_stdout, logFile, "w", stdout );
-        err = freopen_s( &pFile_stdout, "CONOUT$", "w", stdout );
+        if ( printToLog )
+            err = freopen_s( &pFile_stdout, logFile, "w", stdout );
+        else
+            err = freopen_s( &pFile_stdout, "CONOUT$", "w", stdout );
         err |= freopen_s( &pFile_stderr, "CONOUT$", "w", stderr );
         if ( useStdin )
             err |= freopen_s( &pFile_stdin, "CONIN$", "r", stdin );
@@ -68,7 +75,11 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     // Bring MCC to front.
     HWND mccWindow = HaloMCC::getWindow();
     BringWindowToTop( mccWindow );
-    SetForegroundWindow( mccWindow );
+    // SetForegroundWindow( mccWindow );
+    if ( useConsole ) {
+        HWND consoleWindow = GetConsoleWindow();
+        BringWindowToTop( consoleWindow );
+    }
 
     std::cout << "MCC-SUPERHOT Mod Loaded\n\n";
 
@@ -89,11 +100,10 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
             if ( GetAsyncKeyState( VK_F9 ) || !GetModuleHandleA( "halo1.dll" ) )
                 break;
 
-            TimeHack::onDllThreadUpdate();
-            Overlay::onDllThreadUpdate();
-
-            if ( keypressed( VK_DELETE ) )
-                system( "CLS" );
+            if ( Halo1::isCameraLoaded() ) {
+                TimeHack::onDllThreadUpdate();
+                Overlay::onDllThreadUpdate();
+            }
 
             Sleep( 10 );
 
@@ -112,6 +122,8 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     // It might be smart to eventually wrap all hooks with a mutex lock / unlock.
     Sleep( 500 );
 
+    std::cout << "Freeing console and library.\n";
+
     if ( useConsole ) {
         if ( useStdin && pressKeyToExit ) {
             std::cout << std::endl << "Press anything to continue" << std::endl;
@@ -125,6 +137,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     }
 
     onRenderMutex.unlock();
+
     FreeLibraryAndExitThread( hmSuperHotHack, 0 );
 
 }
