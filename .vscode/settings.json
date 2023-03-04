@@ -133,7 +133,12 @@
         "R13",
         "R14",
         "R15",
-        "readQword"
+        "readQword",
+        "bptAccess",
+        "readBytes",
+        "bpmDebugRegister",
+        "bptWrite",
+        "writeBytes"
     ],
     "workspace_superhotmcc": true,
     "C_Cpp.formatting": "vcFormat",

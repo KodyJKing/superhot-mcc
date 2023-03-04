@@ -33,6 +33,7 @@ class Renderer {
 
     // === Drawing Helpers ===
     void drawLine( Vertex a, Vertex b );
+    void drawThickLine( Vertex a, Vertex b, float thickness, Vec3 viewDirection );
 
     // === FW1 ===
     void drawText( Vec2 pos, LPCWSTR text, Vec4 color, uint32_t flags, float fontSize, LPCWSTR fontFamily );

@@ -52,8 +52,8 @@ namespace Tracers {
                 if ( !entity || ( entity->entityCategory != EntityCategory_Projectile ) )
                     return;
 
-                ProjectileData currentData = { entity->projectileAge, entity->pos, true };
                 ProjectileData oldData = projectileData[i];
+                ProjectileData currentData = { entity->projectileAge, entity->pos, true };
 
                 // If the age decreased, then the entity was deleted and a new one took its place.
                 if ( oldData.initialized && oldData.age < currentData.age )
@@ -63,7 +63,9 @@ namespace Tracers {
             }
         );
 
+
         renderer->begin();
+        auto pCam = getPlayerCameraPointer();
         for ( size_t i = 0; i < ARRAYSIZE( lineBuffer ); i++ ) {
             static const float fadeTime = 250.0f;
             TracerLine line = lineBuffer[i];
@@ -72,9 +74,11 @@ namespace Tracers {
                 continue;
             float fadeProgress = (float) age / (float) fadeTime;
             Vec4 color = Colors::withAlpha( Colors::red, 1.0f - fadeProgress );
-            renderer->drawLine(
+            renderer->drawThickLine(
                 { line.a, color },
-                { line.b, color }
+                { line.b, color },
+                0.02f + 0.03f * ( 1.0f - fadeProgress ),
+                pCam->pos
             );
         }
         renderer->flush();

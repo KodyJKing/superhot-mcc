@@ -9,6 +9,7 @@
 #include "./headers/Renderer.h"
 #include "./headers/shader.h"
 #include "../utils/headers/common.h"
+#include "../utils/headers/Vec.h"
 
 #include <DirectXPackedVector.h>
 
@@ -211,6 +212,26 @@ void Renderer::drawLine( Vertex a, Vertex b ) {
     setPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_LINELIST );
     pushVerticies( 1, &a );
     pushVerticies( 1, &b );
+    flush();
+}
+
+void Renderer::drawThickLine( Vertex a, Vertex b, float thickness, Vec3 viewPosition ) {
+    setPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP );
+
+    Vec3 midPoint = Vec::scale( Vec::add( a.pos, b.pos ), 0.5f );
+    Vec3 viewDirection = Vec::unit( Vec::sub( midPoint, viewPosition ) );
+
+    Vec3 u = Vec::unit( Vec::sub( b.pos, a.pos ) );
+    Vec3 v = Vec::unit( Vec::cross( u, viewDirection ) );
+    Vertex vertices[] = {
+        { Vec::add( a.pos, Vec::scale( v,  thickness ) ), a.color },
+        { Vec::add( a.pos, Vec::scale( v, -thickness ) ), a.color },
+        { Vec::add( b.pos, Vec::scale( v,  thickness ) ), a.color },
+        { Vec::add( b.pos, Vec::scale( v, -thickness ) ), a.color }
+    };
+
+    pushVerticies( ARRAYSIZE( vertices ), vertices );
+    flush();
 }
 
 // === FW1 ===

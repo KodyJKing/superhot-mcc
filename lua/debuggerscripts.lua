@@ -51,3 +51,14 @@ function scanStack(query, maxOffset, stride)
     end
     return false
 end
+
+function freezeWithBreakpoint(address, size)
+    local bytes = readBytes(address, size, true)
+    debug_setBreakpoint(
+        address, size, bptWrite, bpmDebugRegister,
+        function()
+            writeBytes(address, bytes)
+            debug_continueFromBreakpoint(co_run)
+        end
+    )
+end
