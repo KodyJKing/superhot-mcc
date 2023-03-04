@@ -111,14 +111,12 @@ namespace TimeScale {
 
         float netLevel = activityLevel + minTimescale;
         if ( pPlayer->parentHandle == NULL_HANDLE ) {
-            netLevel += speedLevel;
+            netLevel += speedLevel + lookSpeedLevel;
         } else {
             auto vehicle = getEntityPointer( pPlayer->parentHandle );
             if ( !vehicle->fromResourcePath( "vehicles\\warthog\\warthog" ) )
                 netLevel += lookSpeedLevel;
         }
-
-
 
         if ( isRidingTransport( pPlayer ) )
             timescale = 1.0f;
