@@ -17,7 +17,7 @@ static const float speedLimit = 1.4f;
 static const float timescaleUpdateDeadzone = 0.05f;
 
 // To allow for some discrete updates to still happen when deadzoned, we can update with a probability equal to the current timescale.
-static const bool allowRandomUpdatesInDeadzone = true;
+static const bool allowRandomUpdatesInDeadzone = false;
 
 static bool freezeTimeEnabled = false;
 static bool superhotEnabled = true;

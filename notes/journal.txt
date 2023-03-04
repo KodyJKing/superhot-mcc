@@ -11,3 +11,8 @@ Feb 19 2023
 Feb 21 2023
 
     I removed the old JumpHook in favor of a simpler version that just responsible for installing / removing jump hooks. If I need the convenience of assembly-free hooking, I can add a separate utility for creating trampolines.
+    I might use zydis for runtime code generation. https://github.com/zyantific/zydis
+
+Mar 3 2023
+
+    If I want to find code for creating / destroying entities, I should set a data breakpoint on EntityList.capacity and walk up the stack.

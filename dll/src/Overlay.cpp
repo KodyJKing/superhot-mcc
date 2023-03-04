@@ -12,10 +12,12 @@ using namespace DirectX;
 using namespace MathUtils;
 using namespace Halo1;
 
+#define HEX std::uppercase << std::hex
+
 namespace Overlay {
 
     // Declarations
-    bool drawEntityOverlay( Renderer* renderer, EntityRecord* rec );
+    bool drawEntityOverlay( Renderer* renderer, EntityRecord* rec, uint16_t index );
     void drawPlayerTransformHUD( Renderer* renderer, ID3D11DeviceContext* pCtx );
     bool trySelectEntity( EntityRecord* rec );
 
@@ -63,7 +65,7 @@ namespace Overlay {
         if ( HaloMCC::isInForeground() )
             printSelectedEntity = keypressed( 'P' );
 
-        foreachEntityRecord( [&]( EntityRecord* rec ) { drawEntityOverlay( renderer, rec ); } );
+        foreachEntityRecordIndexed( [&]( EntityRecord* rec, uint16_t i ) { drawEntityOverlay( renderer, rec, i ); } );
         renderer->flush();
 
         drawPlayerTransformHUD( renderer, pCtx );
@@ -113,7 +115,7 @@ namespace Overlay {
         }
     }
 
-    bool drawEntityOverlay( Renderer* renderer, EntityRecord* rec ) {
+    bool drawEntityOverlay( Renderer* renderer, EntityRecord* rec, uint16_t index ) {
         if ( !shouldDisplay( rec ) )
             return true;
 
@@ -156,9 +158,17 @@ namespace Overlay {
                 overlayText << StringUtils::fourccToString( fourcc );
             }
         }
+
         overlayText << " ";
-        overlayText << std::uppercase << std::hex << rec->typeId << " ";
-        overlayText << std::uppercase << std::hex << (uint64_t) pEntity << "\n";
+        overlayText << HEX << rec->typeId << " ";
+        overlayText << HEX << (uint64_t) pEntity << "\n";
+
+        // overlayText << HEX << rec->id << " ";
+        // overlayText << HEX << rec->unknown_1 << " ";
+        // overlayText << HEX << rec->unknown_2 << "\n";
+
+        auto handle = indexToEntityHandle( index );
+        overlayText << HEX << handle << "\n";
 
         std::string overlayStr = overlayText.str();
         draw3DTextCentered( renderer, pos, {}, overlayStr.c_str(), color, fontSize, isSelected );
@@ -167,7 +177,7 @@ namespace Overlay {
 
         if ( printThisEntity ) {
             std::stringstream pointerText;
-            pointerText << std::uppercase << std::hex << (uint64_t) pEntity;
+            pointerText << HEX << (uint64_t) pEntity;
             copyANSITextToClipboard( pointerText.str().c_str() );
         }
 

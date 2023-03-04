@@ -161,11 +161,14 @@ namespace Halo1 {
     uint64_t translateMapAddress( uint32_t address );
 
     void foreachEntityRecord( std::function<void( EntityRecord* )> cb );
-    void foreachEntityRecordIndexed( std::function<void( EntityRecord*, uint32_t i )> cb );
+    void foreachEntityRecordIndexed( std::function<void( EntityRecord*, uint16_t i )> cb );
 
     Entity* getEntityPointer( EntityRecord* pRecord );
+    Entity* getEntityPointer( uint32_t entityHandle );
     EntityRecord* getEntityRecord( uint32_t entityHandle );
     EntityRecord* getEntityRecord( EntityList* pEntityList, uint32_t entityHandle );
+
+    uint32_t indexToEntityHandle( uint16_t index );
 
     bool isPlayerHandle( uint32_t entityHandle );
     bool isPlayerControlled( EntityRecord* rec );

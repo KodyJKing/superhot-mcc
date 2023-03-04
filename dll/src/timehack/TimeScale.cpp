@@ -75,7 +75,7 @@ namespace TimeScale {
         uint64_t now = GetTickCount64();
         bool isActing = playerIsActingUntil > now || isThrowingGrenade;
 
-        if ( pPlayer->vehicleHandle != NULL_HANDLE )
+        if ( pPlayer->parentHandle != NULL_HANDLE )
             isActing |=
             GetAsyncKeyState( 'W' ) || GetAsyncKeyState( 'A' ) ||
             GetAsyncKeyState( 'S' ) || GetAsyncKeyState( 'D' ) ||
@@ -109,9 +109,16 @@ namespace TimeScale {
         updateLookSpeed();
         float lookSpeedLevel = smoothstep( 0.0f, 1.0f, lookSpeedSmoothed * rotationActivityCoefficient ) * maxTimescaleDueToTurning;
 
-        float netLevel = lookSpeedLevel + activityLevel + minTimescale;
-        if ( pPlayer->vehicleHandle == NULL_HANDLE )
+        float netLevel = activityLevel + minTimescale;
+        if ( pPlayer->parentHandle == NULL_HANDLE ) {
             netLevel += speedLevel;
+        } else {
+            auto vehicle = getEntityPointer( pPlayer->parentHandle );
+            if ( !vehicle->fromResourcePath( "vehicles\\warthog\\warthog" ) )
+                netLevel += lookSpeedLevel;
+        }
+
+
 
         if ( isRidingTransport( pPlayer ) )
             timescale = 1.0f;

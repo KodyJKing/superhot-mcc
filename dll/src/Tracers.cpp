@@ -47,7 +47,7 @@ namespace Tracers {
         renderer->setDepthReverse( true );
 
         foreachEntityRecordIndexed(
-            [renderer, time]( EntityRecord* rec, uint32_t i ) {
+            [renderer, time]( EntityRecord* rec, uint16_t i ) {
                 auto entity = rec->entity();
                 if ( !entity || ( entity->entityCategory != EntityCategory_Projectile ) )
                     return;
