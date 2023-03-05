@@ -9,9 +9,7 @@
 
 using namespace Halo1;
 
-// Speed limiting is a hackish solution to projectiles linecasting too far and hitting a wall before they actually should.
-// Preemptively scaling back velocity works for some projectile types, but not for projectiles which despawn when they reach their end speed (like plasma bolts).
-static const float speedLimit = 0.7f; // 1.4f;
+static const float speedLimit = 1.4f; // 0.834f;
 
 // Deadzoning is intended to prevent discrete actions (like spawning projectiles) from being spammed when an entity should be nearly frozen.
 static const float timescaleUpdateDeadzone = 0.05f;
@@ -53,6 +51,12 @@ float timescaleForEntity( EntityRecord* rec ) {
     if ( isTransport( entity ) )
         return 1.0f;
 
+    if ( entity->fromResourcePath( "levels\\b40\\devices\\b40_lift4800\\b40_lift4800" ) )
+        return 1.0f;
+
+    if ( entity->entityCategory == EntityCategory_SoundScenery )
+        return 1.0f;
+
     auto vehicleRec = getEntityRecord( entity->parentHandle );
     if ( vehicleRec ) {
         auto vehicle = getEntityPointer( vehicleRec );
@@ -85,9 +89,9 @@ bool shouldEntityUpdate( EntityRecord* rec ) {
 }
 
 int updateDepth = 0;
-bool warnedRecursiveUpdate;
 void preEntityUpdate( uint32_t entityHandle ) {
 
+    static bool warnedRecursiveUpdate = false;
     if ( updateDepth++ > 0 && !warnedRecursiveUpdate ) {
         std::cout << "Warning, recursive update detected!\n";
         warnedRecursiveUpdate = true;

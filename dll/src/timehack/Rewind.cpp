@@ -37,6 +37,7 @@ namespace Rewind {
     static float old_fuse, old_heat, old_projectileAge, old_shield;
     static uint32_t old_parentHandle, old_ageMilis;
     static uint16_t old_animFrame;
+    static uint8_t old_ticksSinceLastFired;
 
     void snapshot( EntityRecord* rec ) {
 
@@ -56,6 +57,7 @@ namespace Rewind {
                 break;
             }
             case EntityCategory_Weapon: {
+                SAVE( ticksSinceLastFired );
                 SAVE( heat );
                 break;
             }
@@ -79,6 +81,7 @@ namespace Rewind {
 
     void rewindAnimFrame( Entity* entity, float timescale );
     void rewindRotation( Entity* entity, float timescale );
+    void rewindFireCooldown( Entity* entity, float timescale );
 
     void rewind( EntityRecord* rec, float timescale, float globalTimescale ) {
 
@@ -104,15 +107,17 @@ namespace Rewind {
             case EntityCategory_Weapon: {
                 // Weapon heat shouldn't update when player isn't moving.
                 REWIND_DECREASES_WITH_TIMESCALE( heat, float, globalTimescale );
+                rewindFireCooldown( entity, globalTimescale );
                 break;
             }
             case EntityCategory_Projectile: {
                 REWIND( projectileAge, float );
                 REWIND( fuse, float );
 
-                // Do not allow these projectiles to accelerate/decelerate.
+                // Do not allow these projectiles to accelerate / decelerate.
                 if (
                     entity->fromResourcePath( "vehicles\\warthog\\bullet" ) ||
+                    entity->fromResourcePath( "weapons\\pistol\\bullet" ) ||
                     entity->fromResourcePath( "weapons\\plasma rifle\\bolt" )
                     )
                     entity->vel = old_vel;
@@ -129,6 +134,19 @@ namespace Rewind {
             }
         }
 
+    }
+
+    void rewindFireCooldown( Entity* entity, float timescale ) {
+        static const float timescaleThreshold = 0.6f;
+        if ( timescale > timescaleThreshold )
+            return;
+        auto diff = entity->ticksSinceLastFired - old_ticksSinceLastFired;
+        if ( diff == 1 ) {
+            entity->ticksSinceLastFired = old_ticksSinceLastFired;
+            float u = (float) rand() / RAND_MAX;
+            if ( u < timescale )
+                entity->ticksSinceLastFired++;
+        }
     }
 
     void rewindAnimFrame( Entity* entity, float timescale ) {

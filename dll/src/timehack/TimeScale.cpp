@@ -79,7 +79,7 @@ namespace TimeScale {
             isActing |=
             GetAsyncKeyState( 'W' ) || GetAsyncKeyState( 'A' ) ||
             GetAsyncKeyState( 'S' ) || GetAsyncKeyState( 'D' ) ||
-            GetAsyncKeyState( VK_LBUTTON ); // TODO: Replace with more robust checks for vehicle inputs.
+            GetAsyncKeyState( VK_LBUTTON ); // TODO: Replace with checks that respect keybindings.
 
         // Check if charging plasma bolt.
         if ( weapon ) {

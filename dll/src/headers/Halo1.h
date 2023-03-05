@@ -86,7 +86,9 @@ namespace Halo1 {
         float fuse; //0x020C
         char pad_0210[12]; //0x0210
         float projectileAge; //0x021C
-        char pad_0220[32]; //0x0220
+        char pad_0220[8]; //0x0220
+        uint8_t ticksSinceLastFired; //0x0228
+        char pad_0229[23]; //0x0229
         float plasmaCharge; //0x0240
         char pad_0244[61]; //0x0244
         uint8_t weaponIndex; //0x0281
@@ -102,6 +104,7 @@ namespace Halo1 {
         uint8_t plasmas; //0x02FD
         char pad_02FE[6]; //0x02FE
         uint32_t vehicleRiderHandle; //0x0304
+
 
         Tag* tag();
         char* getTagResourcePath();

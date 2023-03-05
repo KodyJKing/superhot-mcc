@@ -48,7 +48,7 @@ namespace Tracers {
 
         void draw( Renderer* renderer, float time, Vec3 viewPos ) {
 
-            static const float fadeTime = 1000.0f;
+            static const float fadeTime = 500.0f;
 
             if ( time - lastUpdated > fadeTime )
                 return;
@@ -78,7 +78,7 @@ namespace Tracers {
                 float alphaLen = smoothstep( 0.0f, 1.0f, normalizedLength ) * sqrtf( 1.0f - normalizedLength * normalizedLength );
                 float alphaAge = smoothstep( 1.0f, 0.0f, age );
                 Vec4 color = Colors::withAlpha( Colors::red, sqrtf( alphaLen * alphaAge ) );
-                float width = alphaLen * 0.05f;
+                float width = alphaLen * 0.025f;
 
                 verts[0] = { Vec::add( p.pos, Vec::scale( v, width ) ), color };
                 verts[1] = { Vec::add( p.pos, Vec::scale( v, -width ) ), color };
