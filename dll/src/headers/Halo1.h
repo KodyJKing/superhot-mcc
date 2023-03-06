@@ -42,6 +42,7 @@ namespace Halo1 {
         char pad_0018[8]; //0x0018
 
         char* getResourcePath();
+        void* getData();
     }; //Size: 0x0020
 
     class EntityList {

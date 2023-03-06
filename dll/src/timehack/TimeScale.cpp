@@ -15,7 +15,7 @@ namespace TimeScale {
     static const float rotationSpeedSmoothing = 0.75f;
     static const float maxTimescaleDueToTurning = 0.25f;
 
-    static const DWORD unpauseAfterFireMilis = 100;
+    static const DWORD unpauseAfterFireMilis = 40; // 100;
     static const DWORD unpauseReloadMilis = 750;
     static const DWORD unpauseMeleeMilis = 250;
     static const DWORD unpauseWeaponSwapMilis = 250;

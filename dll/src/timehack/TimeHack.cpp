@@ -33,6 +33,9 @@ extern "C" {
     void     postEntityUpdate( uint32_t entityHandle );
     void     postEntityUpdateHook();
     uint64_t postEntityUpdateHook_return;
+
+    void fireRateFixHook();
+    uint64_t fireRateFixHook_return;
 }
 
 float globalTimescale() {
@@ -148,6 +151,17 @@ namespace TimeHack {
             (UINT_PTR) postEntityUpdateHook,
             postEntityUpdateHook_return
         ) )->hook();
+
+        // Gives upper limit to weapons without ROF upper limit.
+        auto fireRateFixHook_start = halo1Base + 0xBDEF90U;
+        //
+        ( new Hook::JumpHook(
+            "Fire Rate Fix Hook",
+            fireRateFixHook_start, 22,
+            (UINT_PTR) fireRateFixHook,
+            fireRateFixHook_return
+        ) )->hook();
+        // std::cout << "fireRateFixHook: " << (uint64_t) fireRateFixHook << "\n";
 
     }
 

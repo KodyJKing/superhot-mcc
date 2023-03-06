@@ -161,14 +161,15 @@ namespace Overlay {
 
         overlayText << " ";
         overlayText << HEX << rec->typeId << " ";
-        overlayText << HEX << (uint64_t) pEntity << "\n";
+        overlayText << HEX << (uint64_t) tag->getData() << "\n";
 
         // overlayText << HEX << rec->id << " ";
         // overlayText << HEX << rec->unknown_1 << " ";
         // overlayText << HEX << rec->unknown_2 << "\n";
 
         auto handle = indexToEntityHandle( index );
-        overlayText << HEX << handle << "\n";
+        overlayText << HEX << handle << " ";
+        overlayText << HEX << (uint64_t) pEntity << "\n";
 
         std::string overlayStr = overlayText.str();
         draw3DTextCentered( renderer, pos, {}, overlayStr.c_str(), color, fontSize, isSelected );

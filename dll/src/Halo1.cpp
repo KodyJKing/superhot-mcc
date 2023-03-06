@@ -15,6 +15,7 @@ namespace Halo1 {
     Entity* EntityRecord::entity() { return getEntityPointer( this ); }
 
     char* Tag::getResourcePath() { return (char*) translateMapAddress( resourcePathAddress ); }
+    void* Tag::getData() { return (void*) translateMapAddress( dataAddress ); }
 
     Tag* Entity::tag() { return Halo1::getTag( tagID ); }
     char* Entity::getTagResourcePath() {
