@@ -1,3 +1,5 @@
+Use .codectx file to find updated instruction locations. Disassemble the instructions with this https://defuse.ca/online-x86-assembler.htm#disassembly2 and scan for byte patterns that shouldn't change.
+
 The entity list/array was found by looking at the damage entity function. The damage function takes an entityHandle as its first parameter. It then gets the EntityRecord associated with that handle, using the lower 2 bytes as an index into EntityList. The 0x8 field on EntityRecord is an offset in bytes from EntityArray to the actual Entity.
 
 The entity update function was found by comparing callstacks for various update instructions and finding a common ancestor (like damage and motion instructions).
