@@ -32,13 +32,13 @@ namespace Halo1 {
 
     // === Pointers ===
 
-    static const UINT_PTR pDeviceContainerOffset = 0x2FA0D68;
+    // static const UINT_PTR pDeviceContainerOffset = 0x2FA0D68;
     static const UINT_PTR entityArrayOffset = 0x2F01D80;
     static const UINT_PTR pEntityListOffset = 0x1DBE628;
     static const UINT_PTR playerCamOffset = 0x2F00D64;
     static const UINT_PTR playerHandleOffset = 0x1DD27D0;
 
-    DeviceContainer* getDeviceContainerPointer() { return *(DeviceContainer**) ( dllBase + pDeviceContainerOffset ); }
+    // DeviceContainer* getDeviceContainerPointer() { return *(DeviceContainer**) ( dllBase + pDeviceContainerOffset ); }
     EntityList* getEntityListPointer() { return *(EntityList**) ( dllBase + pEntityListOffset ); }
     UINT_PTR getEntityArrayBase() { return *(UINT_PTR*) ( dllBase + entityArrayOffset ); }
     Camera* getPlayerCameraPointer() { return (Camera*) ( dllBase + playerCamOffset ); }
