@@ -118,7 +118,8 @@ namespace Rewind {
                 if (
                     entity->fromResourcePath( "vehicles\\warthog\\bullet" ) ||
                     entity->fromResourcePath( "weapons\\pistol\\bullet" ) ||
-                    entity->fromResourcePath( "weapons\\plasma rifle\\bolt" )
+                    entity->fromResourcePath( "weapons\\plasma rifle\\bolt" ) ||
+                    entity->fromResourcePath( "vehicles\\scorpion\\bullet" )
                     )
                     entity->vel = old_vel;
 

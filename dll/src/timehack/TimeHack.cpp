@@ -54,7 +54,11 @@ float timescaleForEntity( EntityRecord* rec ) {
     if ( isTransport( entity ) )
         return 1.0f;
 
-    if ( entity->fromResourcePath( "levels\\b40\\devices\\b40_lift4800\\b40_lift4800" ) )
+    if (
+        entity->fromResourcePath( "levels\\b40\\devices\\b40_lift4800\\b40_lift4800" ) ||
+        entity->fromResourcePath( "levels\\c10\\devices\\lift\\lift" ) ||
+        entity->fromResourcePath( "levels\\c20\\devices\\platform\\platform" )
+        )
         return 1.0f;
 
     if ( entity->entityCategory == EntityCategory_SoundScenery )
