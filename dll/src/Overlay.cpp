@@ -95,11 +95,18 @@ namespace Overlay {
         }
     }
 
+    Vec3 displayPos( EntityRecord* rec ) {
+        auto pEntity = getEntityPointer( rec );
+        if ( pEntity->parentHandle != NULL_HANDLE )
+            return pEntity->rootBonePos;
+        return pEntity->pos;
+    }
+
     bool shouldDisplay( EntityRecord* rec ) {
         auto pEntity = getEntityPointer( rec );
 
         auto pCam = getPlayerCameraPointer();
-        auto diff = Vec::sub( pEntity->pos, pCam->pos );
+        auto diff = Vec::sub( displayPos( rec ), pCam->pos );
         if ( Vec::length( diff ) > drawDistance )
             return false;
 
@@ -120,7 +127,7 @@ namespace Overlay {
             return true;
 
         auto pEntity = getEntityPointer( rec );
-        auto pos = pEntity->pos;
+        auto pos = displayPos( rec );
 
         bool isSelected = rec == selectedEntity;
         bool printThisEntity = isSelected && printSelectedEntity;
@@ -200,7 +207,7 @@ namespace Overlay {
         auto pEntity = getEntityPointer( rec );
         auto pCam = getPlayerCameraPointer();
         return Vec::dot(
-            Vec::unit( Vec::sub( pEntity->pos, pCam->pos ) ),
+            Vec::unit( Vec::sub( displayPos( rec ), pCam->pos ) ),
             pCam->fwd
         );
     }

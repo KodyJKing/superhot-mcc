@@ -65,7 +65,7 @@ namespace Halo1 {
         Vec3 up; //0x003C
         Vec3 angularVelocity; //0x0048
         char pad_0054[8]; //0x0054
-        Vec3 eyePos; //0x005C
+        Vec3 rootBonePos; //0x005C
         char pad_0068[8]; //0x0068
         uint16_t entityCategory; //0x0070
         char pad_0072[14]; //0x0072
