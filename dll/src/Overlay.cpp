@@ -110,12 +110,16 @@ namespace Overlay {
         if ( Vec::length( diff ) > drawDistance )
             return false;
 
+        if ( pEntity->entityCategory == EntityCategory_Weapon
+            && isPlayerHandle( pEntity->parentHandle ) )
+            return false;
+
         switch ( pEntity->entityCategory ) {
             case EntityCategory_Biped:
             case EntityCategory_Vehicle:
             case EntityCategory_Weapon:
             case EntityCategory_Projectile:
-            case EntityCategory_Machine:
+                // case EntityCategory_Machine:
                 return true;
             default:
                 return showAllObjectTypes;
