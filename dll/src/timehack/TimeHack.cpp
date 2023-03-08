@@ -74,6 +74,10 @@ float timescaleForEntity( EntityRecord* rec ) {
     return globalTimescale();
 }
 
+bool isSingleStepping() {
+    return GetTickCount64() < runUntil;
+}
+
 bool shouldEntityUpdate( EntityRecord* rec ) {
     auto entity = getEntityPointer( rec );
 
@@ -90,7 +94,7 @@ bool shouldEntityUpdate( EntityRecord* rec ) {
 
     bool canFreeze = !isPlayerControlled( rec );
     bool shouldFreeze =
-        ( freezeTimeEnabled && GetTickCount64() >= runUntil ) ||
+        ( freezeTimeEnabled && !isSingleStepping() ) ||
         ( superhotEnabled && canDeadzone && personalTimescale <= timescaleUpdateDeadzone );
     return !canFreeze || !shouldFreeze;
 }
@@ -181,7 +185,7 @@ namespace TimeHack {
 
     void onGameThreadUpdate() {
         TimeScale::update();
-        float dt = freezeTimeEnabled ? 0.0f : ( superhotEnabled ? TimeScale::timescale : 1.0f );
+        float dt = ( freezeTimeEnabled && !isSingleStepping() ) ? 0.0f : ( superhotEnabled ? TimeScale::timescale : 1.0f );
         timeElapsed += dt * 1000 / 60.0f;
         // static auto i = 0u;
         // if ( i++ % 60 == 0 )
