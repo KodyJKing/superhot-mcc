@@ -9,7 +9,7 @@
 
 using namespace Halo1;
 
-static const float speedLimit = 1.4f; // 0.834f;
+static const float speedLimit = 0.834f; // 1.4f;
 
 // Deadzoning is intended to prevent discrete actions (like spawning projectiles) from being spammed when an entity should be nearly frozen.
 static const float timescaleUpdateDeadzone = 0.05f;
@@ -46,6 +46,9 @@ extern "C" {
 }
 
 float damageScaleForEntity( uint32_t entityHandle ) {
+    if ( !superhotEnabled )
+        return 1.0f;
+
     EntityRecord* rec = getEntityRecord( entityHandle );
     Entity* entity = rec->entity();
     if ( !entity ) return 1.0f;
@@ -71,7 +74,6 @@ float timescaleForEntity( EntityRecord* rec ) {
 
     if ( isTransport( entity ) )
         return 1.0f;
-
 
     if (
         // Don't timescale lifts. That's annoying.
