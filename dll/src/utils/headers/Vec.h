@@ -13,7 +13,9 @@ namespace Vec {
     float dot( Vec2 a, Vec2 b );
 
     Vec3 add( Vec3 a, Vec3 b );
+    Vec3 addScaled( Vec3 a, Vec3 b, float s );
     Vec3 sub( Vec3 a, Vec3 b );
+    Vec3 subScaled( Vec3 a, Vec3 b, float s );
     Vec3 scale( Vec3 a, float s );
     float dot( Vec3 a, Vec3 b );
     float length( Vec3 a );

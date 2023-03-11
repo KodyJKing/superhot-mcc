@@ -23,6 +23,8 @@ static bool speedLimitEnabled = true;
 
 static uint64_t runUntil = 0;
 
+static float previousHealth;
+
 extern "C" {
     void     preEntityUpdate( uint32_t entityHandle );
     bool     preEntityUpdate_doUpdate;
@@ -54,10 +56,15 @@ float timescaleForEntity( EntityRecord* rec ) {
     if ( isTransport( entity ) )
         return 1.0f;
 
+
     if (
+        // Don't timescale lifts. That's annoying.
+        entity->fromResourcePath( "levels\\b40\\devices\\b40_lift1600\\b40_lift1600" ) ||
         entity->fromResourcePath( "levels\\b40\\devices\\b40_lift4800\\b40_lift4800" ) ||
+        entity->fromResourcePath( "levels\\c10\\devices\\lift\\falling lift" ) ||
         entity->fromResourcePath( "levels\\c10\\devices\\lift\\lift" ) ||
-        entity->fromResourcePath( "levels\\c20\\devices\\platform\\platform" )
+        entity->fromResourcePath( "levels\\c20\\devices\\platform\\platform" ) ||
+        entity->fromResourcePath( "levels\\a10\\devices\\elevator\\elevator" )
         )
         return 1.0f;
 

@@ -34,7 +34,9 @@ namespace Vec {
     float dot( Vec2 a, Vec2 b ) { return a.x * b.x + a.y * b.y; }
 
     Vec3 add( Vec3 a, Vec3 b ) { return { a.x + b.x, a.y + b.y, a.z + b.z }; }
+    Vec3 addScaled( Vec3 a, Vec3 b, float s ) { return { a.x + b.x * s, a.y + b.y * s, a.z + b.z * s }; }
     Vec3 sub( Vec3 a, Vec3 b ) { return { a.x - b.x, a.y - b.y, a.z - b.z }; }
+    Vec3 subScaled( Vec3 a, Vec3 b, float s ) { return { a.x - b.x * s, a.y - b.y * s, a.z - b.z * s }; }
     Vec3 scale( Vec3 a, float s ) { return { a.x * s, a.y * s, a.z * s }; }
     float dot( Vec3 a, Vec3 b ) { return a.x * b.x + a.y * b.y + a.z * b.z; }
     float length( Vec3 a ) { return sqrtf( a.x * a.x + a.y * a.y + a.z * a.z ); }

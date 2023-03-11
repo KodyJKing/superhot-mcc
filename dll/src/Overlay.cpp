@@ -182,6 +182,8 @@ namespace Overlay {
         overlayText << HEX << handle << " ";
         overlayText << HEX << (uint64_t) pEntity << "\n";
 
+        // overlayText << "Speed: " << Vec::length( pEntity->vel ) << "\n";
+
         std::string overlayStr = overlayText.str();
         draw3DTextCentered( renderer, pos, {}, overlayStr.c_str(), color, fontSize, isSelected );
         if ( printThisEntity )

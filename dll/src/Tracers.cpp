@@ -10,10 +10,26 @@
 using namespace Halo1;
 using MathUtils::smoothstep;
 using std::vector;
+using std::string;
+using std::unordered_map;
 
 namespace Tracers {
 
-    // =========================================
+    float getPositionAjustment( string projectileResourceName ) {
+        static unordered_map<string, float> positionAdjustments{
+            { "weapons\\plasma pistol\\bolt", 1.0f },
+            { "weapons\\needler\\needle", 0.133f },
+            { "weapons\\plasma rifle\\bolt", 1.4f },
+            { "weapons\\sniper rifle\\sniper bullet", 1.4f },
+            { "weapons\\assault rifle\\bullet", 1.4f },
+            { "weapons\\pistol\\bullet", 1.4f }
+        };
+
+        if ( positionAdjustments.count( projectileResourceName ) == 0 )
+            return 0.0f;
+
+        return positionAdjustments[projectileResourceName];
+    }
 
     struct TracerPoint {
         Vec3 pos;
@@ -95,7 +111,14 @@ namespace Tracers {
             if ( handle != projectileHandle )
                 reset( handle );
 
-            auto p1 = entity->pos;
+            // auto p1 = entity->pos;
+            float adjust = getPositionAjustment( entity->getTagResourcePath() );
+            Vec3 p1;
+            if ( adjust == 0 )
+                p1 = entity->pos;
+            else
+                p1 = Vec::addScaled( entity->pos, Vec::unit( entity->vel ), adjust );
+
             auto N = points.size();
             if ( N > 0 ) {
                 auto p0 = points[N - 1].pos;
