@@ -23,8 +23,6 @@ static bool speedLimitEnabled = true;
 
 static uint64_t runUntil = 0;
 
-static float previousHealth;
-
 extern "C" {
     void     preEntityUpdate( uint32_t entityHandle );
     bool     preEntityUpdate_doUpdate;
@@ -38,6 +36,24 @@ extern "C" {
 
     void fireRateFixHook();
     uint64_t fireRateFixHook_return;
+
+    float damageScaleForEntity( uint32_t entityHandle );
+    uint64_t damageHealthHook_return;
+    void damageHealthHook();
+
+    uint64_t damageShieldHook_return;
+    void damageShieldHook();
+}
+
+float damageScaleForEntity( uint32_t entityHandle ) {
+    EntityRecord* rec = getEntityRecord( entityHandle );
+    Entity* entity = rec->entity();
+    if ( !entity ) return 1.0f;
+
+    if ( rec->typeId == TypeID_Player )
+        return 4.0f;
+    else
+        return 2.0f;
 }
 
 float globalTimescale() {
@@ -106,7 +122,7 @@ bool shouldEntityUpdate( EntityRecord* rec ) {
     return !canFreeze || !shouldFreeze;
 }
 
-int updateDepth = 0;
+static int updateDepth = 0;
 void preEntityUpdate( uint32_t entityHandle ) {
 
     static bool warnedRecursiveUpdate = false;
@@ -126,7 +142,6 @@ void preEntityUpdate( uint32_t entityHandle ) {
         Vec::clampMut( entity->vel, speedLimit );
 
     Rewind::snapshot( rec );
-
 }
 
 void postEntityUpdate( uint32_t entityHandle ) {
@@ -139,7 +154,6 @@ void postEntityUpdate( uint32_t entityHandle ) {
         return;
 
     Rewind::rewind( rec, timescaleForEntity( rec ), globalTimescale() );
-
 }
 
 namespace TimeHack {
@@ -176,7 +190,21 @@ namespace TimeHack {
             (UINT_PTR) fireRateFixHook,
             fireRateFixHook_return
         ) )->hook();
-        // std::cout << "fireRateFixHook: " << (uint64_t) fireRateFixHook << "\n";
+
+
+        ( new Hook::JumpHook(
+            "Damage Health Hook",
+            halo1Base + 0xC19090U, 12,
+            (UINT_PTR) damageHealthHook,
+            damageHealthHook_return
+        ) )->hook();
+
+        ( new Hook::JumpHook(
+            "Damage Shield Hook",
+            halo1Base + 0xC197D0U, 8,
+            (UINT_PTR) damageShieldHook,
+            damageShieldHook_return
+        ) )->hook();
 
     }
 
