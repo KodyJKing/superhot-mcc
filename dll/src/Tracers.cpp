@@ -15,29 +15,32 @@ using std::unordered_map;
 
 namespace Tracers {
 
-    struct PositionAdjust { float absolute, velocity; };
+    struct PositionShift {
+        float absolute = 0.0f;
+        float velocity = 0.0f;
+    };
 
-    PositionAdjust getPositionAjustment( string projectileResourceName ) {
+    PositionShift getPositionShift( string projectileResourceName ) {
 
-        static unordered_map<string, PositionAdjust> positionAdjustments{
+        static unordered_map<string, PositionShift> shifts {
             { "weapons\\plasma pistol\\bolt",
-                { 1.0f, 0.0f } },
+                { .absolute = 1.0f } },
             { "weapons\\needler\\needle",
-                { 0.133f, 0.0f } },
+                { .absolute = 0.133f } },
             { "weapons\\plasma rifle\\bolt",
-                {0.0f, 1.0f} },
+                { .velocity = 1.0f } },
             { "weapons\\sniper rifle\\sniper bullet",
-                {0.0f, 1.0f} },
+                { .velocity = 1.0f } },
             { "weapons\\assault rifle\\bullet",
-                {0.0f, 1.0f} },
+                { .velocity = 1.0f } },
             { "weapons\\pistol\\bullet",
-                {0.0f, 1.0f} },
+                { .velocity = 1.0f } },
         };
 
-        if ( positionAdjustments.count( projectileResourceName ) == 0 )
+        if ( shifts.count( projectileResourceName ) == 0 )
             return { 0.0f, 0.0f };
 
-        return positionAdjustments[projectileResourceName];
+        return shifts[projectileResourceName];
     }
 
     struct TracerPoint {
@@ -120,14 +123,10 @@ namespace Tracers {
             if ( handle != projectileHandle )
                 reset( handle );
 
-            // auto p1 = entity->pos;
-            auto adjust = getPositionAjustment( entity->getTagResourcePath() );
+            auto shift = getPositionShift( entity->getTagResourcePath() );
             Vec3 p1 = Vec::addScaled(
-                Vec::addScaled(
-                    entity->pos,
-                    entity->vel, adjust.velocity
-                ),
-                Vec::unit( entity->vel ), adjust.absolute
+                Vec::addScaled( entity->pos, entity->vel, shift.velocity ),
+                Vec::unit( entity->vel ), shift.absolute
             );
 
             auto N = points.size();
