@@ -482,63 +482,63 @@ createTimer(1, function() memrec.Active = false end)
                 <CheatEntry>
                   <ID>35</ID>
                   <Description>"pos.x"</Description>
-                  <LastState Value="-26.54264069" RealAddress="7FFD243A0D64"/>
+                  <LastState Value="28.6979351" RealAddress="7FFD243A0D64"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>36</ID>
                   <Description>"pos.y"</Description>
-                  <LastState Value="-62.51384735" RealAddress="7FFD243A0D68"/>
+                  <LastState Value="-19.31515503" RealAddress="7FFD243A0D68"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+4</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>37</ID>
                   <Description>"pos.z"</Description>
-                  <LastState Value="2.052221775" RealAddress="7FFD243A0D6C"/>
+                  <LastState Value="89.47450256" RealAddress="7FFD243A0D6C"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+8</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>28</ID>
                   <Description>"fwd.x"</Description>
-                  <LastState Value="0.9257791042" RealAddress="7FFD243A0D84"/>
+                  <LastState Value="0.856139183" RealAddress="7FFD243A0D84"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+20</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>29</ID>
                   <Description>"fwd.y"</Description>
-                  <LastState Value="0.3202196658" RealAddress="7FFD243A0D88"/>
+                  <LastState Value="-0.5030786991" RealAddress="7FFD243A0D88"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+24</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>30</ID>
                   <Description>"fwd.z"</Description>
-                  <LastState Value="-0.2009786814" RealAddress="7FFD243A0D8C"/>
+                  <LastState Value="-0.1180575192" RealAddress="7FFD243A0D8C"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+28</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>31</ID>
                   <Description>"up.x"</Description>
-                  <LastState Value="0.1899374276" RealAddress="7FFD243A0D90"/>
+                  <LastState Value="0.101785481" RealAddress="7FFD243A0D90"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+2C</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>32</ID>
                   <Description>"up.y"</Description>
-                  <LastState Value="0.06569785625" RealAddress="7FFD243A0D94"/>
+                  <LastState Value="-0.05981049687" RealAddress="7FFD243A0D94"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+30</Address>
                 </CheatEntry>
                 <CheatEntry>
                   <ID>33</ID>
                   <Description>"up.z"</Description>
-                  <LastState Value="0.9795956612" RealAddress="7FFD243A0D98"/>
+                  <LastState Value="0.9930068254" RealAddress="7FFD243A0D98"/>
                   <VariableType>Float</VariableType>
                   <Address>halo1.dll+2F00D64+34</Address>
                 </CheatEntry>
@@ -697,7 +697,7 @@ dealloc(newmem)
             <CheatEntry>
               <ID>44</ID>
               <Description>"Player Handle"</Description>
-              <LastState Value="E5FD038E" RealAddress="7FFD232727D0"/>
+              <LastState Value="E64303D4" RealAddress="7FFD232727D0"/>
               <ShowAsHex>1</ShowAsHex>
               <VariableType>4 Bytes</VariableType>
               <Address>halo1.dll+1DD27D0</Address>
@@ -705,7 +705,7 @@ dealloc(newmem)
             <CheatEntry>
               <ID>54</ID>
               <Description>"TagArray"</Description>
-              <LastState Value="000001C41DF90028" RealAddress="7FFD23251390"/>
+              <LastState Value="000001BC5ACB0028" RealAddress="7FFD23251390"/>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>8 Bytes</VariableType>
@@ -723,7 +723,7 @@ dealloc(newmem)
             <CheatEntry>
               <ID>53</ID>
               <Description>"RelocatedMapBase"</Description>
-              <LastState Value="000001C41DF90000" RealAddress="7FFD243A1D98"/>
+              <LastState Value="000001BC5ACB0000" RealAddress="7FFD243A1D98"/>
               <ShowAsHex>1</ShowAsHex>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>8 Bytes</VariableType>
@@ -2248,6 +2248,80 @@ pop rax
         <Byte>0F</Byte>
         <Byte>11</Byte>
         <Byte>B4</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Trace Projectile Function</Description>
+      <AddressString>halo1.dll+C17590</AddressString>
+      <Before>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+      </Before>
+      <Actual>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>C4</Byte>
+      </Actual>
+      <After>
+        <Byte>55</Byte>
+        <Byte>53</Byte>
+        <Byte>56</Byte>
+        <Byte>57</Byte>
+        <Byte>41</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Write Traced Entity Handle (player view raycast)</Description>
+      <AddressString>halo1.dll+BCB96A</AddressString>
+      <Before>
+        <Byte>08</Byte>
+        <Byte>8B</Byte>
+        <Byte>44</Byte>
+        <Byte>24</Byte>
+        <Byte>60</Byte>
+      </Before>
+      <Actual>
+        <Byte>41</Byte>
+        <Byte>89</Byte>
+        <Byte>46</Byte>
+        <Byte>0C</Byte>
+      </Actual>
+      <After>
+        <Byte>4C</Byte>
+        <Byte>8B</Byte>
+        <Byte>AC</Byte>
+        <Byte>24</Byte>
+        <Byte>78</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Projectile Call Raycast?</Description>
+      <AddressString>halo1.dll+C17F22</AddressString>
+      <Before>
+        <Byte>E8</Byte>
+        <Byte>FE</Byte>
+        <Byte>24</Byte>
+        <Byte>01</Byte>
+        <Byte>00</Byte>
+      </Before>
+      <Actual>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>1D</Byte>
+        <Byte>FF</Byte>
+        <Byte>66</Byte>
+        <Byte>1A</Byte>
+        <Byte>01</Byte>
+      </Actual>
+      <After>
+        <Byte>45</Byte>
+        <Byte>33</Byte>
+        <Byte>DB</Byte>
+        <Byte>48</Byte>
+        <Byte>83</Byte>
       </After>
     </CodeEntry>
   </CheatCodes>
@@ -5915,6 +5989,21 @@ end
       <Address>"halo1.dll"+B89690</Address>
       <Header>updateEntity function
 </Header>
+    </DisassemblerComment>
+    <DisassemblerComment>
+      <Address>"halo1.dll"+C17590</Address>
+      <Header>Trace Projectile Function
+</Header>
+    </DisassemblerComment>
+    <DisassemblerComment>
+      <Address>"halo1.dll"+C17F1D</Address>
+      <Comment>call raycast?
+</Comment>
+    </DisassemblerComment>
+    <DisassemblerComment>
+      <Address>"halo1.dll"+C17F22</Address>
+      <Comment>
+</Comment>
     </DisassemblerComment>
     <DisassemblerComment>
       <Address>"halo1.dll"+C5046A</Address>
