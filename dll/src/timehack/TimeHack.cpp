@@ -18,8 +18,8 @@ static const float timescaleUpdateDeadzone = 0.05f;
 static const bool allowRandomUpdatesInDeadzone = false;
 
 static bool freezeTimeEnabled = false;
-static bool superhotEnabled = true;
-static bool speedLimitEnabled = true;
+static bool superhotEnabled = false;
+static bool speedLimitEnabled = false;
 
 static uint64_t runUntil = 0;
 

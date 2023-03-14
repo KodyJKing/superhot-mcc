@@ -29,7 +29,7 @@ namespace Overlay {
     static bool printSelectedEntity;
     static EntityRecord* selectedEntity;
     // Options
-    static bool overlayEnabled = false;
+    static bool overlayEnabled = true;
     static bool onlyShowSelected = false;
     static bool showAllObjectTypes = false;
     static bool entityBeacons = false;
@@ -256,9 +256,10 @@ namespace Overlay {
 
         auto pCam = Halo1::getPlayerCameraPointer();
         auto pos = pCam->pos;
+        auto fwd = pCam->fwd;
 
         char text[100];
-        sprintf_s( text, "%.2f, %.2f, %.2f", pos.x, pos.y, pos.z );
+        sprintf_s( text, "%.2f, %.2f, %.2f\n%.2f, %.2f, %.2f", fwd.x, fwd.y, fwd.z, pos.x, pos.y, pos.z );
         Vec2 textPos = { viewport.TopLeftX + 0.5f * w, screenDimensions.y };
         renderer->drawText( textPos, text, Colors::white, FW1_CENTER | FW1_BOTTOM, 12.0f, nullptr );
         renderer->flush();
