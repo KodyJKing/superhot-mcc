@@ -225,9 +225,9 @@ void Renderer::drawThickLine( Vertex a, Vertex b, float thickness, Vec3 viewPosi
     Vec3 v = Vec::unit( Vec::cross( u, viewDirection ) );
 
     Vertex vertices[] = {
-        { Vec::add( a.pos, Vec::scale( v,  thickness ) ), a.color },
+        { Vec::add( a.pos, Vec::scale( v, thickness ) ), a.color },
         { Vec::add( a.pos, Vec::scale( v, -thickness ) ), a.color },
-        { Vec::add( b.pos, Vec::scale( v,  thickness ) ), a.color },
+        { Vec::add( b.pos, Vec::scale( v, thickness ) ), a.color },
         { Vec::add( b.pos, Vec::scale( v, -thickness ) ), a.color }
     };
 
