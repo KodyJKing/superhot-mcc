@@ -8,6 +8,9 @@
 #include "../utils/headers/Vec.h"
 
 using namespace Halo1;
+using namespace Hook;
+using std::make_unique;
+using std::unique_ptr;
 
 static const float speedLimit = 0.834f; // 1.4f;
 
@@ -160,54 +163,62 @@ void postEntityUpdate( uint32_t entityHandle ) {
 
 namespace TimeHack {
 
+    static std::vector<HookPointer> hooks;
+
     void init( uint64_t halo1Base ) {
+
+        hooks.clear();
 
         std::cout << "Initializing time hack.\n";
 
         auto preEntityUpdateHook_start = halo1Base + 0xB898A4U;
         preEntityUpdateHook_end = halo1Base + 0xB898D2U;
         //
-        ( new Hook::JumpHook(
+        hooks.emplace_back( make_unique<JumpHook>(
             "Pre Entity Update Hook",
             preEntityUpdateHook_start, 10,
             (UINT_PTR) preEntityUpdateHook,
             preEntityUpdateHook_return
-        ) )->hook();
+        ) );
 
         auto posEntityUpdateHook_start = halo1Base + 0xB89A3BU;
         //
-        ( new Hook::JumpHook(
+        hooks.emplace_back( make_unique<JumpHook>(
             "Post Entity Update Hook",
             posEntityUpdateHook_start, 5,
             (UINT_PTR) postEntityUpdateHook,
             postEntityUpdateHook_return
-        ) )->hook();
+        ) );
 
         // Gives upper limit to weapons without ROF upper limit.
         auto fireRateFixHook_start = halo1Base + 0xBDEF90U;
         //
-        ( new Hook::JumpHook(
+        hooks.emplace_back( make_unique<JumpHook>(
             "Fire Rate Fix Hook",
             fireRateFixHook_start, 22,
             (UINT_PTR) fireRateFixHook,
             fireRateFixHook_return
-        ) )->hook();
+        ) );
 
 
-        ( new Hook::JumpHook(
+        hooks.emplace_back( make_unique<JumpHook>(
             "Damage Health Hook",
             halo1Base + 0xC19090U, 12,
             (UINT_PTR) damageHealthHook,
             damageHealthHook_return
-        ) )->hook();
+        ) );
 
-        ( new Hook::JumpHook(
+        hooks.emplace_back( make_unique<JumpHook>(
             "Damage Shield Hook",
             halo1Base + 0xC197D0U, 8,
             (UINT_PTR) damageShieldHook,
             damageShieldHook_return
-        ) )->hook();
+        ) );
 
+    }
+
+    void cleanup() {
+        hooks.clear();
     }
 
     void onDllThreadUpdate() {

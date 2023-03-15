@@ -30,8 +30,6 @@ inline void writeOffset( char** pDest, UINT_PTR address ) {
 
 namespace Hook {
 
-    std::vector<JumpHook*> jumpHooks;
-
     void JumpHook::saveStolenBytes() {
         if ( stolenBytes.size() > 0 )
             return;
@@ -51,6 +49,9 @@ namespace Hook {
     }
 
     void JumpHook::hook() {
+        if ( isHooked )
+            return;
+
         std::cout << "Adding jump hook: " << description << std::endl;
         std::cout << "Trampoline located at: " << std::hex << (UINT_PTR) trampolineAddress << std::endl << std::endl;
 
@@ -68,11 +69,18 @@ namespace Hook {
         writeOffset( &head, (UINT_PTR) trampolineAddress );
 
         VirtualProtect( (void*) address, numStolenBytes, oldProtect, &oldProtect );
+
+        isHooked = true;
     }
 
     void JumpHook::unhook() {
+        if ( !isHooked )
+            return;
+
         std::cout << "Removing jump hook: " << description << std::endl;
         restoreStolenBytes();
+
+        isHooked = false;
     }
 
     JumpHook::JumpHook(
@@ -84,8 +92,9 @@ namespace Hook {
         description( description ),
         address( address ),
         numStolenBytes( numStolenBytes ),
-        trampolineAddress( trampolineAddress ) {
-        jumpHooks.emplace_back( this );
+        trampolineAddress( trampolineAddress ),
+        isHooked( false ) {
+        hook();
     }
 
     JumpHook::JumpHook(
@@ -110,11 +119,6 @@ namespace Hook {
         }
         auto offsetAddress = instructionAddress + 1;
         return offsetAddress + sizeof( int32_t ) + *(int32_t*) ( offsetAddress );
-    }
-
-    void cleanupHooks() {
-        for ( JumpHook* hook : jumpHooks )
-            hook->unhook();
     }
 
 }

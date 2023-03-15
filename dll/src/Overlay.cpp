@@ -39,10 +39,6 @@ namespace Overlay {
         toggleOption( "Only show selected", onlyShowSelected, VK_NUMPAD2 );
         toggleOption( "Show all object types", showAllObjectTypes, VK_NUMPAD3 );
         toggleOption( "Entity beacons", entityBeacons, VK_NUMPAD4 );
-
-        // updateFloat( "Fov Scale", Halo1::fovScale, 1.005f, VK_INSERT, VK_DELETE );
-        // updateFloat( "Clipping near", Halo1::clippingNear, 1.005f, VK_PRIOR, VK_NEXT );
-        // updateFloat( "Clipping far", Halo1::clippingFar, 1.005f, VK_HOME, VK_END );
     }
 
     void render( Renderer* renderer, ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {

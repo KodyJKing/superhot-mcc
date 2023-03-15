@@ -5,6 +5,8 @@
 #include "../../pch.h"
 
 using DX11Hook::PresentCallback;
+using std::make_unique;
+using Hook::JumpHook;
 
 extern "C" {
     uint64_t presentHook_jmp;
@@ -96,6 +98,8 @@ void onResizeBuffers(
 
 namespace DX11Hook {
 
+    static std::vector<HookPointer> hooks;
+
     void hook( HWND hwnd ) {
         IDXGISwapChain* pSwapChain;
         ID3D11Device* pDevice;
@@ -106,32 +110,34 @@ namespace DX11Hook {
         UINT_PTR* swapChainVTable = *( (UINT_PTR**) pSwapChain );
         UINT_PTR* deviceContextVTable = *( (UINT_PTR**) pDeviceContext );
 
+        hooks.clear();
+
         /* We're hooking sites already hooked by steam's overlay, so we don't need
         to use return jumps. It is enough to execute the stolen jump. Steam will
         jump back into DirectX's code for us. */
 
         uint64_t presentHook_start = swapChainVTable[MO_IDXGISwapChain::Present];
         presentHook_jmp = Hook::getJumpDestination( presentHook_start );
-        ( new Hook::JumpHook(
+        hooks.emplace_back( make_unique<JumpHook>(
             "Present",
             presentHook_start, 5,
             (UINT_PTR) presentHook
-        ) )->hook();
+        ) );
 
         uint64_t resizeBuffersHook_start = swapChainVTable[MO_IDXGISwapChain::ResizeBuffers];
         resizeBuffersHook_jmp = Hook::getJumpDestination( resizeBuffersHook_start );
-        ( new Hook::JumpHook(
+        hooks.emplace_back( make_unique<JumpHook>(
             "ResizeBuffers",
             resizeBuffersHook_start, 5,
             (UINT_PTR) resizeBuffersHook
-        ) )->hook();
+        ) );
 
-        ( new Hook::JumpHook(
+        hooks.emplace_back( make_unique<JumpHook>(
             "SetRenderTargets",
             deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets], 5,
             (UINT_PTR) setRenderTargetsHook,
             setRenderTargetsHook_return
-        ) )->hook();
+        ) );
 
         // // Output method locations.
         // std::cout << "\n";
@@ -148,6 +154,7 @@ namespace DX11Hook {
     }
 
     void cleanup() {
+        hooks.clear();
         safeRelease( renderTargetView );
     }
 

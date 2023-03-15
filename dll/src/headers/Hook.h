@@ -23,9 +23,6 @@ namespace Hook {
             UINT_PTR& returnAddress
         );
 
-        void hook();
-        void unhook();
-
         private:
 
         const char* description;
@@ -33,14 +30,19 @@ namespace Hook {
         size_t numStolenBytes;
         UINT_PTR trampolineAddress;
 
+        bool isHooked;
+
         std::vector<char> stolenBytes;
 
         void saveStolenBytes();
         void restoreStolenBytes();
+
+        void hook();
+        void unhook();
     };
 
     UINT_PTR getJumpDestination( UINT_PTR instructionAddress );
 
-    void cleanupHooks();
-
 }
+
+using HookPointer = std::unique_ptr<Hook::JumpHook>;

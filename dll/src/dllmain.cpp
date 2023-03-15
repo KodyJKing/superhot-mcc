@@ -1,6 +1,7 @@
 #include "../pch.h"
 #include "headers/dllmain.h"
 #include "headers/Halo1.h"
+#include "headers/Halo1Mod.h"
 #include "headers/HaloMCC.h"
 #include "headers/Overlay.h"
 #include "headers/Tracers.h"
@@ -12,8 +13,6 @@
 #include "timehack/headers/TimeHack.h"
 
 static HMODULE hmSuperHotHack;
-static HMODULE hmHalo1;
-static UINT_PTR halo1Base;
 static std::mutex onRenderMutex;
 
 BOOL APIENTRY DllMain(
@@ -24,8 +23,6 @@ BOOL APIENTRY DllMain(
     switch ( ul_reason_for_call ) {
         case DLL_PROCESS_ATTACH:
             hmSuperHotHack = hModule;
-            hmHalo1 = GetModuleHandleA( "halo1.dll" );
-            halo1Base = (UINT_PTR) hmHalo1;
             CreateThread( 0, 0, mainThread, 0, 0, 0 );
         case DLL_THREAD_ATTACH:
         case DLL_THREAD_DETACH:
@@ -37,15 +34,8 @@ BOOL APIENTRY DllMain(
 
 void onPresent( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
     if ( onRenderMutex.try_lock() ) {
-
         static std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>( pDevice, 4096 );
-
-        if ( Halo1::isGameLoaded() ) {
-            Overlay::render( renderer.get(), pCtx, pDevice, pSwapChain );
-            Tracers::render( renderer.get(), TimeHack::timeElapsed, pCtx, pDevice, pSwapChain );
-            TimeHack::onGameThreadUpdate();
-        }
-
+        Halo1Mod::onRender( renderer.get(), pCtx, pDevice, pSwapChain );
         onRenderMutex.unlock();
     }
 }
@@ -83,37 +73,24 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     std::cout << "MCC-SUPERHOT Mod Loaded\n\n";
 
-    std::cout << "halo1.dll located at: ";
-    std::cout << std::uppercase << std::hex << hmHalo1;
-    std::cout << "\n\n";
-
-    Halo1::init( halo1Base );
-
     DX11Hook::hook( mccWindow );
     DX11Hook::addOnPresentCallback( onPresent );
 
-    TimeHack::init( halo1Base );
+    Halo1Mod::init();
 
     if ( !err ) {
         while ( true ) {
-
             if ( GetAsyncKeyState( VK_F9 ) || !GetModuleHandleA( "halo1.dll" ) )
                 break;
-
-            if ( Halo1::isGameLoaded() ) {
-                TimeHack::onDllThreadUpdate();
-                Overlay::onDllThreadUpdate();
-            }
-
+            Halo1Mod::onDllThreadUpdate();
             Sleep( 10 );
-
         }
     }
 
     std::cout << "Exiting..." << std::endl;
 
+    Halo1Mod::cleanup();
     DX11Hook::cleanup();
-    Hook::cleanupHooks();
 
     // Wait until we're done rendereing before exiting and letting renderer destruct.
     onRenderMutex.lock();
