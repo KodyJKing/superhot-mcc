@@ -33,10 +33,10 @@ namespace Hook {
     std::vector<JumpHook*> jumpHooks;
 
     void JumpHook::saveStolenBytes() {
-        if ( stolenBytes )
+        if ( stolenBytes.size() > 0 )
             return;
-        stolenBytes = (char*) malloc( numStolenBytes );
-        memcpy( stolenBytes, (char*) address, numStolenBytes );
+        stolenBytes.resize( numStolenBytes );
+        memcpy( stolenBytes.data(), (char*) address, numStolenBytes );
     }
 
     void JumpHook::restoreStolenBytes() {
@@ -44,8 +44,10 @@ namespace Hook {
             std::cout << "Cannot restore original code. Hook site is no longer allocated.\n";
             return;
         }
-        if ( stolenBytes )
-            memcpyExecutable( (char*) address, stolenBytes, numStolenBytes );
+        if ( stolenBytes.size() > 0 ) {
+            memcpyExecutable( (char*) address, stolenBytes.data(), numStolenBytes );
+            stolenBytes.clear();
+        }
     }
 
     void JumpHook::hook() {
@@ -71,7 +73,6 @@ namespace Hook {
     void JumpHook::unhook() {
         std::cout << "Removing jump hook: " << description << std::endl;
         restoreStolenBytes();
-        safeFree( stolenBytes );
     }
 
     JumpHook::JumpHook(
@@ -83,8 +84,7 @@ namespace Hook {
         description( description ),
         address( address ),
         numStolenBytes( numStolenBytes ),
-        trampolineAddress( trampolineAddress ),
-        stolenBytes( nullptr ) {
+        trampolineAddress( trampolineAddress ) {
         jumpHooks.emplace_back( this );
     }
 
@@ -96,6 +96,10 @@ namespace Hook {
         UINT_PTR& returnAddress
     ): JumpHook( description, address, numStolenBytes, trampolineAddress ) {
         returnAddress = address + numStolenBytes;
+    }
+
+    JumpHook::~JumpHook() {
+        unhook();
     }
 
     UINT_PTR getJumpDestination( UINT_PTR instructionAddress ) {

@@ -2,13 +2,11 @@
 
 namespace Hook {
 
-    struct JumpHook {
-        const char* description;
-        UINT_PTR address;
-        size_t numStolenBytes;
-        UINT_PTR trampolineAddress;
+    class JumpHook {
 
-        char* stolenBytes;
+        public:
+
+        ~JumpHook();
 
         JumpHook(
             const char* description,
@@ -25,11 +23,20 @@ namespace Hook {
             UINT_PTR& returnAddress
         );
 
+        void hook();
+        void unhook();
+
+        private:
+
+        const char* description;
+        UINT_PTR address;
+        size_t numStolenBytes;
+        UINT_PTR trampolineAddress;
+
+        std::vector<char> stolenBytes;
 
         void saveStolenBytes();
         void restoreStolenBytes();
-        void hook();
-        void unhook();
     };
 
     UINT_PTR getJumpDestination( UINT_PTR instructionAddress );
