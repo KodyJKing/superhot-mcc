@@ -13,7 +13,6 @@
 #include "timehack/headers/TimeHack.h"
 
 static HMODULE hmSuperHotHack;
-static std::mutex onRenderMutex;
 
 BOOL APIENTRY DllMain(
     HMODULE hModule,
@@ -32,22 +31,19 @@ BOOL APIENTRY DllMain(
     return TRUE;
 }
 
-void onPresent( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
-    if ( onRenderMutex.try_lock() ) {
-        static std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>( pDevice, 4096 );
-        Halo1Mod::onRender( renderer.get(), pCtx, pDevice, pSwapChain );
-        onRenderMutex.unlock();
-    }
+bool checkExit() {
+    static bool hasExited = false;
+    if ( GetAsyncKeyState( VK_F9 ) )
+        hasExited = true;
+    return hasExited;
 }
 
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     const bool useConsole = true;
     const bool useStdin = false;
-    const bool pressKeyToExit = false;
-
-    const char* logFile = "C:\\Users\\Kody\\Desktop\\log.txt";
     const bool printToLog = false;
+    const char* logFile = "C:\\Users\\Kody\\Desktop\\log.txt";
 
     errno_t err = 0;
     FILE* pFile_stdout, * pFile_stderr, * pFile_stdin;
@@ -71,8 +67,6 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
         BringWindowToTop( consoleWindow );
     }
 
-    std::cout << "MCC-SUPERHOT Mod Loaded\n\n";
-
     auto pSwapChain = HaloMCC::getSwapChainPointer();
     if ( !pSwapChain ) {
         std::cout << "Could not find swap chain!\n";
@@ -81,49 +75,32 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
         DX11Hook::hook( mccWindow, pSwapChain );
     }
 
-
     if ( !err ) {
+        while ( !checkExit() ) {
+            while ( !checkExit() && !HaloMCC::isInGame() )
+                Sleep( 100 );
 
-        DX11Hook::addOnPresentCallback( onPresent );
-        Halo1Mod::init();
-
-        while ( true ) {
-            if ( GetAsyncKeyState( VK_F9 ) || !GetModuleHandleA( "halo1.dll" ) )
-                break;
-            Halo1Mod::onDllThreadUpdate();
-            Sleep( 10 );
+            Halo1Mod::init();
+            while ( !checkExit() && HaloMCC::isInGame() ) {
+                Halo1Mod::onDllThreadUpdate();
+                Sleep( 10 );
+            }
+            Halo1Mod::cleanup();
         }
-
-        Halo1Mod::cleanup();
-
     }
 
-    std::cout << "Exiting..." << std::endl;
-
     DX11Hook::cleanup();
-
-    // Wait until we're done rendereing before exiting and letting renderer destruct.
-    onRenderMutex.lock();
 
     // Give any other executing hook code a moment to finish before unloading.
     // It might be smart to eventually wrap all hooks with a mutex lock / unlock.
     Sleep( 500 );
 
-    std::cout << "Freeing console and library.\n";
-
     if ( useConsole ) {
-        if ( useStdin && pressKeyToExit ) {
-            std::cout << std::endl << "Press anything to continue" << std::endl;
-            getchar();
-        }
-
         if ( pFile_stdout ) fclose( pFile_stdout );
         if ( pFile_stderr ) fclose( pFile_stderr );
         if ( useStdin && pFile_stdin ) fclose( pFile_stdin );
         FreeConsole();
     }
-
-    onRenderMutex.unlock();
 
     FreeLibraryAndExitThread( hmSuperHotHack, 0 );
 

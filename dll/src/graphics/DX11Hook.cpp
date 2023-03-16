@@ -33,7 +33,7 @@ extern "C" {
     void setRenderTargetsHook();
 }
 
-static std::vector<PresentCallback> onPresentCallbacks;
+static std::set<PresentCallback> onPresentCallbacks;
 static std::mutex onPresentCallbacks_mutex;
 static bool hasDoneDeviceInit;
 static bool deviceInitFailed;
@@ -159,7 +159,7 @@ namespace DX11Hook {
         // std::cout << "\n";
 
         if ( !pSwapChainActual ) {
-            // The we created dummies and need to clean them up.
+            // We created dummies and need to clean them up.
             pSwapChain->Release();
             pDevice->Release();
             pDeviceContext->Release();
@@ -170,15 +170,23 @@ namespace DX11Hook {
 
     /// @brief Uninstall rendering hooks.
     void cleanup() {
+        onPresentCallbacks_mutex.lock();
         hooks.clear();
         safeRelease( renderTargetView );
+        onPresentCallbacks_mutex.unlock();
     }
 
     /// @brief Adds a render function to run every frame.
     /// @param cb Render function pointer.
     void addOnPresentCallback( PresentCallback cb ) {
         onPresentCallbacks_mutex.lock();
-        onPresentCallbacks.emplace_back( cb );
+        onPresentCallbacks.insert( cb );
+        onPresentCallbacks_mutex.unlock();
+    }
+
+    void removeOnPresentCallback( PresentCallback cb ) {
+        onPresentCallbacks_mutex.lock();
+        onPresentCallbacks.erase( cb );
         onPresentCallbacks_mutex.unlock();
     }
 

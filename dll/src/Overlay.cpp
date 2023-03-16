@@ -29,7 +29,7 @@ namespace Overlay {
     static bool printSelectedEntity;
     static EntityRecord* selectedEntity;
     // Options
-    static bool overlayEnabled = true;
+    static bool overlayEnabled = false;
     static bool onlyShowSelected = false;
     static bool showAllObjectTypes = false;
     static bool entityBeacons = false;

@@ -9,9 +9,6 @@ namespace HaloMCC {
     HWND getWindow();
     Vec2 getWindowSize();
     bool isInForeground();
-
+    bool isInGame();
     IDXGISwapChain* getSwapChainPointer();
-
-    // void initHooks();
-    // void cleanupHooks();
 }

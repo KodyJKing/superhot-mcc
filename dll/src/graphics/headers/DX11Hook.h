@@ -4,6 +4,7 @@ namespace DX11Hook {
 
     void hook( HWND hwnd, IDXGISwapChain* pSwapChainActual );
     void addOnPresentCallback( PresentCallback cb );
+    void removeOnPresentCallback( PresentCallback cb );
     void cleanup();
 
 }

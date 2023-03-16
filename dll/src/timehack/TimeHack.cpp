@@ -21,8 +21,8 @@ static const float timescaleUpdateDeadzone = 0.05f;
 static const bool allowRandomUpdatesInDeadzone = false;
 
 static bool freezeTimeEnabled = false;
-static bool superhotEnabled = false;
-static bool speedLimitEnabled = false;
+static bool superhotEnabled = true;
+static bool speedLimitEnabled = true;
 
 static uint64_t runUntil = 0;
 
@@ -129,7 +129,6 @@ bool shouldEntityUpdate( EntityRecord* rec ) {
 
 static int updateDepth = 0;
 void preEntityUpdate( uint32_t entityHandle ) {
-
     static bool warnedRecursiveUpdate = false;
     if ( updateDepth++ > 0 && !warnedRecursiveUpdate ) {
         std::cout << "Warning, recursive update detected!\n";
@@ -150,7 +149,6 @@ void preEntityUpdate( uint32_t entityHandle ) {
 }
 
 void postEntityUpdate( uint32_t entityHandle ) {
-
     updateDepth--;
 
     EntityRecord* rec = getEntityRecord( entityHandle );
