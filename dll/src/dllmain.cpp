@@ -73,23 +73,33 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     std::cout << "MCC-SUPERHOT Mod Loaded\n\n";
 
-    DX11Hook::hook( mccWindow );
-    DX11Hook::addOnPresentCallback( onPresent );
+    auto pSwapChain = HaloMCC::getSwapChainPointer();
+    if ( !pSwapChain ) {
+        std::cout << "Could not find swap chain!\n";
+        err = E_POINTER;
+    } else {
+        DX11Hook::hook( mccWindow, pSwapChain );
+    }
 
-    Halo1Mod::init();
 
     if ( !err ) {
+
+        DX11Hook::addOnPresentCallback( onPresent );
+        Halo1Mod::init();
+
         while ( true ) {
             if ( GetAsyncKeyState( VK_F9 ) || !GetModuleHandleA( "halo1.dll" ) )
                 break;
             Halo1Mod::onDllThreadUpdate();
             Sleep( 10 );
         }
+
+        Halo1Mod::cleanup();
+
     }
 
     std::cout << "Exiting..." << std::endl;
 
-    Halo1Mod::cleanup();
     DX11Hook::cleanup();
 
     // Wait until we're done rendereing before exiting and letting renderer destruct.

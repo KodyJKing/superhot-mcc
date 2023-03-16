@@ -39,7 +39,7 @@ static bool hasDoneDeviceInit;
 static bool deviceInitFailed;
 static ID3D11RenderTargetView* renderTargetView;
 
-void createDummy(
+HRESULT createDummy(
     IDXGISwapChain** ppSwapChain,
     ID3D11Device** ppDevice,
     D3D_FEATURE_LEVEL* pFeatureLevel,
@@ -100,19 +100,30 @@ namespace DX11Hook {
 
     static std::vector<HookPointer> hooks;
 
-    void hook( HWND hwnd ) {
+    /// @brief  Setup a hook to call custom rendering functions added through DX11Hook::addOnPresentCallback.
+    /// @param hwnd The window you will be rendering.
+    /// @param pSwapChainActual [Optional] A pointer to an existing swap chain to use for virtual table hooking. If this is null, a dummy swap chain is created.
+    void hook( HWND hwnd, IDXGISwapChain* pSwapChainActual ) {
         IDXGISwapChain* pSwapChain;
         ID3D11Device* pDevice;
         D3D_FEATURE_LEVEL featureLevel;
         ID3D11DeviceContext* pDeviceContext;
-        createDummy( &pSwapChain, &pDevice, &featureLevel, &pDeviceContext, hwnd );
+
+        if ( pSwapChainActual ) {
+            pSwapChain = pSwapChainActual;
+            auto hr = pSwapChainActual->GetDevice( __uuidof( ID3D11Device ), (void**) &pDevice );
+            if ( FAILED( hr ) ) return;
+            pDevice->GetImmediateContext( &pDeviceContext );
+        } else {
+            createDummy( &pSwapChain, &pDevice, &featureLevel, &pDeviceContext, hwnd );
+        }
 
         UINT_PTR* swapChainVTable = *( (UINT_PTR**) pSwapChain );
         UINT_PTR* deviceContextVTable = *( (UINT_PTR**) pDeviceContext );
 
         hooks.clear();
 
-        /* We're hooking sites already hooked by steam's overlay, so we don't need
+        /* We're hooking sites already hooked by Steam's overlay, so we don't need
         to use return jumps. It is enough to execute the stolen jump. Steam will
         jump back into DirectX's code for us. */
 
@@ -139,25 +150,32 @@ namespace DX11Hook {
             setRenderTargetsHook_return
         ) );
 
-        // // Output method locations.
         // std::cout << "\n";
-        // // std::cout << "SwapChain.Present address: " << swapChainVTable[MO_IDXGISwapChain::Present] << "\n";
-        // // std::cout << "SwapChain.ResizeBuffers address: " << swapChainVTable[MO_IDXGISwapChain::ResizeBuffers] << "\n";
-        // // std::cout << "Context.Draw address: " << deviceContextVTable[MO_ID3D11DeviceContext::Draw] << "\n";
-        // // std::cout << "Context.DrawIndexed address: " << deviceContextVTable[MO_ID3D11DeviceContext::DrawIndexed] << "\n";
-        // std::cout << "Context.OMSetRenderTargets address: " << deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets] << "\n";
+        // std::cout << "SwapChain.Present address: " << std::uppercase << std::hex << swapChainVTable[MO_IDXGISwapChain::Present] << "\n";
+        // std::cout << "SwapChain.ResizeBuffers address: " << std::uppercase << std::hex << swapChainVTable[MO_IDXGISwapChain::ResizeBuffers] << "\n";
+        // std::cout << "Context.Draw address: " << std::uppercase << std::hex << deviceContextVTable[MO_ID3D11DeviceContext::Draw] << "\n";
+        // std::cout << "Context.DrawIndexed address: " << std::uppercase << std::hex <<  deviceContextVTable[MO_ID3D11DeviceContext::DrawIndexed] << "\n";
+        // std::cout << "Context.OMSetRenderTargets address: " << std::uppercase << std::hex << deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets] << "\n";
         // std::cout << "\n";
 
-        pSwapChain->Release();
-        pDevice->Release();
-        pDeviceContext->Release();
+        if ( !pSwapChainActual ) {
+            // The we created dummies and need to clean them up.
+            pSwapChain->Release();
+            pDevice->Release();
+            pDeviceContext->Release();
+        }
+
     }
 
+
+    /// @brief Uninstall rendering hooks.
     void cleanup() {
         hooks.clear();
         safeRelease( renderTargetView );
     }
 
+    /// @brief Adds a render function to run every frame.
+    /// @param cb Render function pointer.
     void addOnPresentCallback( PresentCallback cb ) {
         onPresentCallbacks_mutex.lock();
         onPresentCallbacks.emplace_back( cb );
@@ -166,7 +184,7 @@ namespace DX11Hook {
 
 }
 
-void createDummy(
+HRESULT createDummy(
     IDXGISwapChain** ppSwapChain,
     ID3D11Device** ppDevice,
     D3D_FEATURE_LEVEL* pFeatureLevel,
@@ -185,7 +203,7 @@ void createDummy(
     sd.Windowed = TRUE;
     sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
-    D3D11CreateDeviceAndSwapChain(
+    return D3D11CreateDeviceAndSwapChain(
         NULL,
         D3D_DRIVER_TYPE_HARDWARE,
         NULL,
