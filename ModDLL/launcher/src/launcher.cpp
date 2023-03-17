@@ -4,6 +4,7 @@
 #define MCC_WINDOW_NAME "Halo: The Master Chief Collection  "
 #define THREAD_TIMEOUT 10000
 
+// Thanks to 247CTF for their LoadLibrary DLL injection example.
 HRESULT injectDll( DWORD pid, std::string path ) {
     HRESULT result = S_OK;
 
@@ -44,7 +45,6 @@ HRESULT injectDll( DWORD pid, std::string path ) {
 
                 }
 
-
             }
 
             if ( !VirtualFreeEx( hProc, path_remotePtr, NULL, MEM_RELEASE ) )
@@ -59,16 +59,12 @@ HRESULT injectDll( DWORD pid, std::string path ) {
     return result;
 }
 
-std::string getModulePath() {
+std::string getLauncherDirectory() {
     char path[MAX_PATH];
     GetModuleFileNameA( NULL, path, MAX_PATH );
     std::string pathStr = path;
     auto lastSlash = pathStr.find_last_of( '\\' );
     return pathStr.substr( 0, lastSlash + 1 );
-}
-
-std::string getModDLLPath() {
-    return getModulePath() + "SUPERHOTMCC.dll";
 }
 
 void exitWithErrorMessage( std::string message ) {
@@ -86,7 +82,7 @@ int main() {
     GetWindowThreadProcessId( hwnd, &pid );
     if ( !pid ) exitWithErrorMessage( "Could not get MCC process ID." );
 
-    auto dllPath = getModDLLPath();
+    auto dllPath = getLauncherDirectory() + "SUPERHOTMCC.dll";
     if ( FAILED( injectDll( pid, dllPath ) ) )
         exitWithErrorMessage( "Could not inject mod dll." );
 }
