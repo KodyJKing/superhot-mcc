@@ -3,8 +3,6 @@
 
 namespace HaloMCC {
 
-    static const char* moduleName = "mcc-win64-shipping.exe";
-
     HWND getWindow() {
         static HWND window = NULL;
         if ( !window )
@@ -27,7 +25,7 @@ namespace HaloMCC {
     }
 
     uint64_t getModuleBase() {
-        return (uint64_t) GetModuleHandleA( moduleName );
+        return (uint64_t) GetModuleHandleA( MCC_MODULE_NAME );
     }
 
     bool isInGame() {
