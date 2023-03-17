@@ -64,6 +64,8 @@ namespace Rewind {
             case EntityCategory_Projectile: {
                 SAVE( projectileAge );
                 SAVE( fuse );
+                SAVE( fwd );
+                SAVE( up );
                 break;
             }
             case EntityCategory_Vehicle: {
@@ -113,6 +115,7 @@ namespace Rewind {
             case EntityCategory_Projectile: {
                 REWIND( projectileAge, float );
                 REWIND( fuse, float );
+                rewindRotation( entity, timescale );
 
                 // Do not allow these projectiles to accelerate / decelerate.
                 if (
