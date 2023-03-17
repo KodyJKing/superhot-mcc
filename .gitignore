@@ -5,6 +5,11 @@ ModDLL/Debug
 ModDLL/*/Debug
 ModDLL/x64
 
+ModDLL/*/.vs/**
+ModDLL/*/Debug
+ModDLL/*/*/Debug
+ModDLL/*/x64
+
 tmp
 pointerScans
 

@@ -1,12 +1,14 @@
 {
     "files.exclude": {
-        "**/*.sln": true,
+        // "**/*.sln": true,
         // "**/*.vcxproj*": true,
         "**/*.vcxproj.user": true,
         "**/*.vcxproj.filters": true,
         "**/*.vs": true,
-        "dll/Debug": true,
-        "dll/x64": true,
+        "ModDLL/*/Debug": true,
+        "ModDLL/*/x64": true,
+        "ModDLL/Debug": true,
+        "ModDLL/x64": true,
     },
     "files.associations": {
         "*.asmlib": "asm-intel-x86-generic",
