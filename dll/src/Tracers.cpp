@@ -15,33 +15,33 @@ using std::unordered_map;
 
 namespace Tracers {
 
-    struct PositionShift {
-        float absolute = 0.0f;
-        float velocity = 0.0f;
-    };
+    // struct PositionShift {
+    //     float absolute = 0.0f;
+    //     float velocity = 0.0f;
+    // };
 
-    PositionShift getPositionShift( string projectileResourceName ) {
+    // PositionShift getPositionShift( string projectileResourceName ) {
 
-        static unordered_map<string, PositionShift> shifts {
-            { "weapons\\plasma pistol\\bolt",
-                { .absolute = 1.0f } },
-            { "weapons\\needler\\needle",
-                { .absolute = 0.133f } },
-            { "weapons\\plasma rifle\\bolt",
-                { .velocity = 1.0f } },
-            { "weapons\\sniper rifle\\sniper bullet",
-                { .velocity = 1.0f } },
-            { "weapons\\assault rifle\\bullet",
-                { .velocity = 1.0f } },
-            { "weapons\\pistol\\bullet",
-                { .velocity = 1.0f } },
-        };
+    //     static unordered_map<string, PositionShift> shifts {
+    //         { "weapons\\plasma pistol\\bolt",
+    //             { .absolute = 1.0f } },
+    //         { "weapons\\needler\\needle",
+    //             { .absolute = 0.133f } },
+    //         { "weapons\\plasma rifle\\bolt",
+    //             { .velocity = 1.0f } },
+    //         { "weapons\\sniper rifle\\sniper bullet",
+    //             { .velocity = 1.0f } },
+    //         { "weapons\\assault rifle\\bullet",
+    //             { .velocity = 1.0f } },
+    //         { "weapons\\pistol\\bullet",
+    //             { .velocity = 1.0f } },
+    //     };
 
-        if ( shifts.count( projectileResourceName ) == 0 )
-            return { 0.0f, 0.0f };
+    //     if ( shifts.count( projectileResourceName ) == 0 )
+    //         return { 0.0f, 0.0f };
 
-        return shifts[projectileResourceName];
-    }
+    //     return shifts[projectileResourceName];
+    // }
 
     struct TracerPoint {
         Vec3 pos;
@@ -123,16 +123,19 @@ namespace Tracers {
             if ( handle != projectileHandle )
                 reset( handle );
 
-            auto shift = getPositionShift( entity->getTagResourcePath() );
-            Vec3 p1 = Vec::addScaled(
-                Vec::addScaled( entity->pos, entity->vel, shift.velocity ),
-                Vec::unit( entity->vel ), shift.absolute
-            );
-
+            Vec3 p1;
             auto N = points.size();
-            if ( N > 0 ) {
+            if ( N == 0 ) {
+                p1 = entity->pos;
+            } else {
+                // auto shift = getPositionShift( entity->getTagResourcePath() );
+                // p1 = Vec::addScaled(
+                //     Vec::addScaled( entity->pos, entity->vel, shift.velocity ),
+                //     Vec::unit( entity->vel ), shift.absolute
+                // );
+                p1 = entity->pos;
                 auto p0 = points[N - 1].pos;
-                if ( p0.x == p1.x && p0.y == p1.y && p0.z == p1.z )
+                if ( Vec::distance( p0, p1 ) < 0.0001 )
                     return;
             }
 

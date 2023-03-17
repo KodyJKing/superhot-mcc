@@ -19,6 +19,7 @@ namespace Vec {
     Vec3 scale( Vec3 a, float s );
     float dot( Vec3 a, Vec3 b );
     float length( Vec3 a );
+    float distance( Vec3 a, Vec3 b );
     Vec3 unit( Vec3 a );
     Vec3 lerp( Vec3 a, Vec3 b, float t );
     Vec3 rejection( Vec3 v, Vec3 axis );

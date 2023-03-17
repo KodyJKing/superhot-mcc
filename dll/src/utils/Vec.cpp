@@ -40,6 +40,7 @@ namespace Vec {
     Vec3 scale( Vec3 a, float s ) { return { a.x * s, a.y * s, a.z * s }; }
     float dot( Vec3 a, Vec3 b ) { return a.x * b.x + a.y * b.y + a.z * b.z; }
     float length( Vec3 a ) { return sqrtf( a.x * a.x + a.y * a.y + a.z * a.z ); }
+    float distance( Vec3 a, Vec3 b ) { return length( sub( a, b ) ); }
     Vec3 unit( Vec3 a ) { return scale( a, 1 / length( a ) ); }
     Vec3 lerp( Vec3 a, Vec3 b, float t ) { return { MathUtils::lerp( a.x, b.x, t ), MathUtils::lerp( a.y, b.y, t ), MathUtils::lerp( a.z, b.z, t ) }; }
     Vec3 rejection( Vec3 v, Vec3 axis ) { return sub( v, scale( axis, dot( v, axis ) ) ); }
