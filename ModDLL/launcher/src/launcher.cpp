@@ -12,7 +12,7 @@ HRESULT injectDll( DWORD pid, std::string path ) {
     HANDLE hProc = OpenProcess( access, false, pid );
     if ( !hProc ) {
 
-        std::cout << "Could not open MCC process.\n";
+        std::cerr << "Could not open MCC process.\n";
         result = E_FAIL;
 
     } else {
@@ -20,14 +20,14 @@ HRESULT injectDll( DWORD pid, std::string path ) {
         LPVOID path_remotePtr = VirtualAllocEx( hProc, NULL, path.size(), MEM_COMMIT, PAGE_READWRITE );
         if ( !path_remotePtr ) {
 
-            std::cout << "Could not allocate DLL path in MCC process.\n";
+            std::cerr << "Could not allocate DLL path in MCC process.\n";
             result = E_FAIL;
 
         } else {
 
             if ( !WriteProcessMemory( hProc, path_remotePtr, path.c_str(), path.size(), NULL ) ) {
 
-                std::cout << "Could not write DLL path in MCC process.\n";
+                std::cerr << "Could not write DLL path in MCC process.\n";
                 result = E_FAIL;
 
             } else {
@@ -35,7 +35,7 @@ HRESULT injectDll( DWORD pid, std::string path ) {
                 HANDLE hThread = CreateRemoteThread( hProc, NULL, NULL, (LPTHREAD_START_ROUTINE) LoadLibraryA, path_remotePtr, NULL, NULL );
                 if ( !hThread ) {
 
-                    std::cout << "Could not create thread in MCC Process.\n";
+                    std::cerr << "Could not create thread in MCC Process.\n";
                     result = E_FAIL;
 
                 } else {
@@ -48,7 +48,7 @@ HRESULT injectDll( DWORD pid, std::string path ) {
             }
 
             if ( !VirtualFreeEx( hProc, path_remotePtr, NULL, MEM_RELEASE ) )
-                std::cout << "Could not free DLL path in MCC process!\n";
+                std::cerr << "Could not free DLL path in MCC process!\n";
 
         }
 
@@ -68,7 +68,7 @@ std::string getLauncherDirectory() {
 }
 
 void exitWithErrorMessage( std::string message ) {
-    std::cout << "Error: " << message << "\n\n";
+    std::cerr << "Error: " << message << "\n\n";
     std::cout << "Press any key to exit.\n";
     getchar();
     exit( 0 );

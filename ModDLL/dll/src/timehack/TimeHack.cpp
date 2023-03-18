@@ -3,6 +3,7 @@
 #include "headers/Rewind.h"
 #include "../headers/Hook.h"
 #include "../headers/Halo1.h"
+#include "../utils/headers/BytePattern.h"
 #include "../utils/headers/MathUtils.h"
 #include "../utils/headers/common.h"
 #include "../utils/headers/Vec.h"
@@ -163,11 +164,25 @@ namespace TimeHack {
 
     static std::vector<HookPointer> hooks;
 
-    void init( uint64_t halo1Base ) {
+    bool init( uint64_t halo1Base ) {
 
         hooks.clear();
 
         std::cout << "Initializing time hack.\n";
+
+        bool instructionsCheck =
+            assertBytes( "Pre Entity Update", halo1Base + 0xB898A0U, "48 8B 34 C6 48 8B 86 F0 00 00 00 48 85 C0" ) &&
+            assertBytes( "Post Entity Update", halo1Base + 0xB89A34U, "33 DB 4C 8B 7C 24 20 48 8B 44 24 30 48 8B BC 24 C0 00 00 00 48 8B B4 24 B8 00 00 00" ) &&
+            assertBytes( "Fire Rate Fix", halo1Base + 0xBDEF90U, "F3 0F 10 52 08 0F 57 DB F3 0F 5C 52 04 F3 0F 59 D1 F3 0F 58 52 04" ) &&
+            assertBytes( "Damage Health", halo1Base + 0xC19090U, "F3 0F 10 83 9C 00 00 00 F3 0F 5C C6 F3 0F 11 83 9C 00 00 00" ) &&
+            assertBytes( "Damage Shield", halo1Base + 0xC197D0U, "F3 0F 5C CA F3 0F 11 0F 41 F6 C1 02" );
+
+        if ( !instructionsCheck ) {
+            auto message = "Could not install time manipulation hooks. The game may have updated.";
+            std::cerr << message << "\n";
+            MessageBoxA( NULL, message, "SuperHot MCC Error", MB_OK );
+            return false;
+        }
 
         auto preEntityUpdateHook_start = halo1Base + 0xB898A4U;
         preEntityUpdateHook_end = halo1Base + 0xB898D2U;
@@ -213,6 +228,7 @@ namespace TimeHack {
             damageShieldHook_return
         ) );
 
+        return true;
     }
 
     void cleanup() {

@@ -5,7 +5,7 @@
 
 namespace Halo1Mod {
 
-    void init();
+    bool init();
     void cleanup();
     void onRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain );
     void onDllThreadUpdate();

@@ -15,6 +15,11 @@ void throwIfFail( HRESULT hr ) {
     throwIfFail( nullptr, hr );
 }
 
+void showAndPrintError( const char* message ) {
+    std::cerr << message << "\n";
+    MessageBoxA( NULL, message, "SuperHot MCC Error", MB_OK );
+}
+
 void updateFloat( const char* floatName, float& x, float rate, int increaseKey, int decreaseKey ) {
     int increase = GetAsyncKeyState( increaseKey );
     int decrease = GetAsyncKeyState( decreaseKey );

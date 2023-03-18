@@ -9,36 +9,37 @@
 namespace Halo1Mod {
 
     uint64_t dllBase = 0;
-    bool hasInit = false;
     std::mutex mtx;
 
-    void init() {
-        mtx.lock();
+    bool init() {
+        const std::lock_guard<std::mutex> lock( mtx );
 
         dllBase = (uint64_t) GetModuleHandleA( "halo1.dll" );
-        if ( !dllBase ) return;
-        Halo1::init( dllBase );
-        TimeHack::init( dllBase );
-        DX11Hook::addOnPresentCallback( onRender );
-        hasInit = true;
+        if ( !dllBase )
+            return false;
 
-        mtx.unlock();
+        Halo1::init( dllBase );
+
+        if ( !TimeHack::init( dllBase ) )
+            return false;
+
+        DX11Hook::addOnPresentCallback( onRender );
+
+        return true;
     }
 
     void cleanup() {
-        mtx.lock();
+        const std::lock_guard<std::mutex> lock( mtx );
 
         std::cout << "Cleaning up Halo CE mod.\n";
         DX11Hook::removeOnPresentCallback( onRender );
         TimeHack::cleanup();
-
-        mtx.unlock();
     }
 
     void onRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
         if ( mtx.try_lock() ) {
 
-            if ( hasInit && Halo1::isGameLoaded() ) {
+            if ( Halo1::isGameLoaded() ) {
                 static std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>( pDevice, 4096 );
                 Overlay::render( renderer.get(), pCtx, pDevice, pSwapChain );
                 Tracers::render( renderer.get(), TimeHack::timeElapsed, pCtx, pDevice, pSwapChain );
@@ -50,14 +51,12 @@ namespace Halo1Mod {
     }
 
     void onDllThreadUpdate() {
-        mtx.lock();
+        const std::lock_guard<std::mutex> lock( mtx );
 
-        if ( hasInit && Halo1::isGameLoaded() ) {
+        if ( Halo1::isGameLoaded() ) {
             TimeHack::onDllThreadUpdate();
             Overlay::onDllThreadUpdate();
         }
-
-        mtx.unlock();
     }
 
 }

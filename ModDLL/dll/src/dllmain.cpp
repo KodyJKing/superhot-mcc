@@ -8,6 +8,7 @@
 #include "headers/Hook.h"
 #include "utils/headers/common.h"
 #include "utils/headers/Vec.h"
+#include "utils/headers/BytePattern.h"
 #include "graphics/headers/DX11Hook.h"
 #include "graphics/headers/Renderer.h"
 #include "timehack/headers/TimeHack.h"
@@ -31,11 +32,11 @@ BOOL APIENTRY DllMain(
     return TRUE;
 }
 
+static bool exitMod = false;
 bool checkExit() {
-    static bool hasExited = false;
     if ( GetAsyncKeyState( VK_F9 ) )
-        hasExited = true;
-    return hasExited;
+        exitMod = true;
+    return exitMod;
 }
 
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
@@ -72,7 +73,9 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
         std::cout << "Could not find swap chain!\n";
         err = E_POINTER;
     } else {
-        DX11Hook::hook( mccWindow, pSwapChain );
+        auto hr = DX11Hook::hook( mccWindow, pSwapChain );
+        if ( FAILED( hr ) )
+            err = hr;
     }
 
     if ( !err ) {
@@ -80,7 +83,9 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
             while ( !checkExit() && !HaloMCC::isInGame() )
                 Sleep( 100 );
 
-            Halo1Mod::init();
+            if ( !Halo1Mod::init() )
+                exitMod = true;
+
             while ( !checkExit() && HaloMCC::isInGame() ) {
                 Halo1Mod::onDllThreadUpdate();
                 Sleep( 10 );

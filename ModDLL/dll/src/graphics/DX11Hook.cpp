@@ -1,4 +1,5 @@
 #include "../utils/headers/common.h"
+#include "../utils/headers/BytePattern.h"
 #include "./headers/DX11MethodOffsets.h"
 #include "./headers/DX11Hook.h"
 #include "../headers/Hook.h"
@@ -103,7 +104,7 @@ namespace DX11Hook {
     /// @brief  Setup a hook to call custom rendering functions added through DX11Hook::addOnPresentCallback.
     /// @param hwnd The window you will be rendering.
     /// @param pSwapChainActual [Optional] A pointer to an existing swap chain to use for virtual table hooking. If this is null, a dummy swap chain is created.
-    void hook( HWND hwnd, IDXGISwapChain* pSwapChainActual ) {
+    HRESULT hook( HWND hwnd, IDXGISwapChain* pSwapChainActual ) {
         IDXGISwapChain* pSwapChain;
         ID3D11Device* pDevice;
         D3D_FEATURE_LEVEL featureLevel;
@@ -112,10 +113,17 @@ namespace DX11Hook {
         if ( pSwapChainActual ) {
             pSwapChain = pSwapChainActual;
             auto hr = pSwapChainActual->GetDevice( __uuidof( ID3D11Device ), (void**) &pDevice );
-            if ( FAILED( hr ) ) return;
+            if ( FAILED( hr ) ) {
+                showAndPrintError( "Could not install DX11 hooks: Couldn't get device from swap chain." );
+                return hr;
+            }
             pDevice->GetImmediateContext( &pDeviceContext );
         } else {
-            createDummy( &pSwapChain, &pDevice, &featureLevel, &pDeviceContext, hwnd );
+            auto hr = createDummy( &pSwapChain, &pDevice, &featureLevel, &pDeviceContext, hwnd );
+            if ( FAILED( hr ) ) {
+                showAndPrintError( "Could not install DX11 hooks: Could not construct dummy device." );
+                return hr;
+            }
         }
 
         UINT_PTR* swapChainVTable = *( (UINT_PTR**) pSwapChain );
@@ -128,6 +136,19 @@ namespace DX11Hook {
         jump back into DirectX's code for us. */
 
         uint64_t presentHook_start = swapChainVTable[MO_IDXGISwapChain::Present];
+        uint64_t resizeBuffersHook_start = swapChainVTable[MO_IDXGISwapChain::ResizeBuffers];
+        uint64_t setRenderTargets_start = deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets];
+
+        bool instructionsCheck =
+            assertBytes( "Present Function", presentHook_start, "E9 ?? ?? ?? ?? 48 89 74 24 20 55 57 41 56" ) &&
+            assertBytes( "Resize Buffers Function", resizeBuffersHook_start, "E9 ?? ?? ?? ?? 54 41 55 41 56 41 57 48 8D 68 B1 48 81 EC C0 00 00 00" ) &&
+            assertBytes( "Set Render Targets Function", setRenderTargets_start, "40 53 55 56 57 41 54 41 55 41 56 41 57 48 81 EC C8 01 00 00" );
+
+        if ( !instructionsCheck ) {
+            showAndPrintError( "Could not install DX11 hooks: Found unexpected instructions at hook location(s)." );
+            return E_FAIL;
+        }
+
         presentHook_jmp = Hook::getJumpDestination( presentHook_start );
         hooks.emplace_back( make_unique<JumpHook>(
             "Present",
@@ -135,7 +156,6 @@ namespace DX11Hook {
             (UINT_PTR) presentHook
         ) );
 
-        uint64_t resizeBuffersHook_start = swapChainVTable[MO_IDXGISwapChain::ResizeBuffers];
         resizeBuffersHook_jmp = Hook::getJumpDestination( resizeBuffersHook_start );
         hooks.emplace_back( make_unique<JumpHook>(
             "ResizeBuffers",
@@ -145,7 +165,7 @@ namespace DX11Hook {
 
         hooks.emplace_back( make_unique<JumpHook>(
             "SetRenderTargets",
-            deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets], 5,
+            setRenderTargets_start, 5,
             (UINT_PTR) setRenderTargetsHook,
             setRenderTargetsHook_return
         ) );
@@ -154,7 +174,7 @@ namespace DX11Hook {
         // std::cout << "SwapChain.Present address: " << std::uppercase << std::hex << swapChainVTable[MO_IDXGISwapChain::Present] << "\n";
         // std::cout << "SwapChain.ResizeBuffers address: " << std::uppercase << std::hex << swapChainVTable[MO_IDXGISwapChain::ResizeBuffers] << "\n";
         // std::cout << "Context.Draw address: " << std::uppercase << std::hex << deviceContextVTable[MO_ID3D11DeviceContext::Draw] << "\n";
-        // std::cout << "Context.DrawIndexed address: " << std::uppercase << std::hex <<  deviceContextVTable[MO_ID3D11DeviceContext::DrawIndexed] << "\n";
+        // std::cout << "Context.DrawIndexed address: " << std::uppercase << std::hex << deviceContextVTable[MO_ID3D11DeviceContext::DrawIndexed] << "\n";
         // std::cout << "Context.OMSetRenderTargets address: " << std::uppercase << std::hex << deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets] << "\n";
         // std::cout << "\n";
 
@@ -165,29 +185,27 @@ namespace DX11Hook {
             pDeviceContext->Release();
         }
 
-    }
+        return S_OK;
 
+    }
 
     /// @brief Uninstall rendering hooks.
     void cleanup() {
-        onPresentCallbacks_mutex.lock();
+        const std::lock_guard<std::mutex> lock( onPresentCallbacks_mutex );
         hooks.clear();
         safeRelease( renderTargetView );
-        onPresentCallbacks_mutex.unlock();
     }
 
     /// @brief Adds a render function to run every frame.
     /// @param cb Render function pointer.
     void addOnPresentCallback( PresentCallback cb ) {
-        onPresentCallbacks_mutex.lock();
+        const std::lock_guard<std::mutex> lock( onPresentCallbacks_mutex );
         onPresentCallbacks.insert( cb );
-        onPresentCallbacks_mutex.unlock();
     }
 
     void removeOnPresentCallback( PresentCallback cb ) {
-        onPresentCallbacks_mutex.lock();
+        const std::lock_guard<std::mutex> lock( onPresentCallbacks_mutex );
         onPresentCallbacks.erase( cb );
-        onPresentCallbacks_mutex.unlock();
     }
 
 }

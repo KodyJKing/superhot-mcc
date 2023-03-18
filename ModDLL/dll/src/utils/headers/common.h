@@ -33,6 +33,8 @@ bool isZero( T* pData ) {
 void throwIfFail( const char* taskDescription, HRESULT hr );
 void throwIfFail( HRESULT hr );
 
+void showAndPrintError( const char* message );
+
 void updateFloat( const char* floatName, float& x, float rate, int increaseKey, int decreaseKey );
 
 bool keypressed( char vk );
