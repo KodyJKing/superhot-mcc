@@ -8,18 +8,6 @@ namespace Halo1 {
 
     // === Classes created with ReClass.NET 1.2 by KN4CK3R ===
 
-    // class DeviceContainer {
-    //     public:
-    //     uint64_t vftable; //0x0000
-    //     char gpuName[256]; //0x0008
-    //     char pad_0108[992]; //0x0108
-    //     ID3D11Device* pDevice; //0x04E8
-    //     char pad_04F0[88]; //0x04F0
-    //     uint32_t resolutionX; //0x0548
-    //     uint32_t resolutionY; //0x054C
-    //     char pad_0550[984]; //0x0550
-    // }; //Size: 0x0928
-
     class Camera {
         public:
         Vec3 pos; //0x0000
@@ -106,7 +94,6 @@ namespace Halo1 {
         char pad_02FE[6]; //0x02FE
         uint32_t vehicleRiderHandle; //0x0304
 
-
         Tag* tag();
         char* getTagResourcePath();
         bool fromResourcePath( const char* str );
@@ -151,6 +138,35 @@ namespace Halo1 {
         TypeID_Projectile = 0x0290,
     };
 
+    // === Raycasting ===================================
+
+    inline const uint64_t defaultRaycastFlags = 0x1000E9;
+
+    enum HitType {
+        HitType_Nothing = 0xFFFF,
+        HitType_Map = 0x02,
+        HitType_Entity = 0x03
+    };
+
+    class RaycastResult {
+        public:
+        uint16_t hitType; //0x0000
+        char pad_0002[22]; //0x0002
+        Vec3 pos; //0x0018
+        Vec3 normal; //0x0024
+        char pad_0030[8]; //0x0030
+        uint32_t entityHandle; //0x0038
+        char pad_003C[20]; //0x003C
+
+        char safetyPad[64]; // Just in case the structure is bigger than I think.
+    }; //Size: 0x0050 + 64
+
+    typedef bool ( *RaycastFunction )( uint64_t flags, Vec3* origin, Vec3* displacement, uint32_t sourceEntityHandle, RaycastResult* raycastResult );
+
+    extern RaycastFunction raycast;
+
+    bool raycastPlayerSightLine( RaycastResult& result, float distance = 100.0f, uint64_t flags = defaultRaycastFlags );
+
     // =======================================================
 
     void init( UINT_PTR _dllBase );
@@ -173,6 +189,8 @@ namespace Halo1 {
     EntityRecord* getEntityRecord( EntityList* pEntityList, uint32_t entityHandle );
 
     uint32_t indexToEntityHandle( uint16_t index );
+
+    EntityRecord* getPlayerRecord();
 
     bool isPlayerHandle( uint32_t entityHandle );
     bool isPlayerControlled( EntityRecord* rec );

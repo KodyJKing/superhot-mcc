@@ -7,8 +7,12 @@
 namespace Halo1 {
 
     static UINT_PTR dllBase;
+    RaycastFunction raycast;
 
-    void init( UINT_PTR _dllBase ) { dllBase = _dllBase; }
+    void init( UINT_PTR _dllBase ) {
+        dllBase = _dllBase;
+        raycast = (RaycastFunction) ( dllBase + 0xC03710U );
+    }
 
     // === Methods ===
 
@@ -99,6 +103,13 @@ namespace Halo1 {
 
     // ================
 
+    EntityRecord* getPlayerRecord() {
+        auto rec = getEntityRecord( getPlayerHandle() );
+        if ( !rec || !rec->entity() )
+            return nullptr;
+        return rec;
+    }
+
     bool isPlayerHandle( uint32_t entityHandle ) {
         auto rec = getEntityRecord( entityHandle );
         return rec && rec->typeId == TypeID_Player;
@@ -161,7 +172,13 @@ namespace Halo1 {
         }
     }
 
-    // ======================
+    // === Raycasting ===
+
+    bool raycastPlayerSightLine( RaycastResult& result, float distance, uint64_t flags ) {
+        auto cam = Halo1::getPlayerCameraPointer();
+        auto displacement = Vec::scale( cam->fwd, distance );
+        return Halo1::raycast( flags, &cam->pos, &displacement, Halo1::getPlayerHandle(), &result );
+    }
 
     // === Camera Helpers ===
 

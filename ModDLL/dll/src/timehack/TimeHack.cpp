@@ -213,7 +213,6 @@ namespace TimeHack {
             fireRateFixHook_return
         ) );
 
-
         hooks.emplace_back( make_unique<JumpHook>(
             "Damage Health Hook",
             halo1Base + 0xC19090U, 12,
