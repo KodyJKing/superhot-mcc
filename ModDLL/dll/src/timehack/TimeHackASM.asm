@@ -19,9 +19,20 @@ _TEXT SEGMENT
     PUBLIC preEntityUpdateHook
     preEntityUpdateHook PROC
 
-        ; Original:
-            mov rax, [rsi+00F0h]
-            test rax,rax
+        ; halo1.dll+B89892 - 48 0FBF 00            - movsx rax,word ptr [rax]
+        ; halo1.dll+B89896 - 48 8D 35 A382E400     - lea rsi,[halo1.dll+19D1B40]
+        ; halo1.dll+B8989D - 0FB7 FB               - movzx edi,bx
+        ; halo1.dll+B898A0 - 48 8B 34 C6           - mov rsi,[rsi+rax*8]
+        ; === BEGIN HOOK === (10 bytes)
+        ; halo1.dll+B898A4 - 48 8B 86 F0000000     - mov rax,[rsi+000000F0]
+        ; halo1.dll+B898AB - 48 85 C0              - test rax,rax
+        ; === END HOOK =====
+        ; halo1.dll+B898AE - 74 22                 - je halo1.dll+B898D2
+        ; halo1.dll+B898B0 - 48 8B 50 58           - mov rdx,[rax+58]
+        ; halo1.dll+B898B4 - 48 85 D2              - test rdx,rdx
+        ; halo1.dll+B898B7 - 74 05                 - je halo1.dll+B898BE
+        ; halo1.dll+B898B9 - 41 8B CC              - mov ecx,r12d
+        ; halo1.dll+B898BC - FF D2                 - call rdx
 
         pushState
 
@@ -50,16 +61,26 @@ _TEXT SEGMENT
     PUBLIC postEntityUpdateHook
     postEntityUpdateHook PROC
     
-        ; Original:
-            mov rax,[rsp+30h]
+        ; halo1.dll+B89A25 - 66 FF C7              - inc di
+        ; halo1.dll+B89A28 - 0FBF C7               - movsx eax,di
+        ; halo1.dll+B89A2B - 41 3B 87 40010000     - cmp eax,[r15+00000140]
+        ; halo1.dll+B89A32 - 7C 8D                 - jl halo1.dll+B899C1
+        ; halo1.dll+B89A34 - 33 DB                 - xor ebx,ebx
+        ; halo1.dll+B89A36 - 4C 8B 7C 24 20        - mov r15,[rsp+20]
+        ; === BEGIN HOOK === (5 bytes)
+        ; halo1.dll+B89A3B - 48 8B 44 24 30        - mov rax,[rsp+30]
+        ; === END HOOK =====
+        ; halo1.dll+B89A40 - 48 8B BC 24 C0000000  - mov rdi,[rsp+000000C0]
+        ; halo1.dll+B89A48 - 48 8B B4 24 B8000000  - mov rsi,[rsp+000000B8]
+        ; halo1.dll+B89A50 - 8B 08                 - mov ecx,[rax]
+        ; halo1.dll+B89A52 - 83 F9 FF              - cmp ecx,-01
+        ; halo1.dll+B89A55 - 74 05                 - je halo1.dll+B89A5C
 
         pushState
-        
             sub rsp, 20h
             mov rcx, r12
             call postEntityUpdate
             add rsp, 20h
-
         popState
         
         jmp [postEntityUpdateHook_return]
@@ -73,19 +94,19 @@ _TEXT SEGMENT
     PUBLIC fireRateFixHook
     fireRateFixHook PROC
         
-        ; Original
-            ; F3 43 0F10 8C 01 38020000  - movss xmm1,[r9+r8+00000238]
-            ; ==== BEGIN HOOK ==== (22 bytes)
-            ; halo1.dll+BDEF90:
-            ; F3 0F10 52 08              - movss xmm2,[rdx+08]
-            ; 0F57 DB                    - xorps xmm3,xmm3
-            ; F3 0F5C 52 04              - subss xmm2,[rdx+04]
-            ; F3 0F59 D1                 - mulss xmm2,xmm1
-            ; F3 0F58 52 04              - addss xmm2,[rdx+04]
-            ; ==== END HOOK ======
-            ; 0F2F 15 875AEA00           - comiss xmm2,[7FFCE8904A34]
-            ; 76 0E                      - jna 7FFCE7A5EFBD
-            ; F3 0F10 0D 0599D600        - movss xmm1,[7FFCE87C88BC]
+        ; halo1.dll+BDEF7B - F3 41 0F10 88 FC010000  - movss xmm1,[r8+000001FC]
+        ; halo1.dll+BDEF84 - EB 0A                 - jmp halo1.dll+BDEF90
+        ; halo1.dll+BDEF86 - F3 43 0F10 8C 01 38020000  - movss xmm1,[r9+r8+00000238]
+        ; ==== BEGIN HOOK ==== (22 bytes)
+        ; halo1.dll+BDEF90 - F3 0F10 52 08         - movss xmm2,[rdx+08]
+        ; halo1.dll+BDEF95 - 0F57 DB               - xorps xmm3,xmm3
+        ; halo1.dll+BDEF98 - F3 0F5C 52 04         - subss xmm2,[rdx+04]
+        ; halo1.dll+BDEF9D - F3 0F59 D1            - mulss xmm2,xmm1
+        ; halo1.dll+BDEFA1 - F3 0F58 52 04         - addss xmm2,[rdx+04]
+        ; ==== END HOOK ======
+        ; halo1.dll+BDEFA6 - 0F2F 15 875AEA00      - comiss xmm2,[halo1.dll+1A84A34]
+        ; halo1.dll+BDEFAD - 76 0E                 - jna halo1.dll+BDEFBD
+        ; halo1.dll+BDEFAF - F3 0F10 0D 0599D600   - movss xmm1,[halo1.dll+19488BC]
 
         push rax
 
