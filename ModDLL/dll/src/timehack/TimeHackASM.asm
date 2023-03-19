@@ -172,18 +172,19 @@ _TEXT SEGMENT
         ; halo1.dll+C197D8 - 41 F6 C1 02           - test r9l,02
         ; halo1.dll+C197DC - 75 35                 - jne halo1.dll+C19813
         ; halo1.dll+C197DE - F3 0F10 83 84010000   - movss xmm0,[rbx+00000184]
-        ; halo1.dll+C197E6 - 0F2F C1               - comiss xmm0,xmm1
-
+        ; halo1.dll+C197E6 - 0F2F C1               - comiss xmm0,xmm
 
         ; Get entity handle from stack to pass to damageScaleForEntity
-        mov ecx, dword ptr [rsp + 00E0h]
-        pushState
-            sub rsp, 20h
-            call damageScaleForEntity
-            add rsp, 20h
+        push rcx
+            mov ecx, dword ptr [rsp + 00E0h]
+            pushState
+                sub rsp, 20h
+                call damageScaleForEntity
+                add rsp, 20h
 
-            mulss xmm2, xmm0
-        popState
+                mulss xmm2, xmm0
+            popState
+        pop rcx
 
         subss xmm1, xmm2
         movss dword ptr [rdi], xmm1
