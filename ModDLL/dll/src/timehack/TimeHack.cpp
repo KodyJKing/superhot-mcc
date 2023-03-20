@@ -58,7 +58,7 @@ float damageScaleForEntity( uint32_t entityHandle ) {
     if ( !entity ) return 1.0f;
 
     if ( rec->typeId == TypeID_Player )
-        return 4.0f;
+        return 3.0f;
     else
         return 2.0f;
 }
