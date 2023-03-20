@@ -34,6 +34,9 @@ _TEXT SEGMENT
         ; halo1.dll+B898B9 - 41 8B CC              - mov ecx,r12d
         ; halo1.dll+B898BC - FF D2                 - call rdx
 
+        mov rax, [rsi+00F0h]
+        test rax,rax
+
         pushState
 
             sub rsp, 20h
@@ -75,6 +78,8 @@ _TEXT SEGMENT
         ; halo1.dll+B89A50 - 8B 08                 - mov ecx,[rax]
         ; halo1.dll+B89A52 - 83 F9 FF              - cmp ecx,-01
         ; halo1.dll+B89A55 - 74 05                 - je halo1.dll+B89A5C
+
+        mov rax,[rsp+30h]
 
         pushState
             sub rsp, 20h
