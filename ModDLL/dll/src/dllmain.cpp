@@ -7,6 +7,7 @@
 #include "headers/Tracers.h"
 #include "headers/Hook.h"
 #include "utils/headers/common.h"
+#include "utils/headers/Config.h"
 #include "utils/headers/Vec.h"
 #include "utils/headers/BytePattern.h"
 #include "graphics/headers/DX11Hook.h"

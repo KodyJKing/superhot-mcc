@@ -41,6 +41,8 @@ bool keypressed( char vk );
 
 void toggleOption( const char* description, bool& option, int key );
 
+std::string getModDirectory();
+
 void memcpyExecutable( char* dest, char* source, size_t size );
 
 void copyANSITextToClipboard( const char* text, size_t maxLength = 500 );

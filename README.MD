@@ -6,7 +6,7 @@
 
 ## Installing
 
-1. Place `FW1FontWrapper.dll` under `\mcc\binaries\win64\`.
+1. Place `FW1FontWrapper.dll` (under ModDLL/dll/include) and `SuperhotMCC.ini` under `\mcc\binaries\win64\`.
 2. If you're an end user, place `SUPERHOTMCC.dll` and `SuperhotMCCLauncher.exe` under the same directory.
 
 ## Running

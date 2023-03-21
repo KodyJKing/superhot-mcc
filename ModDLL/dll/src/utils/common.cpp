@@ -45,6 +45,14 @@ void toggleOption( const char* description, bool& option, int key ) {
     }
 }
 
+std::string getModDirectory() {
+    char path[MAX_PATH];
+    GetModuleFileNameA( NULL, path, MAX_PATH );
+    std::string pathStr = path;
+    auto lastSlash = pathStr.find_last_of( '\\' );
+    return pathStr.substr( 0, lastSlash + 1 );
+}
+
 void memcpyExecutable( char* dest, char* source, size_t size ) {
     DWORD oldProtect;
     VirtualProtect( (void*) dest, size, PAGE_EXECUTE_READWRITE, &oldProtect );

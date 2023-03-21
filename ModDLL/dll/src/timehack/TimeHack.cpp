@@ -5,6 +5,7 @@
 #include "../headers/Halo1.h"
 #include "../utils/headers/BytePattern.h"
 #include "../utils/headers/MathUtils.h"
+#include "../utils/headers/Config.h"
 #include "../utils/headers/common.h"
 #include "../utils/headers/Vec.h"
 
@@ -13,17 +14,20 @@ using namespace Hook;
 using std::make_unique;
 using std::unique_ptr;
 
-static const float speedLimit = 0.834f; // 1.4f;
+static float speedLimit = 0.834f; // 1.4f;
 
 // Deadzoning is intended to prevent discrete actions (like spawning projectiles) from being spammed when an entity should be nearly frozen.
-static const float timescaleUpdateDeadzone = 0.05f;
+static float timescaleUpdateDeadzone = 0.05f;
 
 // To allow for some discrete updates to still happen when deadzoned, we can update with a probability equal to the current timescale.
-static const bool allowRandomUpdatesInDeadzone = false;
+static bool allowRandomUpdatesInDeadzone = false;
 
 static bool freezeTimeEnabled = false;
 static bool superhotEnabled = true;
 static bool speedLimitEnabled = true;
+
+static float playerDamageScale = 3.0f;
+static float npcDamageScale = 2.0f;
 
 static uint64_t runUntil = 0;
 
@@ -58,9 +62,9 @@ float damageScaleForEntity( uint32_t entityHandle ) {
     if ( !entity ) return 1.0f;
 
     if ( rec->typeId == TypeID_Player )
-        return 3.0f;
+        return playerDamageScale;
     else
-        return 2.0f;
+        return npcDamageScale;
 }
 
 float globalTimescale() {
@@ -226,6 +230,17 @@ namespace TimeHack {
             (UINT_PTR) damageShieldHook,
             damageShieldHook_return
         ) );
+
+        speedLimit = Config::getFloat( "gameplay", "speedLimit", 0.834f );
+        timescaleUpdateDeadzone = Config::getFloat( "gameplay", "timescaleUpdateDeadzone", 0.05f );
+        allowRandomUpdatesInDeadzone = (bool) Config::getUint64( "gameplay", "allowRandomUpdatesInDeadzone", false );
+        playerDamageScale = Config::getFloat( "gameplay", "playerDamageScale", 3.0f );
+        npcDamageScale = Config::getFloat( "gameplay", "npcDamageScale", 2.0f );
+
+        TimeScale::init();
+
+        // std::cout << "Config: playerDamageScale = " << playerDamageScale << "\n";
+        // std::cout << "Config: npcDamageScale = " << npcDamageScale << "\n";
 
         return true;
     }

@@ -1,6 +1,7 @@
 #include "headers/Halo1Mod.h"
 
 #include "headers/Halo1.h"
+#include "headers/HaloMCC.h"
 #include "headers/Tracers.h"
 #include "headers/Overlay.h"
 #include "utils/headers/Vec.h"
@@ -64,7 +65,7 @@ namespace Halo1Mod {
                 TimeHack::onGameThreadUpdate();
 
                 #ifdef _DEBUG
-                if ( keypressed( 'T' ) )
+                if ( HaloMCC::isInForeground() && keypressed( 'T' ) )
                     teleportToCrosshair();
                 #endif
             }

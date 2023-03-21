@@ -1,4 +1,5 @@
 #include "headers/TimeScale.h"
+#include "../utils/headers/Config.h"
 #include "../utils/headers/MathUtils.h"
 #include "../utils/headers/Vec.h"
 
@@ -7,18 +8,19 @@ using namespace MathUtils;
 
 namespace TimeScale {
 
-    static const float minTimescale = 0.05f;
     static const float walkingSpeed = 0.07f;
-    static const float activityDecayRate = 0.05f;
 
-    static const float rotationActivityCoefficient = 100.0f;
-    static const float rotationSpeedSmoothing = 0.75f;
-    static const float maxTimescaleDueToTurning = 0.25f;
+    static float minTimescale = 0.05f;
+    static float activityDecayRate = 0.05f;
 
-    static const DWORD unpauseAfterFireMilis = 40; // 100;
-    static const DWORD unpauseReloadMilis = 750;
-    static const DWORD unpauseMeleeMilis = 250;
-    static const DWORD unpauseWeaponSwapMilis = 250;
+    static float rotationActivityCoefficient = 100.0f;
+    static float rotationSpeedSmoothing = 0.75f;
+    static float maxTimescaleDueToTurning = 0.25f;
+
+    static DWORD unpauseAfterFireMilis = 40;
+    static DWORD unpauseReloadMilis = 750;
+    static DWORD unpauseMeleeMilis = 250;
+    static DWORD unpauseWeaponSwapMilis = 250;
 
     float timescale;
     static float activityLevel;
@@ -27,6 +29,22 @@ namespace TimeScale {
     static float lookSpeed, lookSpeedSmoothed;
 
     void unpauseForNMilis( uint64_t milis ) { playerIsActingUntil = GetTickCount() + milis; }
+
+    void init() {
+        minTimescale = Config::getFloat( "gameplay", "minTimeScale", 0.05f );
+        activityDecayRate = Config::getFloat( "gameplay", "activityDecayRate", 0.05f );
+
+        rotationActivityCoefficient = Config::getFloat( "gameplay", "rotationActivityCoefficient", 100.0f );
+        rotationSpeedSmoothing = Config::getFloat( "gameplay", "rotationSpeedSmoothing", 0.75f );
+        maxTimescaleDueToTurning = Config::getFloat( "gameplay", "maxTimescaleDueToTurning", 0.25f );
+
+        unpauseAfterFireMilis = (DWORD) Config::getUint64( "gameplay", "unpauseAfterFireMilis", 40 );
+        unpauseReloadMilis = (DWORD) Config::getUint64( "gameplay", "unpauseReloadMilis", 750 );
+        unpauseMeleeMilis = (DWORD) Config::getUint64( "gameplay", "unpauseMeleeMilis", 250 );
+        unpauseWeaponSwapMilis = (DWORD) Config::getUint64( "gameplay", "unpauseWeaponSwapMilis", 250 );
+
+        timescale = minTimescale;
+    }
 
     void updateLookSpeed() {
         auto pCam = getPlayerCameraPointer();
