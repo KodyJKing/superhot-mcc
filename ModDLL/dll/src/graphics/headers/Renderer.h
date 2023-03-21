@@ -21,6 +21,8 @@ class Renderer {
     Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR defaultFontFamily = L"Consolas" );
     ~Renderer();
 
+    static Renderer* getDefault( ID3D11Device* pDevice );
+
     void setTransform( XMMATRIX* pTransform );
     void setPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY topology );
     void setDepthReverse( bool reverse );

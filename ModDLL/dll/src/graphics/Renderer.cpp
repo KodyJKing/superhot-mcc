@@ -13,6 +13,11 @@
 
 #include <DirectXPackedVector.h>
 
+Renderer* Renderer::getDefault( ID3D11Device* pDevice ) {
+    static std::unique_ptr<Renderer> result = std::make_unique<Renderer>( pDevice, 4096 );
+    return result.get();
+}
+
 Renderer::Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR defaultFontFamily ) {
     HRESULT hr;
 
