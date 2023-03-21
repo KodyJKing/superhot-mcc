@@ -65,8 +65,15 @@ namespace Halo1Mod {
                 TimeHack::onGameThreadUpdate();
 
                 #ifdef _DEBUG
-                if ( HaloMCC::isInForeground() && keypressed( 'T' ) )
-                    teleportToCrosshair();
+                if ( HaloMCC::isInForeground() ) {
+                    if ( keypressed( 'T' ) )
+                        teleportToCrosshair();
+                    if ( keypressed( 'M' ) ) {
+                        auto name = Halo1::getMapName();
+                        if ( name )
+                            std::cout << name << "\n";
+                    }
+                }
                 #endif
             }
 

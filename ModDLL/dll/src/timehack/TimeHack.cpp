@@ -74,27 +74,27 @@ float globalTimescale() {
 }
 
 float timescaleForEntity( EntityRecord* rec ) {
-    // Don't timescale player's 
-    if ( isPlayerControlled( rec ) )
-        return 1.0f;
-
     auto entity = getEntityPointer( rec );
 
-    if ( isTransport( entity ) )
-        return 1.0f;
-
     if (
+        isPlayerControlled( rec ) ||
+
+        isTransport( entity ) ||
+        entity->entityCategory == EntityCategory_SoundScenery ||
+
         // Don't timescale lifts. That's annoying.
         entity->fromResourcePath( "levels\\b40\\devices\\b40_lift1600\\b40_lift1600" ) ||
         entity->fromResourcePath( "levels\\b40\\devices\\b40_lift4800\\b40_lift4800" ) ||
         entity->fromResourcePath( "levels\\c10\\devices\\lift\\falling lift" ) ||
         entity->fromResourcePath( "levels\\c10\\devices\\lift\\lift" ) ||
         entity->fromResourcePath( "levels\\c20\\devices\\platform\\platform" ) ||
-        entity->fromResourcePath( "levels\\a10\\devices\\elevator\\elevator" )
-        )
-        return 1.0f;
+        entity->fromResourcePath( "levels\\a10\\devices\\elevator\\elevator" ) ||
 
-    if ( entity->entityCategory == EntityCategory_SoundScenery )
+        // Don't freeze Keys on Pilar of Autumn or the player will get stuck after their meeting.
+        // (Keys has to give them the gun before they can move.)
+        entity->fromResourcePath( "characters\\captain\\captain" )
+        && isOnMap( "halo1\\maps\\a10.map" )
+        )
         return 1.0f;
 
     auto vehicleRec = getEntityRecord( entity->parentHandle );

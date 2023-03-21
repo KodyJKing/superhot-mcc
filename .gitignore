@@ -11,7 +11,7 @@ ModDLL/*/*/Debug
 ModDLL/*/x64
 
 tmp
-pointerScans
+pointerscans
 
 # RenderDoc captures
 data/*.rdc

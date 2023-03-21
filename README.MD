@@ -25,7 +25,7 @@ Currently, you need to use an FOV of 90 for tracers to render at the right posit
 ## Hotkeys
 
 | Option              | Key |
-| -------------       |---- |
+| ------------------- | --- |
 | Unload mod DLL      | F9  |
 | Toggle time scaling | F3  |
 | Toggle freeze time  | F2  |
@@ -33,7 +33,7 @@ Currently, you need to use an FOV of 90 for tracers to render at the right posit
 
 ### Debug overlay
 | Option                 | Key           |
-| -------------          | ------------- |
+| ---------------------- | ------------- |
 | Show overlay           | Numpad 1      |
 | Show highlighted only  | Numpad 2      |
 | Show all entity types  | Numpad 3      |

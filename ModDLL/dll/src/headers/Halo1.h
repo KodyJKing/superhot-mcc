@@ -171,10 +171,12 @@ namespace Halo1 {
 
     void init( UINT_PTR _dllBase );
 
-    // DeviceContainer* getDeviceContainerPointer();
     EntityList* getEntityListPointer();
     Camera* getPlayerCameraPointer();
     uint32_t getPlayerHandle();
+    char* getMapName();
+
+    bool isOnMap( const char* mapName );
 
     Tag* getTag( uint32_t tagID );
 

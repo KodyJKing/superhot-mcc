@@ -45,6 +45,24 @@ namespace Halo1 {
     UINT_PTR getEntityArrayBase() { return *(UINT_PTR*) ( dllBase + entityArrayOffset ); }
     Camera* getPlayerCameraPointer() { return (Camera*) ( dllBase + playerCamOffset ); }
     uint32_t getPlayerHandle() { return *(uint32_t*) ( dllBase + playerHandleOffset ); }
+    char* getMapName() {
+        char** stringPtr = (char**) ( dllBase + 0x02C81358U );
+        if ( !AllocationUtils::isAllocated( (UINT_PTR) stringPtr ) )
+            return nullptr;
+
+        char* result = ( *stringPtr ) + 0x0C;
+        if ( !AllocationUtils::isAllocated( (UINT_PTR) result ) )
+            return nullptr;
+
+        return result;
+    }
+
+    bool isOnMap( const char* mapName ) {
+        auto actualMapName = getMapName();
+        if ( !actualMapName )
+            return false;
+        return strncmp( mapName, actualMapName, strnlen( mapName, 256 ) ) == 0;
+    }
 
     uint64_t translateMapAddress( uint32_t address ) {
         uint64_t relocatedMapBase = *(uint64_t*) ( dllBase + 0x2F01D98U );
