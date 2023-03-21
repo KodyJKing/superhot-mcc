@@ -40,6 +40,29 @@ bool checkExit() {
     return exitMod;
 }
 
+void renderLoadedText( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
+    static std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>( pDevice, 1024 );
+
+    renderer->begin();
+
+    static uint64_t startTick = GetTickCount64();
+    uint64_t tick = GetTickCount64();
+    uint64_t uptime = tick - startTick;
+    float fUptimeSeconds = (float) uptime / 1000.0f;
+
+    const float flashAmplitude = 0.5f;
+    const float flashFreq = 2.0f;
+    float alpha = sinf( fUptimeSeconds * flashFreq ) * flashAmplitude + ( 1 - flashAmplitude );
+    Vec4 color = { 1.0f, 1.0f, 1.0f, alpha };
+
+    auto size = HaloMCC::getWindowSize();
+    Vec2 pos = { size.x / 2, 0 };
+
+    renderer->drawText( pos, "SUPERHOT MCC Loaded", color, FW1_CENTER | FW1_TOP, 16.0f, nullptr );
+
+    renderer->end();
+}
+
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
     const bool useConsole = true;
@@ -77,6 +100,8 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
         auto hr = DX11Hook::hook( mccWindow, pSwapChain );
         if ( FAILED( hr ) )
             err = hr;
+        else
+            DX11Hook::addOnPresentCallback( renderLoadedText );
     }
 
     if ( !err ) {
