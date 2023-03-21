@@ -6,20 +6,26 @@
 
 ## Installing
 
-1. Place `FW1FontWrapper.dll` under `\mcc\binaries\win64\`.
-2. If you're an end user, place `SUPERHOTMCC.dll` under the same directory.
+1. Place `FW1FontWrapper.dll` (under ModDLL/dll/include) and `SuperhotMCC.ini` under `\mcc\binaries\win64\`.
+2. If you're an end user, place `SUPERHOTMCC.dll` and `SuperhotMCCLauncher.exe` under the same directory.
 
 ## Running
 
 1. Launch Halo MCC with EAC disabled.
-2. Disable fullscreen mode if active, you can use borderless windowed instead for fullscreen.
-3. Load a Halo 1 level.
-4. Use a DLL injector to inject `SUPERHOTMCC.dll` into `mcc-win64-shipping.exe`. I use cheat engine's DLL injector.
+2. Run SuperhotMCCLauncher.exe
+
+## Usage
+
+This mod is developed for the Steam version of MCC. It probably won't work on the Window's Store version.
+
+Only CE's single player campaign is supported at the moment.
+
+Currently, you need to use an FOV of 90 for tracers to render at the right position. I'm working on a fix for that.
 
 ## Hotkeys
 
 | Option              | Key |
-| -------------       |---- |
+| ------------------- | --- |
 | Unload mod DLL      | F9  |
 | Toggle time scaling | F3  |
 | Toggle freeze time  | F2  |
@@ -27,7 +33,7 @@
 
 ### Debug overlay
 | Option                 | Key           |
-| -------------          | ------------- |
+| ---------------------- | ------------- |
 | Show overlay           | Numpad 1      |
 | Show highlighted only  | Numpad 2      |
 | Show all entity types  | Numpad 3      |

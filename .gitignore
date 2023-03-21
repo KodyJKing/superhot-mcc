@@ -1,10 +1,17 @@
 *.VC.db
-dll/.vs/**
-dll/Debug
-dll/*/Debug
-dll/x64
+
+ModDLL/.vs/**
+ModDLL/Debug
+ModDLL/*/Debug
+ModDLL/x64
+
+ModDLL/*/.vs/**
+ModDLL/*/Debug
+ModDLL/*/*/Debug
+ModDLL/*/x64
+
 tmp
-pointerScans
+pointerscans
 
 # RenderDoc captures
 data/*.rdc

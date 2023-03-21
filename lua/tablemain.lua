@@ -35,7 +35,7 @@ end
 function tryInjectDll(memrec, dllBaseName)
     dllBaseName = dllBaseName or memrec.Description
     local dllName = dllBaseName .. ".dll"
-    local dllPath = getCWD() .. "\\dll\\x64\\Debug\\" .. dllName
+    local dllPath = getCWD() .. "\\ModDLL\\x64\\Debug\\" .. dllName
     if checkSymbol(dllName) then
         beep()
     else
