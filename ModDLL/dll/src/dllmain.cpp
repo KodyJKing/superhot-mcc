@@ -9,6 +9,7 @@
 #include "utils/headers/common.h"
 #include "utils/headers/Config.h"
 #include "utils/headers/Vec.h"
+#include "utils/headers/MathUtils.h"
 #include "utils/headers/BytePattern.h"
 #include "graphics/headers/DX11Hook.h"
 #include "graphics/headers/Renderer.h"
@@ -41,25 +42,26 @@ bool checkExit() {
 }
 
 void renderLoadedText( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
-    static std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>( pDevice, 1024 );
-
-    renderer->begin();
+    // static std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>( pDevice, 1024 );
+    auto renderer = Renderer::getDefault( pDevice );
 
     static uint64_t startTick = GetTickCount64();
     uint64_t tick = GetTickCount64();
-    uint64_t uptime = tick - startTick;
-    float fUptimeSeconds = (float) uptime / 1000.0f;
+    float uptime = (float) ( tick - startTick ) / 1000.0f;
+
+    static bool hide = false;
+    if ( HaloMCC::isInGame() && hide )
+        return;
 
     const float flashAmplitude = 0.5f;
     const float flashFreq = 2.0f;
-    float alpha = sinf( fUptimeSeconds * flashFreq ) * flashAmplitude + ( 1 - flashAmplitude );
-    Vec4 color = { 1.0f, 1.0f, 1.0f, alpha };
+    float alpha = sinf( uptime * flashFreq ) * flashAmplitude + ( 1 - flashAmplitude );
+
+    hide = HaloMCC::isInGame() && abs( alpha ) < 0.01f;
 
     auto size = HaloMCC::getWindowSize();
-    Vec2 pos = { size.x / 2, 0 };
-
-    renderer->drawText( pos, "SUPERHOT MCC Loaded", color, FW1_CENTER | FW1_TOP, 16.0f, nullptr );
-
+    renderer->begin();
+    renderer->drawText( { size.x / 2, 0 }, "SUPERHOT MCC Loaded", { 1.0f, 1.0f, 1.0f, alpha }, FW1_CENTER | FW1_TOP, 16.0f, nullptr );
     renderer->end();
 }
 
