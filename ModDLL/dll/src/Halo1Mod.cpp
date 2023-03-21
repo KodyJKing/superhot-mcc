@@ -59,12 +59,12 @@ namespace Halo1Mod {
         if ( mtx.try_lock() ) {
 
             if ( Halo1::isGameLoaded() ) {
-                // static std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>( pDevice, 4096 );
-                // Overlay::render( renderer.get(), pCtx, pDevice, pSwapChain );
-                // Tracers::render( renderer.get(), TimeHack::timeElapsed, pCtx, pDevice, pSwapChain );
-
                 auto renderer = Renderer::getDefault( pDevice );
+
+                #ifdef _DEBUG
                 Overlay::render( renderer, pCtx, pDevice, pSwapChain );
+                #endif
+
                 Tracers::render( renderer, TimeHack::timeElapsed, pCtx, pDevice, pSwapChain );
 
                 TimeHack::onGameThreadUpdate();
@@ -91,7 +91,9 @@ namespace Halo1Mod {
 
         if ( Halo1::isGameLoaded() ) {
             TimeHack::onDllThreadUpdate();
+            #ifdef _DEBUG
             Overlay::onDllThreadUpdate();
+            #endif
         }
     }
 

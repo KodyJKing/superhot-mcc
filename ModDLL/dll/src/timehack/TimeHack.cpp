@@ -207,6 +207,9 @@ namespace TimeHack {
             postEntityUpdateHook_return
         ) );
 
+        // std::cout << "preEntityUpdateHook: " << (UINT_PTR) preEntityUpdateHook << "\n";
+        // std::cout << "postEntityUpdateHook: " << (UINT_PTR) postEntityUpdateHook << "\n";
+
         // Gives upper limit to weapons without ROF upper limit.
         auto fireRateFixHook_start = halo1Base + 0xBDEF90U;
         //

@@ -17,6 +17,12 @@
 
 static HMODULE hmSuperHotHack;
 
+#ifdef _DEBUG
+static const bool isDebug = true;
+#else
+static const bool isDebug = false;
+#endif
+
 BOOL APIENTRY DllMain(
     HMODULE hModule,
     DWORD  ul_reason_for_call,
@@ -42,7 +48,6 @@ bool checkExit() {
 }
 
 void renderLoadedText( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
-    // static std::unique_ptr<Renderer> renderer = std::make_unique<Renderer>( pDevice, 1024 );
     auto renderer = Renderer::getDefault( pDevice );
 
     static uint64_t startTick = GetTickCount64();
@@ -67,22 +72,23 @@ void renderLoadedText( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISw
 
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
-    const bool useConsole = true;
+    const bool useConsole = true; // isDebug;
     const bool useStdin = false;
-    const bool printToLog = false;
-    const char* logFile = "C:\\Users\\Kody\\Desktop\\log.txt";
+
+    auto logFile = getModDirectory() + "superhotmcc-log.txt";
 
     errno_t err = 0;
-    FILE* pFile_stdout, * pFile_stderr, * pFile_stdin;
+    FILE* pFile_stdout = NULL;
+    FILE* pFile_stderr = NULL;
+    FILE* pFile_stdin = NULL;
     if ( useConsole ) {
         AllocConsole();
-        if ( printToLog )
-            err = freopen_s( &pFile_stdout, logFile, "w", stdout );
-        else
-            err = freopen_s( &pFile_stdout, "CONOUT$", "w", stdout );
+        err = freopen_s( &pFile_stdout, "CONOUT$", "w", stdout );
         err |= freopen_s( &pFile_stderr, "CONOUT$", "w", stderr );
         if ( useStdin )
             err |= freopen_s( &pFile_stdin, "CONIN$", "r", stdin );
+    } else {
+        err = freopen_s( &pFile_stdout, logFile.c_str(), "w", stdout );
     }
 
     // Bring MCC to front.
@@ -128,13 +134,11 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     // It might be smart to eventually wrap all hooks with a mutex lock / unlock.
     Sleep( 500 );
 
-    if ( useConsole ) {
-        if ( pFile_stdout ) fclose( pFile_stdout );
-        if ( pFile_stderr ) fclose( pFile_stderr );
-        if ( useStdin && pFile_stdin ) fclose( pFile_stdin );
+    if ( pFile_stdout ) fclose( pFile_stdout );
+    if ( pFile_stderr ) fclose( pFile_stderr );
+    if ( pFile_stdin ) fclose( pFile_stdin );
+    if ( useConsole )
         FreeConsole();
-    }
 
     FreeLibraryAndExitThread( hmSuperHotHack, 0 );
-
 }
