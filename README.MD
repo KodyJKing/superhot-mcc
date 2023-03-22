@@ -12,7 +12,7 @@
 ## Running
 
 1. Launch Halo MCC with EAC disabled.
-2. Run SuperhotMCCLauncher.exe
+2. Run SuperhotMCCLauncher.exe or inject SUPERHOTMCC.dll with a DLL injector.
 
 ## Usage
 
