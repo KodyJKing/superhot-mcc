@@ -96,7 +96,7 @@ Renderer::Renderer( ID3D11Device* pDevice, uint32_t maxVertices, LPCWSTR default
         throwIfFail( pDevice->CreateRasterizerState( &desc, &noCullRasterState ) );
     }
 
-    { // Create reverse depth-stencil state
+    { // Create normal depth-stencil state
         D3D11_DEPTH_STENCIL_DESC desc{};
         desc.DepthEnable = true;
         desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
