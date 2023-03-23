@@ -11,7 +11,11 @@ assignees: KodyJKing
 A clear and concise description of what the bug is.
 
 **System Info**
-Your OS and CPU.
+OS:
+CPU:
+Steam Build Date: (under help > about Steam)
+MCC BuildID: (under properties > Updates)
+Other mods:
 
 **To Reproduce**
 Steps to reproduce the behavior.
