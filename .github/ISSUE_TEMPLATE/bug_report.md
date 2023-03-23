@@ -14,7 +14,7 @@ A clear and concise description of what the bug is.
 OS:
 CPU:
 Steam Build Date: (under help > about Steam)
-MCC BuildID: (under properties > Updates)
+MCC Build ID: (under properties > Updates)
 Other mods:
 
 **To Reproduce**
