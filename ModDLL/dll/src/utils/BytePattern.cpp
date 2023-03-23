@@ -12,8 +12,8 @@ BytePattern::BytePattern( std::string pattern ) {
                 tokens.push_back( (uint16_t) byte );
             } catch ( const std::exception& e ) {
                 tokens.push_back( BytePattern::wildcard );
-                std::cerr << "Bad argument to byte pattern: \"" << part;
-                std::cerr << "\" (" << e.what() << ")\n";
+                std::cout << "Bad argument to byte pattern: \"" << part;
+                std::cout << "\" (" << e.what() << ")\n";
             }
         }
     }
@@ -33,10 +33,32 @@ bool assertBytes( UINT_PTR address, std::string pattern ) {
     return assertBytes( nullptr, address, pattern );
 }
 
+#define FMT_BYTE std::uppercase << std::hex << std::setw(2) << std::setfill('0')
+
 bool assertBytes( const char* description, UINT_PTR address, std::string pattern ) {
     BytePattern bp( pattern );
     auto result = bp.compare( address );
-    if ( !result && description )
-        std::cerr << "Byte check failed: " << description << '\n';
+
+    if ( !result ) {
+        if ( description )
+            std::cout << "\nByte check failed: " << description << '\n';
+
+        std::cout << "    Expected: ";
+        for ( auto token : bp.tokens ) {
+            if ( token == BytePattern::wildcard )
+                std::cout << "?? ";
+            else
+                std::cout << FMT_BYTE << token << " ";
+        }
+
+        std::cout << "\n    Found:    ";
+        for ( int i = 0; i < bp.tokens.size(); i++ ) {
+            uint16_t byte = (uint16_t) ( *(uint8_t*) ( address + i ) );
+            std::cout << FMT_BYTE << byte << " ";
+        }
+        std::cout << "\n\n";
+    }
+
+
     return result;
 }

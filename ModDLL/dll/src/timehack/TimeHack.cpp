@@ -183,7 +183,7 @@ namespace TimeHack {
 
         if ( !instructionsCheck ) {
             auto message = "Could not install time manipulation hooks. The game may have updated.";
-            std::cerr << message << "\n";
+            std::cout << message << "\n";
             MessageBoxA( NULL, message, "SuperHot MCC Error", MB_OK );
             return false;
         }
@@ -206,9 +206,6 @@ namespace TimeHack {
             (UINT_PTR) postEntityUpdateHook,
             postEntityUpdateHook_return
         ) );
-
-        // std::cout << "preEntityUpdateHook: " << (UINT_PTR) preEntityUpdateHook << "\n";
-        // std::cout << "postEntityUpdateHook: " << (UINT_PTR) postEntityUpdateHook << "\n";
 
         // Gives upper limit to weapons without ROF upper limit.
         auto fireRateFixHook_start = halo1Base + 0xBDEF90U;
@@ -241,9 +238,6 @@ namespace TimeHack {
         npcDamageScale = Config::getFloat( "gameplay", "npcDamageScale", 2.0f );
 
         TimeScale::init();
-
-        // std::cout << "Config: playerDamageScale = " << playerDamageScale << "\n";
-        // std::cout << "Config: npcDamageScale = " << npcDamageScale << "\n";
 
         return true;
     }

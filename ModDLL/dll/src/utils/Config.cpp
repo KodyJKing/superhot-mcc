@@ -17,8 +17,8 @@ namespace Config {
         try {
             return std::stof( resultStr, nullptr );
         } catch ( const std::exception& e ) {
-            std::cerr << "Error parsing option " << section << '.' << name << ": " << resultStr << "\n";
-            std::cerr << "    " << e.what() << '\n';
+            std::cout << "Error parsing option " << section << '.' << name << ": " << resultStr << "\n";
+            std::cout << "    " << e.what() << '\n';
             return defaultValue;
         }
     }
@@ -28,8 +28,8 @@ namespace Config {
         try {
             return std::stoull( resultStr, nullptr, base );
         } catch ( const std::exception& e ) {
-            std::cerr << "Error parsing option " << section << '.' << name << ": " << resultStr << "\n";
-            std::cerr << "    " << e.what() << '\n';
+            std::cout << "Error parsing option " << section << '.' << name << ": " << resultStr << "\n";
+            std::cout << "    " << e.what() << '\n';
             return defaultValue;
         }
     }

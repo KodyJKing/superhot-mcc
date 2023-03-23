@@ -16,7 +16,7 @@ void throwIfFail( HRESULT hr ) {
 }
 
 void showAndPrintError( const char* message ) {
-    std::cerr << message << "\n";
+    std::cout << message << "\n";
     MessageBoxA( NULL, message, "SuperHot MCC Error", MB_OK );
 }
 
