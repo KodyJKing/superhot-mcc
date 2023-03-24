@@ -39,10 +39,10 @@ _TEXT SEGMENT
 
         pushState
 
-            sub rsp, 20h
+            sub rsp, 28h
             mov rcx, r12
             call preEntityUpdate
-            add rsp, 20h
+            add rsp, 28h
 
             cmp byte ptr [preEntityUpdate_doUpdate], 1
             je __doUpdate
@@ -82,10 +82,10 @@ _TEXT SEGMENT
         mov rax,[rsp+30h]
 
         pushState
-            sub rsp, 20h
+            sub rsp, 28h
             mov rcx, r12
             call postEntityUpdate
-            add rsp, 20h
+            add rsp, 28h
         popState
         
         jmp [postEntityUpdateHook_return]
@@ -166,10 +166,10 @@ _TEXT SEGMENT
         ; halo1.dll+C1909C - F3 0F11 83 9C000000   - movss [rbx+0000009C],xmm0
 
         pushState
-            sub rsp, 20h
+            sub rsp, 28h
             mov rcx, r14
             call damageScaleForEntity
-            add rsp, 20h
+            add rsp, 28h
 
             mulss xmm6, xmm0
         popState
@@ -204,9 +204,9 @@ _TEXT SEGMENT
         push rcx
             mov ecx, dword ptr [rsp + 00E0h]
             pushState
-                sub rsp, 20h
+                sub rsp, 28h
                 call damageScaleForEntity
-                add rsp, 20h
+                add rsp, 28h
 
                 mulss xmm2, xmm0
             popState
