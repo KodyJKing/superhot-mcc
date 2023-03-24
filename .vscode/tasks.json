@@ -4,9 +4,24 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
+            "label": "build debug",
             "type": "shell",
             "command": "cls; MSBuild ./ModDLL/ModDLL.sln /p:Platform=x64",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "clear": true
+            },
+            // Use the standard MS compiler pattern to detect errors, warnings and infos
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build release",
+            "type": "shell",
+            "command": "cls; MSBuild ./ModDLL/ModDLL.sln /p:Platform=x64 /p:Configuration=Release",
             "group": {
                 "kind": "build",
                 "isDefault": true

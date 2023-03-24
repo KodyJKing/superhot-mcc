@@ -64,9 +64,15 @@ void renderLoadedText( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISw
 
     hide = HaloMCC::isInGame() && abs( alpha ) < 0.01f;
 
+    std::stringstream ss;
+    ss << "SUPERHOT MCC Loaded";
+    if ( isDebug )
+        ss << " (debug build)";
+    std::string text = ss.str();
+
     auto size = HaloMCC::getWindowSize();
     renderer->begin();
-    renderer->drawText( { size.x / 2, 0 }, "SUPERHOT MCC Loaded", { 1.0f, 1.0f, 1.0f, alpha }, FW1_CENTER | FW1_TOP, 16.0f, nullptr );
+    renderer->drawText( { size.x / 2, 0 }, text.c_str(), { 1.0f, 1.0f, 1.0f, alpha }, FW1_CENTER | FW1_TOP, 16.0f, nullptr );
     renderer->end();
 }
 

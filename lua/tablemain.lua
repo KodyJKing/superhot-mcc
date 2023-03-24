@@ -32,10 +32,10 @@ function checkSymbol(symbol)
     return true
 end
 
-function tryInjectDll(memrec, dllBaseName)
+function tryInjectDll(memrec, relativePath, dllBaseName)
     dllBaseName = dllBaseName or memrec.Description
     local dllName = dllBaseName .. ".dll"
-    local dllPath = getCWD() .. "\\ModDLL\\x64\\Debug\\" .. dllName
+    local dllPath = getCWD() .. relativePath .. dllName
     if checkSymbol(dllName) then
         beep()
     else
