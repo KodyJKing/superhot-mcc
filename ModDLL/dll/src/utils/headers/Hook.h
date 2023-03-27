@@ -46,16 +46,16 @@ namespace Hook {
     class VirtualTableHook {
 
         public:
+
         ~VirtualTableHook();
 
         VirtualTableHook(
             const char* description,
             void** vtable,
             size_t methodIndex,
-            void* hookFunction
+            void* hookFunction,
+            void** originalFunction
         );
-
-        void* originalFunction;
 
         private:
 
@@ -63,6 +63,7 @@ namespace Hook {
         void** vtable;
         size_t methodIndex;
         void* hookFunction;
+        void* _originalFunction;
     };
 
 }

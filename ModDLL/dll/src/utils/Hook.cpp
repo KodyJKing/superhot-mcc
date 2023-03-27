@@ -126,7 +126,8 @@ namespace Hook {
         const char* description,
         void** vtable,
         size_t methodIndex,
-        void* hookFunction
+        void* hookFunction,
+        void** originalFunction
     ):
         description( description ),
         vtable( vtable ),
@@ -134,13 +135,14 @@ namespace Hook {
         hookFunction( hookFunction ) {
 
         std::cout << "Adding virtual table hook: " << description << "\n";
-        originalFunction = vtable[methodIndex];
-        vtable[methodIndex] = hookFunction;
+        _originalFunction = vtable[methodIndex];
+        *originalFunction = _originalFunction;
+        memWrite( vtable[methodIndex], hookFunction );
     }
 
     VirtualTableHook::~VirtualTableHook() {
         std::cout << "Removing virtual table hook: " << description << "\n";
-        vtable[methodIndex] = originalFunction;
+        memWrite( vtable[methodIndex], _originalFunction );
     }
 
 }
