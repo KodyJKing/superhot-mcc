@@ -1,6 +1,7 @@
 # Installing
 1. Make sure you have the latest MS Visual C++ Redistributable https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170
-2. Place the contents of this folder under \mcc\binaries\win64\ in your MCC install directory.
+2. Make sure Steam and MCC are up to date.
+3. Place the contents of this folder under \mcc\binaries\win64\ in your MCC install directory.
 
 # Running
 1. Launch MCC with EAC disabled.

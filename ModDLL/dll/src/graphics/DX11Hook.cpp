@@ -1,44 +1,13 @@
+#include "./headers/DX11Hook.h"
+#include "../../pch.h"
 #include "../utils/headers/common.h"
 #include "../utils/headers/BytePattern.h"
+#include "../utils/headers/Hook.h"
 #include "./headers/DX11MethodOffsets.h"
-#include "./headers/DX11Hook.h"
-#include "../headers/Hook.h"
-#include "../../pch.h"
 
 using DX11Hook::PresentCallback;
+using Hook::VirtualTableHook;
 using std::make_unique;
-using Hook::JumpHook;
-
-extern "C" {
-    uint64_t presentHook_jmp;
-    void presentHook();
-    void __stdcall onPresentCalled(
-        IDXGISwapChain* pSwapChain,
-        UINT SyncInterval,
-        UINT Flags
-    );
-
-    uint64_t resizeBuffersHook_jmp;
-    void resizeBuffersHook();
-    void onResizeBuffers(
-        IDXGISwapChain* pSwapChain,
-        UINT           BufferCount,
-        UINT           Width,
-        UINT           Height,
-        DXGI_FORMAT    NewFormat,
-        UINT           SwapChainFlags
-    );
-
-    uint64_t setRenderTargetsHook_return;
-    uint64_t setRenderTargetsHook_depthStencilView;
-    void setRenderTargetsHook();
-}
-
-static std::set<PresentCallback> onPresentCallbacks;
-static std::mutex onPresentCallbacks_mutex;
-static bool hasDoneDeviceInit;
-static bool deviceInitFailed;
-static ID3D11RenderTargetView* renderTargetView;
 
 HRESULT createDummy(
     IDXGISwapChain** ppSwapChain,
@@ -50,8 +19,19 @@ HRESULT createDummy(
 
 bool initDevice( ID3D11Device* pDevice, IDXGISwapChain* pSwapChain );
 
-// We're hooking the begining of the Present function so we can use the same positional arguments.
-void __stdcall onPresentCalled(
+static std::set<PresentCallback> onPresentCallbacks;
+static std::mutex onPresentCallbacks_mutex;
+static bool hasDoneDeviceInit;
+static bool deviceInitFailed;
+static ID3D11RenderTargetView* renderTargetView;
+static ID3D11DepthStencilView* firstDepthStencilView;
+
+static HRESULT( *Present )(
+    IDXGISwapChain* pSwapChain,
+    UINT SyncInterval,
+    UINT Flags
+    );
+HRESULT onPresent(
     IDXGISwapChain* pSwapChain,
     UINT SyncInterval,
     UINT Flags
@@ -59,28 +39,34 @@ void __stdcall onPresentCalled(
     ID3D11Device* pDevice;
     if ( FAILED( pSwapChain->GetDevice( __uuidof( ID3D11Device ), (void**) &pDevice ) ) ) {
         std::cout << "Could not get device." << std::endl;
-        return;
+    } else {
+        if ( !hasDoneDeviceInit )
+            initDevice( pDevice, pSwapChain );
+
+        ID3D11DeviceContext* pCtx;
+        pDevice->GetImmediateContext( &pCtx );
+        pCtx->OMSetRenderTargets( 1, &renderTargetView, firstDepthStencilView );
+
+        if ( onPresentCallbacks_mutex.try_lock() ) {
+            for ( PresentCallback cb : onPresentCallbacks )
+                cb( pCtx, pDevice, pSwapChain );
+            onPresentCallbacks_mutex.unlock();
+        }
+
+        firstDepthStencilView = nullptr;
     }
-
-    if ( !hasDoneDeviceInit )
-        initDevice( pDevice, pSwapChain );
-
-    auto depthStencilView = (ID3D11DepthStencilView*) setRenderTargetsHook_depthStencilView;
-
-    ID3D11DeviceContext* pCtx;
-    pDevice->GetImmediateContext( &pCtx );
-    pCtx->OMSetRenderTargets( 1, &renderTargetView, depthStencilView );
-
-    if ( onPresentCallbacks_mutex.try_lock() ) {
-        for ( PresentCallback cb : onPresentCallbacks )
-            cb( pCtx, pDevice, pSwapChain );
-        onPresentCallbacks_mutex.unlock();
-    }
-
-    setRenderTargetsHook_depthStencilView = 0;
+    return Present( pSwapChain, SyncInterval, Flags );
 }
 
-void onResizeBuffers(
+static HRESULT( *ResizeBuffers )(
+    IDXGISwapChain* pSwapChain,
+    UINT           BufferCount,
+    UINT           Width,
+    UINT           Height,
+    DXGI_FORMAT    NewFormat,
+    UINT           SwapChainFlags
+    );
+HRESULT onResizeBuffers(
     IDXGISwapChain* pSwapChain,
     UINT           BufferCount,
     UINT           Width,
@@ -95,11 +81,29 @@ void onResizeBuffers(
     safeRelease( renderTargetView );
     hasDoneDeviceInit = false;
     deviceInitFailed = false;
+    return ResizeBuffers( pSwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags );
+}
+
+static void ( *SetRenderTargets )(
+    ID3D11DeviceContext* pCtx,
+    UINT NumViews,
+    ID3D11RenderTargetView* const* ppRenderTargetViews,
+    ID3D11DepthStencilView* pDepthStencilView
+    );
+void onSetRenderTargets(
+    ID3D11DeviceContext* pCtx,
+    UINT NumViews,
+    ID3D11RenderTargetView* const* ppRenderTargetViews,
+    ID3D11DepthStencilView* pDepthStencilView
+) {
+    if ( !firstDepthStencilView )
+        firstDepthStencilView = pDepthStencilView;
+    SetRenderTargets( pCtx, NumViews, ppRenderTargetViews, pDepthStencilView );
 }
 
 namespace DX11Hook {
 
-    static std::vector<HookPointer> hooks;
+    static std::vector<VHookPointer> hooks;
 
     /// @brief  Setup a hook to call custom rendering functions added through DX11Hook::addOnPresentCallback.
     /// @param hwnd The window you will be rendering.
@@ -126,49 +130,17 @@ namespace DX11Hook {
             }
         }
 
-        UINT_PTR* swapChainVTable = *( (UINT_PTR**) pSwapChain );
-        UINT_PTR* deviceContextVTable = *( (UINT_PTR**) pDeviceContext );
+        void** swapChainVTable = *( (void***) pSwapChain );
+        void** deviceContextVTable = *( (void***) pDeviceContext );
 
         hooks.clear();
 
-        /* We're hooking sites already hooked by Steam's overlay, so we don't need
-        to use return jumps. It is enough to execute the stolen jump. Steam will
-        jump back into DirectX's code for us. */
-
-        uint64_t presentHook_start = swapChainVTable[MO_IDXGISwapChain::Present];
-        uint64_t resizeBuffersHook_start = swapChainVTable[MO_IDXGISwapChain::ResizeBuffers];
-        uint64_t setRenderTargets_start = deviceContextVTable[MO_ID3D11DeviceContext::OMSetRenderTargets];
-
-        bool instructionsCheck =
-            assertBytes( "Present Function", presentHook_start, "E9 ?? ?? ?? ?? 48 89 74 24 20 55 57 41 56" ) &&
-            assertBytes( "Resize Buffers Function", resizeBuffersHook_start, "E9 ?? ?? ?? ?? 54 41 55 41 56 41 57 48 8D 68 B1 48 81 EC C0 00 00 00" ) &&
-            assertBytes( "Set Render Targets Function", setRenderTargets_start, "40 53 55 56 57 41 54 41 55 41 56 41 57 48 81 EC C8 01 00 00" );
-
-        if ( !instructionsCheck ) {
-            showAndPrintError( "Could not install DX11 hooks: Found unexpected instructions at hook location(s)." );
-            return E_FAIL;
-        }
-
-        presentHook_jmp = Hook::getJumpDestination( presentHook_start );
-        hooks.emplace_back( make_unique<JumpHook>(
-            "Present",
-            presentHook_start, 5,
-            (UINT_PTR) presentHook
-        ) );
-
-        resizeBuffersHook_jmp = Hook::getJumpDestination( resizeBuffersHook_start );
-        hooks.emplace_back( make_unique<JumpHook>(
-            "ResizeBuffers",
-            resizeBuffersHook_start, 5,
-            (UINT_PTR) resizeBuffersHook
-        ) );
-
-        hooks.emplace_back( make_unique<JumpHook>(
-            "SetRenderTargets",
-            setRenderTargets_start, 5,
-            (UINT_PTR) setRenderTargetsHook,
-            setRenderTargetsHook_return
-        ) );
+        hooks.emplace_back( make_unique<VirtualTableHook>(
+            "Present", swapChainVTable, MO_IDXGISwapChain::Present, onPresent, (void**) &Present ) );
+        hooks.emplace_back( make_unique<VirtualTableHook>(
+            "ResizeBuffers", swapChainVTable, MO_IDXGISwapChain::ResizeBuffers, onResizeBuffers, (void**) &ResizeBuffers ) );
+        hooks.emplace_back( make_unique<VirtualTableHook>(
+            "SetRenderTargets", deviceContextVTable, MO_ID3D11DeviceContext::OMSetRenderTargets, onSetRenderTargets, (void**) &SetRenderTargets ) );
 
         // std::cout << "\n";
         // std::cout << "SwapChain.Present address: " << std::uppercase << std::hex << swapChainVTable[MO_IDXGISwapChain::Present] << "\n";

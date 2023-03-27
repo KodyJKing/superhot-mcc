@@ -29,7 +29,6 @@ void updateFloat( const char* floatName, float& x, float rate, int increaseKey, 
         std::cout << floatName << ": " << x << "\n";
 }
 
-
 bool keypressed( char vk ) {
     static bool wasPressed[0xFF] = {};
     int isPressed = GetAsyncKeyState( vk ) != 0;

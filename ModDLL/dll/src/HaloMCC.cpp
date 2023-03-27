@@ -1,5 +1,4 @@
 #include "headers/HaloMCC.h"
-#include "headers/Hook.h"
 
 namespace HaloMCC {
 

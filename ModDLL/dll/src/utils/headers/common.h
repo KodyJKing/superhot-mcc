@@ -30,6 +30,14 @@ bool isZero( T* pData ) {
     return true;
 }
 
+template <typename T>
+void memWrite( T& dest, T value ) {
+    DWORD oldProtect;
+    VirtualProtect( (void*) &dest, sizeof( T ), PAGE_READWRITE, &oldProtect );
+    dest = value;
+    VirtualProtect( (void*) &dest, sizeof( T ), oldProtect, &oldProtect );
+}
+
 void throwIfFail( const char* taskDescription, HRESULT hr );
 void throwIfFail( HRESULT hr );
 

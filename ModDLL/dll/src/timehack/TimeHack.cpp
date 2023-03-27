@@ -1,7 +1,7 @@
 #include "headers/TimeHack.h"
 #include "headers/TimeScale.h"
 #include "headers/Rewind.h"
-#include "../headers/Hook.h"
+#include "../utils/headers/Hook.h"
 #include "../headers/Halo1.h"
 #include "../utils/headers/BytePattern.h"
 #include "../utils/headers/MathUtils.h"

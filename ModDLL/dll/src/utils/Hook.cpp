@@ -1,7 +1,7 @@
-#include "./headers/Hook.h"
-#include "./utils/headers/AllocationUtils.h"
-#include "./utils/headers/MathUtils.h"
-#include "./utils/headers/common.h"
+#include "headers/Hook.h"
+#include "headers/AllocationUtils.h"
+#include "headers/MathUtils.h"
+#include "headers/common.h"
 
 #define CALL   '\xE8'
 #define JMP    '\xE9'
@@ -94,6 +94,7 @@ namespace Hook {
         numStolenBytes( numStolenBytes ),
         trampolineAddress( trampolineAddress ),
         isHooked( false ) {
+
         hook();
     }
 
@@ -119,6 +120,29 @@ namespace Hook {
         }
         auto offsetAddress = instructionAddress + 1;
         return offsetAddress + sizeof( int32_t ) + *(int32_t*) ( offsetAddress );
+    }
+
+    VirtualTableHook::VirtualTableHook(
+        const char* description,
+        void** vtable,
+        size_t methodIndex,
+        void* hookFunction,
+        void** originalFunction
+    ):
+        description( description ),
+        vtable( vtable ),
+        methodIndex( methodIndex ),
+        hookFunction( hookFunction ) {
+
+        std::cout << "Adding virtual table hook: " << description << "\n";
+        _originalFunction = vtable[methodIndex];
+        *originalFunction = _originalFunction;
+        memWrite( vtable[methodIndex], hookFunction );
+    }
+
+    VirtualTableHook::~VirtualTableHook() {
+        std::cout << "Removing virtual table hook: " << description << "\n";
+        memWrite( vtable[methodIndex], _originalFunction );
     }
 
 }
