@@ -1,9 +1,9 @@
+#include "./headers/DX11Hook.h"
+#include "../../pch.h"
 #include "../utils/headers/common.h"
 #include "../utils/headers/BytePattern.h"
+#include "../utils/headers/Hook.h"
 #include "./headers/DX11MethodOffsets.h"
-#include "./headers/DX11Hook.h"
-#include "../headers/Hook.h"
-#include "../../pch.h"
 
 using DX11Hook::PresentCallback;
 using std::make_unique;

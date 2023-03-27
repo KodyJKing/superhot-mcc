@@ -43,6 +43,29 @@ namespace Hook {
 
     UINT_PTR getJumpDestination( UINT_PTR instructionAddress );
 
+    class VirtualTableHook {
+
+        public:
+        ~VirtualTableHook();
+
+        VirtualTableHook(
+            const char* description,
+            void** vtable,
+            size_t methodIndex,
+            void* hookFunction
+        );
+
+        void* originalFunction;
+
+        private:
+
+        const char* description;
+        void** vtable;
+        size_t methodIndex;
+        void* hookFunction;
+    };
+
 }
 
 using HookPointer = std::unique_ptr<Hook::JumpHook>;
+using VHookPointer = std::unique_ptr<Hook::VirtualTableHook>;
