@@ -1,3 +1,5 @@
+[See it in action.](https://www.youtube.com/watch?v=wjiKeEh5J7g)
+
 ## Building
 
 1. Install the [DirectX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)
