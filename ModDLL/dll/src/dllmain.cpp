@@ -13,6 +13,7 @@
 #include "utils/headers/BytePattern.h"
 #include "graphics/headers/DX11Hook.h"
 #include "graphics/headers/Renderer.h"
+#include "sound/headers/DSoundHook.h"
 #include "timehack/headers/TimeHack.h"
 
 static HMODULE hmSuperHotHack;
@@ -118,6 +119,8 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
             DX11Hook::addOnPresentCallback( renderLoadedText );
     }
 
+    DSoundHook::hook();
+
     if ( !err ) {
         while ( !checkExit() ) {
             while ( !checkExit() && !HaloMCC::isInGame() )
@@ -133,6 +136,8 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
             Halo1Mod::cleanup();
         }
     }
+
+    DSoundHook::cleanup();
 
     DX11Hook::cleanup();
 

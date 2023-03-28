@@ -43,4 +43,7 @@ using DirectX::XMMATRIX;
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dx11.lib")
 
+#include <dsound.h>
+#pragma comment(lib, "dsound.lib")
+
 #endif //PCH_H

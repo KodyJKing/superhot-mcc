@@ -18,21 +18,21 @@
             // Use the standard MS compiler pattern to detect errors, warnings and infos
             "problemMatcher": "$msCompile"
         },
-        {
-            "label": "build release",
-            "type": "shell",
-            "command": "cls; MSBuild ./ModDLL/ModDLL.sln /p:Platform=x64 /p:Configuration=Release",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "presentation": {
-                "reveal": "always",
-                "clear": true
-            },
-            // Use the standard MS compiler pattern to detect errors, warnings and infos
-            "problemMatcher": "$msCompile"
-        },
+        // {
+        //     "label": "build release",
+        //     "type": "shell",
+        //     "command": "cls; MSBuild ./ModDLL/ModDLL.sln /p:Platform=x64 /p:Configuration=Release",
+        //     "group": {
+        //         "kind": "build",
+        //         "isDefault": true
+        //     },
+        //     "presentation": {
+        //         "reveal": "always",
+        //         "clear": true
+        //     },
+        //     // Use the standard MS compiler pattern to detect errors, warnings and infos
+        //     "problemMatcher": "$msCompile"
+        // },
         {
             "label": "create header",
             "type": "shell",

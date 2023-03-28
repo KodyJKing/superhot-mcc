@@ -10,6 +10,8 @@ namespace HaloMCC {
     HWND getWindow();
     Vec2 getWindowSize();
     bool isInForeground();
+    uint64_t getModuleBase();
     bool isInGame();
     IDXGISwapChain* getSwapChainPointer();
+    IDirectSound* getDirectSound();
 }
