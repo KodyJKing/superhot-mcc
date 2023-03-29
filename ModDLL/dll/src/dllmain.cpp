@@ -13,8 +13,7 @@
 #include "utils/headers/BytePattern.h"
 #include "graphics/headers/DX11Hook.h"
 #include "graphics/headers/Renderer.h"
-#include "sound/headers/DSoundHook.h"
-#include "timehack/headers/TimeHack.h"
+#include "sound/headers/XAudio2Hook.h"
 
 static HMODULE hmSuperHotHack;
 
@@ -107,39 +106,42 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
         BringWindowToTop( consoleWindow );
     }
 
-    auto pSwapChain = HaloMCC::getSwapChainPointer();
-    if ( !pSwapChain ) {
-        std::cout << "Could not find swap chain!\n";
-        err = E_POINTER;
-    } else {
-        auto hr = DX11Hook::hook( mccWindow, pSwapChain );
-        if ( FAILED( hr ) )
-            err = hr;
-        else
-            DX11Hook::addOnPresentCallback( renderLoadedText );
-    }
+    // auto pSwapChain = HaloMCC::getSwapChainPointer();
+    // if ( !pSwapChain ) {
+    //     std::cout << "Could not find swap chain!\n";
+    //     err = E_POINTER;
+    // } else {
+    //     auto hr = DX11Hook::hook( mccWindow, pSwapChain );
+    //     if ( FAILED( hr ) )
+    //         err = hr;
+    //     else
+    //         DX11Hook::addOnPresentCallback( renderLoadedText );
+    // }
 
-    DSoundHook::hook();
+    XAudio2Hook::hook();
 
     if ( !err ) {
-        while ( !checkExit() ) {
-            while ( !checkExit() && !HaloMCC::isInGame() )
-                Sleep( 100 );
+        // while ( !checkExit() ) {
+        //     while ( !checkExit() && !HaloMCC::isInGame() )
+        //         Sleep( 100 );
 
-            if ( !Halo1Mod::init() )
-                exitMod = true;
+        //     if ( !Halo1Mod::init() )
+        //         exitMod = true;
 
-            while ( !checkExit() && HaloMCC::isInGame() ) {
-                Halo1Mod::onDllThreadUpdate();
-                Sleep( 10 );
-            }
-            Halo1Mod::cleanup();
-        }
+        //     while ( !checkExit() && HaloMCC::isInGame() ) {
+        //         Halo1Mod::onDllThreadUpdate();
+        //         Sleep( 10 );
+        //     }
+        //     Halo1Mod::cleanup();
+        // }
+
+        while ( !GetAsyncKeyState( VK_F9 ) )
+            Sleep( 10 );
     }
 
-    DSoundHook::cleanup();
+    XAudio2Hook::cleanup();
 
-    DX11Hook::cleanup();
+    // DX11Hook::cleanup();
 
     // Give any other executing hook code a moment to finish before unloading.
     // It might be smart to eventually wrap all hooks with a mutex lock / unlock.

@@ -1,8 +1,9 @@
 #include "../../../pch.h"
 
-namespace DSoundHook {
+namespace XAudio2Hook {
 
-    void hook();
+    HRESULT hook();
+
     void cleanup();
 
 }

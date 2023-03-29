@@ -1,0 +1,52 @@
+enum class Methods_IXAudio2: size_t {
+    QueryInterface,
+    AddRef,
+    Release,
+    GetDeviceCount,
+    GetDeviceDetails,
+    Initialize,
+    RegisterForCallbacks,
+    UnregisterForCallbacks,
+    CreateSourceVoice,
+    CreateSubmixVoice,
+    CreateMasteringVoice,
+    StartEngine,
+    StopEngine,
+    CommitChanges,
+    GetPerformanceData,
+    SetDebugConfiguration
+};
+
+enum class Methods_IXAudio2Voice: size_t {
+    GetVoiceDetails,
+    SetOutputVoices,
+    SetEffectChain,
+    EnableEffect,
+    DisableEffect,
+    GetEffectState,
+    SetEffectParameters,
+    GetEffectParameters,
+    SetFilterParameters,
+    GetFilterParameters,
+    SetOutputFilterParameters,
+    GetOutputFilterParameters,
+    SetVolume,
+    GetVolume,
+    SetChannelVolumes,
+    GetChannelVolumes,
+    SetOutputMatrix,
+    GetOutputMatrix,
+    DestroyVoice,
+
+    // Source Voice Only:
+    Start,
+    Stop,
+    SubmitSourceBuffer,
+    FlushSourceBuffers,
+    Discontinuity,
+    ExitLoop,
+    GetState,
+    SetFrequencyRatio,
+    GetFrequencyRatio,
+    SetSourceSampleRate
+};

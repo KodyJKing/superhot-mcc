@@ -4,6 +4,7 @@ ModDLL/.vs/**
 ModDLL/Debug
 ModDLL/*/Debug
 ModDLL/x64
+ModDLL/packages
 
 ModDLL/*/.vs/**
 ModDLL/*/Debug
