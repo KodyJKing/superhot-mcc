@@ -21,7 +21,7 @@
         {
             "label": "build release",
             "type": "shell",
-            "command": "cls; MSBuild ./ModDLL/ModDLL.sln /p:Platform=x64 /p:Configuration=Release",
+            "command": "cls; MSBuild ./ModDLL/ModDLL.sln /p:Platform=x64 /p:Configuration=Release; cd ./ModDll; ./bundleRelease.ps1",
             "group": {
                 "kind": "build",
                 "isDefault": true

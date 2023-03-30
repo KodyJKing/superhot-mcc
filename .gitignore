@@ -5,7 +5,7 @@ ModDLL/Debug
 ModDLL/*/Debug
 ModDLL/x64
 ModDLL/packages
-
+ModDLL/SUPERHOTMCC.zip
 ModDLL/*/.vs/**
 ModDLL/*/Debug
 ModDLL/*/*/Debug

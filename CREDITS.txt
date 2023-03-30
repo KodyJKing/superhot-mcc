@@ -1,0 +1,7 @@
+FW1FontWrapper created by gamelaster.
+
+Thanks to CasualGamer on YouTube for his excellent intro to DLL injection and DirectX hooking.
+
+Thanks to Yazzn on the UnknownCheats forums for his DX11 batch rendering example.
+
+Thanks to Ludantes for help with testing.
