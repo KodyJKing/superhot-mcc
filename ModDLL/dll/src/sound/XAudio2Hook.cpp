@@ -10,9 +10,9 @@ using Hook::VirtualTableHook;
 WAVEFORMATEX getDefaultFormat() {
     WAVEFORMATEX wfx{ 0 };
     wfx.wFormatTag = WAVE_FORMAT_PCM;
-    wfx.nChannels = 1;
+    wfx.nChannels = 2;
     wfx.nSamplesPerSec = 44100;
-    wfx.wBitsPerSample = 8;
+    wfx.wBitsPerSample = 16;
     wfx.nAvgBytesPerSec = wfx.wBitsPerSample * wfx.nSamplesPerSec / 8;
     wfx.nBlockAlign = ( wfx.nChannels * wfx.wBitsPerSample ) / 8;
     return wfx;
@@ -20,11 +20,25 @@ WAVEFORMATEX getDefaultFormat() {
 
 namespace XAudio2Hook {
 
+    HRESULT( *SubmitSourceBuffer )(
+        IXAudio2SourceVoice* pSourceVoice,
+        const XAUDIO2_BUFFER* pBuffer,
+        const XAUDIO2_BUFFER_WMA* pBufferWMA
+        );
+    HRESULT onSubmitSourceBuffer(
+        IXAudio2SourceVoice* pSourceVoice,
+        const XAUDIO2_BUFFER* pBuffer,
+        const XAUDIO2_BUFFER_WMA* pBufferWMA
+    ) {
+        std::cout << "Submitting source buffer.\n";
+        return SubmitSourceBuffer( pSourceVoice, pBuffer, pBufferWMA );
+    }
+
     HRESULT( *CreateSourceVoice )(
         IXAudio2SourceVoice** ppSourceVoice,
         const WAVEFORMATEX* pSourceFormat,
-        UINT32                     Flags,
-        float                      MaxFrequencyRatio,
+        UINT32 Flags,
+        float MaxFrequencyRatio,
         IXAudio2VoiceCallback* pCallback,
         const XAUDIO2_VOICE_SENDS* pSendList,
         const XAUDIO2_EFFECT_CHAIN* pEffectChain
@@ -32,8 +46,8 @@ namespace XAudio2Hook {
     HRESULT onCreateSourceVoice(
         IXAudio2SourceVoice** ppSourceVoice,
         const WAVEFORMATEX* pSourceFormat,
-        UINT32                     Flags,
-        float                      MaxFrequencyRatio,
+        UINT32 Flags,
+        float MaxFrequencyRatio,
         IXAudio2VoiceCallback* pCallback,
         const XAUDIO2_VOICE_SENDS* pSendList,
         const XAUDIO2_EFFECT_CHAIN* pEffectChain
@@ -75,7 +89,9 @@ namespace XAudio2Hook {
 
 
         hooks.emplace_back( make_unique<VirtualTableHook>(
-            "CreateSourceVoice", vtable, (size_t) Methods_IXAudio2::CreateSourceVoice, (void*) onCreateSourceVoice, (void**) &CreateSourceVoice ) );
+            "CreateSourceVoice", vtable,
+            (size_t) Methods_IXAudio2::CreateSourceVoice,
+            (void*) onCreateSourceVoice, (void**) &CreateSourceVoice ) );
 
         IXAudio2MasteringVoice* dummyMasteringVoice = nullptr;
         hr = dummyInterface->CreateMasteringVoice( &dummyMasteringVoice, 4, 44100, 0, NULL, NULL );
@@ -94,7 +110,14 @@ namespace XAudio2Hook {
                 std::cout << "Dummy source voice vtable: " << std::uppercase << std::hex << (uint64_t) dummySourceVoice_vtable << "\n";
 
                 hooks.emplace_back( make_unique<VirtualTableHook>(
-                    "IXAudio2SourceVoice::SetVolume", dummySourceVoice_vtable, (size_t) Methods_IXAudio2Voice::SetVolume, onSetVolume, (void**) &SetVolume ) );
+                    "IXAudio2SourceVoice::SetVolume", dummySourceVoice_vtable,
+                    (size_t) Methods_IXAudio2Voice::SetVolume,
+                    onSetVolume, (void**) &SetVolume ) );
+
+                hooks.emplace_back( make_unique<VirtualTableHook>(
+                    "IXAudio2SourceVoice::SubmitSourceBuffer", dummySourceVoice_vtable,
+                    (size_t) Methods_IXAudio2Voice::SubmitSourceBuffer,
+                    onSubmitSourceBuffer, (void**) &SubmitSourceBuffer ) );
 
                 dummySourceVoice->DestroyVoice();
             } else {
