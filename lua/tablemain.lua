@@ -32,6 +32,10 @@ function checkSymbol(symbol)
     return true
 end
 
+function disableMemrec(memrec)
+    createTimer(1, function() memrec.Active = false end)
+end
+
 function tryInjectDll(memrec, relativePath, dllBaseName)
     dllBaseName = dllBaseName or memrec.Description
     local dllName = dllBaseName .. ".dll"
@@ -41,10 +45,10 @@ function tryInjectDll(memrec, relativePath, dllBaseName)
     else
         injectDLL(dllPath)
     end
-    createTimer(1, function() memrec.Active = false end)
+    disableMemrec(memrec)
 end
 
 function reopenProcess(memrec)
     openProcess(getOpenedProcessID())
-    createTimer(1, function() memrec.Active = false end)
+    disableMemrec(memrec)
 end
