@@ -17,16 +17,24 @@ namespace Halo1Mod {
     bool init() {
         const std::lock_guard<std::mutex> lock( mtx );
 
+        std::cout << "Initializing Halo 1 mod.\n";
+
         dllBase = (uint64_t) GetModuleHandleA( "halo1.dll" );
-        if ( !dllBase )
+        if ( !dllBase ) {
+            std::cout << "Failed. Halo1.dll not found.\n";
             return false;
+        }
 
         Halo1::init( dllBase );
 
-        if ( !TimeHack::init( dllBase ) )
+        if ( !TimeHack::init( dllBase ) ) {
+            std::cout << "Failed. Couldn't initialize time hack.\n";
             return false;
+        }
 
         DX11Hook::addOnPresentCallback( onRender );
+
+        std::cout << "Halo 1 mod initialized.\n";
 
         return true;
     }

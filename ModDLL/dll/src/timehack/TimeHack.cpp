@@ -231,7 +231,7 @@ namespace TimeHack {
             damageShieldHook_return
         ) );
 
-        std::cout << "Reading timehack configurations.\n";
+        std::cout << "Reading configs.\n";
         speedLimit = Config::getFloat( "gameplay", "speedLimit", 0.834f );
         timescaleUpdateDeadzone = Config::getFloat( "gameplay", "timescaleUpdateDeadzone", 0.05f );
         allowRandomUpdatesInDeadzone = (bool) Config::getUint64( "gameplay", "allowRandomUpdatesInDeadzone", false );
@@ -239,6 +239,8 @@ namespace TimeHack {
         npcDamageScale = Config::getFloat( "gameplay", "npcDamageScale", 2.0f );
 
         TimeScale::init();
+
+        std::cout << "Time hack initialized.\n";
 
         return true;
     }
