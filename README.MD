@@ -4,7 +4,7 @@
 
 1. Install the [DirectX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)
 2. Make sure the DXSDK_DIR environment variable is set.
-3. Build with Visual Studio 19+. 
+3. Build with Visual Studio 2022. 
 
 ## Installing
 

@@ -3,7 +3,8 @@
 template <typename T>
 inline void safeRelease( T& comPtr ) {
     static_assert( std::is_pointer<T>::value, "safeRelease - comPtr not a pointer." );
-    static_assert( std::is_base_of<IUnknown, std::remove_pointer<T>::type>::value,
+    using T_REMOVE_PTR = std::remove_pointer<T>::type;
+    static_assert( std::is_base_of<IUnknown, T_REMOVE_PTR>::value,
         "safeRelease - remove_ptr<comPtr>::type is not a com object." );
     if ( comPtr ) {
         comPtr->Release();
