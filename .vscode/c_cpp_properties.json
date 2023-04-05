@@ -4,7 +4,8 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${env:DXSDK_DIR}Include"
+                "${env:DXSDK_DIR}Include",
+                "${env:BUGSPLAT_DIR}inc",
             ],
             "defines": [
                 "_DEBUG",

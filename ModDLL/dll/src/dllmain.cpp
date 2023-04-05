@@ -11,6 +11,7 @@
 #include "utils/headers/Vec.h"
 #include "utils/headers/MathUtils.h"
 #include "utils/headers/BytePattern.h"
+#include "utils/headers/CrashReporting.h"
 #include "graphics/headers/DX11Hook.h"
 #include "graphics/headers/Renderer.h"
 #include "timehack/headers/TimeHack.h"
@@ -77,6 +78,9 @@ void renderLoadedText( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISw
 }
 
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
+
+    CrashReporting::initialize();
+    CrashReporting::initializeForCurrentThread();
 
     const bool useConsole = true; // isDebug;
     const bool useStdin = false;

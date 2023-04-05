@@ -19,6 +19,7 @@
 #include <functional>
 #include <unordered_map>
 #include <mutex>
+#include <unordered_set>
 #include <set>
 #include <exception>
 #include <cstdio>

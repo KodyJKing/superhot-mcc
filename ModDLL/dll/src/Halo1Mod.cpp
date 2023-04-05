@@ -6,6 +6,7 @@
 #include "headers/Overlay.h"
 #include "utils/headers/Vec.h"
 #include "utils/headers/common.h"
+#include "utils/headers/CrashReporting.h"
 #include "timehack/headers/TimeHack.h"
 #include "graphics/headers/DX11Hook.h"
 
@@ -64,6 +65,8 @@ namespace Halo1Mod {
     }
 
     void onRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
+        CrashReporting::initializeForCurrentThread();
+
         if ( mtx.try_lock() ) {
 
             if ( Halo1::isGameLoaded() ) {
