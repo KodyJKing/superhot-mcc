@@ -83,7 +83,8 @@
         "xutility": "cpp",
         "fstream": "cpp",
         "functional": "cpp",
-        "*.ixx": "cpp"
+        "*.ixx": "cpp",
+        "unordered_set": "cpp"
     },
     "Lua.diagnostics.disable": [
         "lowercase-global",
