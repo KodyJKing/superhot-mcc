@@ -20,7 +20,7 @@ To make sure you have all the necessary DLL dependencies, download the latest re
 1. Launch Halo MCC with EAC disabled.
 2. To inject SUPERHOTMCC.dll either:
     - run SuperhotMCCLauncher.exe
-    - or inject SUPERHOTMCC.dll with a DLL injector[^1].
+    - or inject SUPERHOTMCC.dll with a DLL injector[^1]
     
 [^1]: The cheat table in this repository has a hotkeys for injecting the Debug and Release DLLs. See `Dev Cheat Table`.
 
