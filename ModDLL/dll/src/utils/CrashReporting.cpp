@@ -1,25 +1,30 @@
 #include "headers/CrashReporting.h"
+#include "../../version.h"
 
 #ifndef _DEBUG
+#define _USE_BUGSPLAT 1
+#endif
+
+#ifdef _USE_BUGSPLAT
 #include "BugSplat.h"
 #pragma comment(lib, "BugSplat64.lib")
 #endif
 
 namespace CrashReporting {
 
-    #ifndef _DEBUG
+    #ifdef _USE_BUGSPLAT
     bool ExceptionCallback_SendFiles( UINT nCode, LPVOID lpVal1, LPVOID lpVal2 );
 
     const wchar_t* database = L"kody_j_king_gmail_com";
     const wchar_t* app = L"Superhot-MCC";
-    const wchar_t* version = L"0.03-alpha";
+    const wchar_t* version = SUPERHOTMCC_VERSION_WSTRING;
 
     static MiniDmpSender* miniDumpSender = nullptr;
     static std::unordered_set<HANDLE> initializedThreads;
     #endif
 
     void initialize() {
-        #ifndef _DEBUG
+        #ifdef _USE_BUGSPLAT
         miniDumpSender = new MiniDmpSender( database, app, version, NULL, MDSF_LOGFILE | MDSF_PREVENTHIJACKING );
         SetGlobalCRTExceptionBehavior();
         miniDumpSender->setCallback( ExceptionCallback_SendFiles );
@@ -28,7 +33,7 @@ namespace CrashReporting {
 
     /// @brief Setup crash handling for the current thread if it hasn't already been setup.
     void initializeForCurrentThread() {
-        #ifndef _DEBUG
+        #ifdef _USE_BUGSPLAT
         auto handle = GetCurrentThread();
         if ( initializedThreads.contains( handle ) )
             return;
@@ -37,7 +42,7 @@ namespace CrashReporting {
         #endif
     }
 
-    #ifndef _DEBUG
+    #ifdef _USE_BUGSPLAT
     bool ExceptionCallback_SendFiles( UINT nCode, LPVOID lpVal1, LPVOID lpVal2 ) {
         switch ( nCode ) {
             case MDSCB_EXCEPTIONCODE:

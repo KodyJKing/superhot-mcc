@@ -1,4 +1,5 @@
 #include "../pch.h"
+#include "../version.h"
 #include "headers/dllmain.h"
 #include "headers/Halo1.h"
 #include "headers/Halo1Mod.h"
@@ -66,9 +67,11 @@ void renderLoadedText( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISw
     hide = HaloMCC::isInGame() && abs( alpha ) < 0.01f;
 
     std::stringstream ss;
-    ss << "SUPERHOT MCC Loaded";
+    ss << "SUPERHOT MCC Loaded (v";
+    ss << SUPERHOTMCC_VERSION_STRING;
     if ( isDebug )
-        ss << " (debug build)";
+        ss << " Debug";
+    ss << ")";
     std::string text = ss.str();
 
     auto size = HaloMCC::getWindowSize();
