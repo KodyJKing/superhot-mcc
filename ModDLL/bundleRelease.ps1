@@ -9,9 +9,11 @@ $outpath = ".\out\SUPERHOTMCC-" + $version + ".zip"
 
 $compress = @{
     Path = 
-        ($buildDir + "*.exe"), ($buildDir + "*.dll"), 
+        ($buildDir + "*.exe"), 
+        ($buildDir + "*.dll"), 
         ".\releaseFiles\*",
-        "..\CREDITS.txt", "..\LICENSE.txt", 
+        "..\CREDITS.txt", 
+        "..\LICENSE.txt", 
         "dll\include\FW1FontWrapper.dll", 
         ($bugSplatBin + "BugSplat64.dll"),
         ($bugSplatBin + "BsSndRpt64.exe"),
