@@ -1,7 +1,5 @@
 ### [See it in action.](https://www.youtube.com/watch?v=wjiKeEh5J7g)
 
----
-
 ## Building Debug
 
 1. Install the [DirectX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)
@@ -22,11 +20,9 @@ To make sure you have all the necessary DLL dependencies, download the latest re
 1. Launch Halo MCC with EAC disabled.
 2. To inject SUPERHOTMCC.dll either:
     - run SuperhotMCCLauncher.exe
-    - or inject SUPERHOTMCC.dll with a DLL injector [^1].
+    - or inject SUPERHOTMCC.dll with a DLL injector[^1].
     
 [^1]: The cheat table in this repository has a hotkeys for injecting the Debug and Release DLLs. See `Dev Cheat Table`.
-
----
 
 ## Usage
 
@@ -35,8 +31,6 @@ This mod is developed for the Steam version of MCC. It probably won't work on th
 Only CE's single player campaign is supported at the moment.
 
 Currently, you need to use an FOV of 90 for tracers to render at the right position. I'm working on a fix for that.
-
----
 
 ## Hotkeys
 
@@ -53,7 +47,7 @@ Currently, you need to use an FOV of 90 for tracers to render at the right posit
 | Show overlay           | Numpad 1      |
 | Show highlighted only  | Numpad 2      |
 | Show all entity types  | Numpad 3      |
-| Print highlighted [^2]     | P             |
+| Print highlighted[^2]     | P             |
 
 [^2]: Printing a highlighted entity also copies its address to your clipboard.
 
