@@ -85,8 +85,8 @@ namespace Halo1Mod {
 
                 TimeHack::onGameThreadUpdate();
 
-                if ( keypressed( VK_NUMPAD8 ) )
-                    testCrash();
+                // if ( keypressed( VK_NUMPAD8 ) )
+                //     testCrash();
 
                 #ifdef _DEBUG
                 if ( HaloMCC::isInForeground() ) {
@@ -108,8 +108,8 @@ namespace Halo1Mod {
     void onDllThreadUpdate() {
         const std::lock_guard<std::mutex> lock( mtx );
 
-        if ( keypressed( VK_NUMPAD7 ) )
-            testCrash();
+        // if ( keypressed( VK_NUMPAD7 ) )
+        //     testCrash();
 
         if ( Halo1::isGameLoaded() ) {
             TimeHack::onDllThreadUpdate();

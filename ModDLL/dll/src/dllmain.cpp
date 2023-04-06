@@ -85,7 +85,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     CrashReporting::initialize();
     CrashReporting::initializeForCurrentThread();
 
-    const bool useConsole = true; // isDebug;
+    const bool useConsole = isDebug;
     const bool useStdin = false;
 
     auto logFile = getModDirectory() + "superhotmcc-log.txt";
