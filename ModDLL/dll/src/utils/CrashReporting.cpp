@@ -1,4 +1,5 @@
 #include "headers/CrashReporting.h"
+#include "headers/common.h"
 #include "../../version.h"
 
 #ifndef _DEBUG
@@ -52,9 +53,12 @@ namespace CrashReporting {
                 ss << modDir.c_str();
                 auto modDirW = ss.str();
 
+                closeLogFile();
+
                 wchar_t filePath[MAX_PATH];
                 wsprintf( filePath, L"%ssuperhotmcc-log.txt", modDirW.c_str() );
                 miniDumpSender->sendAdditionalFile( filePath );
+
                 wsprintf( filePath, L"%sSuperhotMCC.ini", modDirW.c_str() );
                 miniDumpSender->sendAdditionalFile( filePath );
             }

@@ -52,6 +52,25 @@ std::string getModDirectory() {
     return pathStr.substr( 0, lastSlash + 1 );
 }
 
+std::string getLogFilePath() {
+    return getModDirectory() + "superhotmcc-log.txt";
+}
+
+static FILE* pFile_stdout = NULL;
+void openLogFile() {
+    if ( !pFile_stdout ) {
+        auto path = getLogFilePath();
+        freopen_s( &pFile_stdout, path.c_str(), "w", stdout );
+    }
+}
+
+void closeLogFile() {
+    if ( pFile_stdout ) {
+        fclose( pFile_stdout );
+        pFile_stdout = NULL;
+    }
+}
+
 void memcpyExecutable( char* dest, char* source, size_t size ) {
     DWORD oldProtect;
     VirtualProtect( (void*) dest, size, PAGE_EXECUTE_READWRITE, &oldProtect );

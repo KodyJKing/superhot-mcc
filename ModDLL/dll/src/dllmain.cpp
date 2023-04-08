@@ -88,8 +88,6 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     const bool useConsole = isDebug;
     const bool useStdin = false;
 
-    auto logFile = getModDirectory() + "superhotmcc-log.txt";
-
     errno_t err = 0;
     FILE* pFile_stdout = NULL;
     FILE* pFile_stderr = NULL;
@@ -101,7 +99,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
         if ( useStdin )
             err |= freopen_s( &pFile_stdin, "CONIN$", "r", stdin );
     } else {
-        err = freopen_s( &pFile_stdout, logFile.c_str(), "w", stdout );
+        openLogFile();
     }
 
     // Bring MCC to front.
@@ -147,11 +145,11 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     // It might be smart to eventually wrap all hooks with a mutex lock / unlock.
     Sleep( 500 );
 
+    closeLogFile();
     if ( pFile_stdout ) fclose( pFile_stdout );
     if ( pFile_stderr ) fclose( pFile_stderr );
     if ( pFile_stdin ) fclose( pFile_stdin );
-    if ( useConsole )
-        FreeConsole();
+    if ( useConsole ) FreeConsole();
 
     FreeLibraryAndExitThread( hmSuperHotHack, 0 );
 }

@@ -51,6 +51,9 @@ bool keypressed( char vk );
 void toggleOption( const char* description, bool& option, int key );
 
 std::string getModDirectory();
+std::string getLogFilePath();
+void openLogFile();
+void closeLogFile();
 
 void memcpyExecutable( char* dest, char* source, size_t size );
 

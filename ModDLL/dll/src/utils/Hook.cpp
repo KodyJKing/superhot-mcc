@@ -52,8 +52,8 @@ namespace Hook {
         if ( isHooked )
             return;
 
-        std::cout << "Adding jump hook: " << description << std::endl;
-        std::cout << "Trampoline located at: " << std::hex << (UINT_PTR) trampolineAddress << std::endl << std::endl;
+        std::cout << "Adding jump hook: " << description;
+        std::cout << ", trampoline located at: " << std::hex << (UINT_PTR) trampolineAddress << "\n";
 
         saveStolenBytes();
 
