@@ -6,8 +6,14 @@
 #include "headers/Overlay.h"
 #include "utils/headers/Vec.h"
 #include "utils/headers/common.h"
+#include "utils/headers/CrashReporting.h"
 #include "timehack/headers/TimeHack.h"
 #include "graphics/headers/DX11Hook.h"
+
+void testCrash() {
+    Vec3* badPtr = nullptr;
+    std::cout << badPtr->x;
+}
 
 namespace Halo1Mod {
 
@@ -64,6 +70,8 @@ namespace Halo1Mod {
     }
 
     void onRender( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISwapChain* pSwapChain ) {
+        CrashReporting::initializeForCurrentThread();
+
         if ( mtx.try_lock() ) {
 
             if ( Halo1::isGameLoaded() ) {
@@ -76,6 +84,9 @@ namespace Halo1Mod {
                 Tracers::render( renderer, TimeHack::timeElapsed, pCtx, pDevice, pSwapChain );
 
                 TimeHack::onGameThreadUpdate();
+
+                // if ( keypressed( VK_NUMPAD8 ) )
+                //     testCrash();
 
                 #ifdef _DEBUG
                 if ( HaloMCC::isInForeground() ) {
@@ -96,6 +107,9 @@ namespace Halo1Mod {
 
     void onDllThreadUpdate() {
         const std::lock_guard<std::mutex> lock( mtx );
+
+        // if ( keypressed( VK_NUMPAD7 ) )
+        //     testCrash();
 
         if ( Halo1::isGameLoaded() ) {
             TimeHack::onDllThreadUpdate();

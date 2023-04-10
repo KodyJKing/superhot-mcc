@@ -1,20 +1,28 @@
-[See it in action.](https://www.youtube.com/watch?v=wjiKeEh5J7g)
+### [See it in action.](https://www.youtube.com/watch?v=wjiKeEh5J7g)
 
-## Building
+## Building Debug
 
 1. Install the [DirectX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)
 2. Make sure the DXSDK_DIR environment variable is set.
-3. Build with Visual Studio 2022. 
+3. Build with Visual Studio 2022.
 
-## Installing
+## Building Release
 
-1. Place `FW1FontWrapper.dll` (under ModDLL/dll/include) and `SuperhotMCC.ini` under `\mcc\binaries\win64\`.
-2. If you're an end user, place `SUPERHOTMCC.dll` and `SuperhotMCCLauncher.exe` under the same directory.
+1. Download the [BugSplat Native SDK](https://app.bugsplat.com/browse/download_item.php?item=native) and set the environment variable `BUGSPLAT_DIR` to point at `./BugSplatNative/BugSplat`
+2. Follow the instructions from `Building Debug`
+
+## Dev Install
+
+To make sure you have all the necessary DLL dependencies, download the latest release and follow the instructions in the README.
 
 ## Running
 
 1. Launch Halo MCC with EAC disabled.
-2. Run SuperhotMCCLauncher.exe or inject SUPERHOTMCC.dll with a DLL injector.
+2. To inject SUPERHOTMCC.dll either:
+    - run SuperhotMCCLauncher.exe
+    - or inject SUPERHOTMCC.dll with a DLL injector[^1]
+    
+[^1]: The cheat table in this repository has a hotkeys for injecting the Debug and Release DLLs. See `Dev Cheat Table`.
 
 ## Usage
 
@@ -39,12 +47,13 @@ Currently, you need to use an FOV of 90 for tracers to render at the right posit
 | Show overlay           | Numpad 1      |
 | Show highlighted only  | Numpad 2      |
 | Show all entity types  | Numpad 3      |
-| Print highlighted*     | P             |
+| Print highlighted[^2]     | P             |
 
-**Printing a highlighted entity also copies its address to your clipboard.*
+[^2]: Printing a highlighted entity also copies its address to your clipboard.
 
 ### Dev Cheat Table
-| Option     | Key |
-| ---------- | --- |
-| Inject DLL | F10 |
-| Unload PDB | F9  |
+| Option             | Key |
+| ------------------ | --- |
+| Inject debug DLL   | F10 |
+| Inject release DLL | F8  |
+| Unload PDB         | F9  |

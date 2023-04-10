@@ -9,6 +9,7 @@
         "ModDLL/*/x64": true,
         "ModDLL/Debug": true,
         "ModDLL/x64": true,
+        "ModDLL/packages": true,
     },
     "files.associations": {
         "*.asmlib": "asm-intel-x86-generic",
@@ -83,7 +84,8 @@
         "xutility": "cpp",
         "fstream": "cpp",
         "functional": "cpp",
-        "*.ixx": "cpp"
+        "*.ixx": "cpp",
+        "unordered_set": "cpp"
     },
     "Lua.diagnostics.disable": [
         "lowercase-global",

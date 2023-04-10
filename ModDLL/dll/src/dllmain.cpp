@@ -1,4 +1,5 @@
 #include "../pch.h"
+#include "../version.h"
 #include "headers/dllmain.h"
 #include "headers/Halo1.h"
 #include "headers/Halo1Mod.h"
@@ -11,6 +12,7 @@
 #include "utils/headers/Vec.h"
 #include "utils/headers/MathUtils.h"
 #include "utils/headers/BytePattern.h"
+#include "utils/headers/CrashReporting.h"
 #include "graphics/headers/DX11Hook.h"
 #include "graphics/headers/Renderer.h"
 #include "timehack/headers/TimeHack.h"
@@ -65,9 +67,11 @@ void renderLoadedText( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISw
     hide = HaloMCC::isInGame() && abs( alpha ) < 0.01f;
 
     std::stringstream ss;
-    ss << "SUPERHOT MCC Loaded";
+    ss << "SUPERHOT MCC Loaded (v";
+    ss << SUPERHOTMCC_VERSION_STRING;
     if ( isDebug )
-        ss << " (debug build)";
+        ss << " Debug";
+    ss << ")";
     std::string text = ss.str();
 
     auto size = HaloMCC::getWindowSize();
@@ -78,10 +82,11 @@ void renderLoadedText( ID3D11DeviceContext* pCtx, ID3D11Device* pDevice, IDXGISw
 
 DWORD __stdcall mainThread( LPVOID lpParameter ) {
 
-    const bool useConsole = true; // isDebug;
-    const bool useStdin = false;
+    CrashReporting::initialize();
+    CrashReporting::initializeForCurrentThread();
 
-    auto logFile = getModDirectory() + "superhotmcc-log.txt";
+    const bool useConsole = isDebug;
+    const bool useStdin = false;
 
     errno_t err = 0;
     FILE* pFile_stdout = NULL;
@@ -94,7 +99,7 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
         if ( useStdin )
             err |= freopen_s( &pFile_stdin, "CONIN$", "r", stdin );
     } else {
-        err = freopen_s( &pFile_stdout, logFile.c_str(), "w", stdout );
+        openLogFile();
     }
 
     // Bring MCC to front.
@@ -140,11 +145,11 @@ DWORD __stdcall mainThread( LPVOID lpParameter ) {
     // It might be smart to eventually wrap all hooks with a mutex lock / unlock.
     Sleep( 500 );
 
+    closeLogFile();
     if ( pFile_stdout ) fclose( pFile_stdout );
     if ( pFile_stderr ) fclose( pFile_stderr );
     if ( pFile_stdin ) fclose( pFile_stdin );
-    if ( useConsole )
-        FreeConsole();
+    if ( useConsole ) FreeConsole();
 
     FreeLibraryAndExitThread( hmSuperHotHack, 0 );
 }
