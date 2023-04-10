@@ -5,18 +5,62 @@
 #include "headers/Tracers.h"
 #include "headers/Overlay.h"
 #include "utils/headers/Vec.h"
+#include "utils/headers/Hook.h"
 #include "utils/headers/common.h"
 #include "utils/headers/CrashReporting.h"
+#include "graphics/headers/DX11Utils.h"
 #include "timehack/headers/TimeHack.h"
 #include "graphics/headers/DX11Hook.h"
+
+using namespace Hook;
+using std::make_unique;
+using std::unique_ptr;
 
 void testCrash() {
     Vec3* badPtr = nullptr;
     std::cout << badPtr->x;
 }
 
+static XMMATRIX anniversaryCamMatrix;
+
+void printMat( XMMATRIX* pMat ) {
+    float* fmat = (float*) pMat;
+    for ( int i = 0; i < 4; i++ ) {
+        for ( int j = 0; j < 4; j++ ) {
+            std::cout << std::setw( 12 ) << std::fixed << std::setfill( ' ' ) << fmat[j + i * 4];
+        }
+        std::cout << "\n";
+    }
+    std::cout << "\n";
+}
+
+extern "C" {
+    void setViewProjMatrixHook();
+    uint64_t setViewProjMatrixHook_return;
+    void copyViewProjMatrix( XMMATRIX* pViewProjMatrix ) {
+        anniversaryCamMatrix = *pViewProjMatrix;
+
+        auto pCam = Halo1::getPlayerCameraPointer();
+        anniversaryCamMatrix = XMMatrixTranspose( *pViewProjMatrix ); // *pViewProjMatrix; // cameraMatrix( pCam->pos, *pViewProjMatrix );
+
+        static int callCount = 0;
+        if ( callCount++ % 100 == 0 ) {
+            printMat( &anniversaryCamMatrix );
+
+            XMMATRIX transform;
+            auto screenDimensions = HaloMCC::getWindowSize();
+            auto oldCamPos = pCam->pos;
+            pCam->pos = { 0.0f, 0.0f, 0.0f };
+            Halo1::getCameraMatrix( screenDimensions.x, screenDimensions.y, transform );
+            pCam->pos = oldCamPos;
+            printMat( &transform );
+        }
+    }
+}
+
 namespace Halo1Mod {
 
+    static std::vector<HookPointer> hooks;
     uint64_t dllBase = 0;
     std::mutex mtx;
 
@@ -40,6 +84,14 @@ namespace Halo1Mod {
 
         DX11Hook::addOnPresentCallback( onRender );
 
+        hooks.clear();
+        hooks.emplace_back( make_unique<JumpHook>(
+            "Copy ViewProjection Matrix (anniversary mode)",
+            dllBase + 0x22FCC0U, 11,
+            (UINT_PTR) setViewProjMatrixHook,
+            setViewProjMatrixHook_return
+        ) );
+
         std::cout << "Halo 1 mod initialized.\n";
 
         return true;
@@ -49,6 +101,7 @@ namespace Halo1Mod {
         const std::lock_guard<std::mutex> lock( mtx );
 
         std::cout << "Cleaning up Halo CE mod.\n";
+        hooks.clear();
         DX11Hook::removeOnPresentCallback( onRender );
         TimeHack::cleanup();
     }

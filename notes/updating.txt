@@ -1,5 +1,3 @@
-Use .codectx file to find updated instruction locations. Disassemble the instructions with this https://defuse.ca/online-x86-assembler.htm#disassembly2 and scan for byte patterns that shouldn't change.
-
 The entity list/array was found by looking at the damage entity function. The damage function takes an entityHandle as its first parameter. It then gets the EntityRecord associated with that handle, using the lower 2 bytes as an index into EntityList. The 0x8 field on EntityRecord is an offset in bytes from EntityArray to the actual Entity.
 
 The entity update function was found by comparing callstacks for various update instructions and finding a common ancestor (like damage and motion instructions).
@@ -8,3 +6,31 @@ The tag list was found by looking in the update entity function. Entity's first 
 See: https://opencarnage.net/index.php?/topic/6693-halo-map-file-structure-revision-212/
 
 The weapon min/max rate of fire TagData fields were found by printing a pistol's tagdata pointer to the HUD and then looking for 2 floats with value 3.5 in a row.
+
+The raycast function was found by backtracing the hitEntity handle in the damage entity function with a mix of CE debugging and Ghidra. The hit entity will first show up in a RaycastResult structure on the stack. It's been a while since I did this, so the details or a bit fuzzy, but you should look for a function with signature:
+   bool Raycast( uint64_t flags, Vec3* origin, Vec3* displacement, uint32_t sourceEntityHandle, RaycastResult* raycastResult )
+
+Steps for updating offsets for moved instructions:
+    1. Find the instruction in savedInstructionContext.codectx.
+    2. Disassemble the surrounding bytes with https://defuse.ca/online-x86-assembler.htm#disassembly2
+    3. Identify sections that don't change after relocation and scan for those.
+
+Steps to find the anniversary viewProjMatrix:
+    1. Open the game in RenderDoc.
+    2. Look for a render step rendering in world geometry.
+    3. Inspect the vertex shader phase of the render pipeline.
+    4. Open the CB_PS_COMMON buffer.
+    5. Look for VS_REG_COMMON_VIEWPROJ_MATRIX.
+    6. Copy a few lines from the matrix into a group scan statement.
+    7. Run the groupscan in Cheat Engine.
+    8. Find an entry which is exclusively written by an instruction (should be the last entry).
+    9. Save the instructions that access the entry.
+    11. If too much hasn't changed, the first instruction is the one we want. Do an injection copy at the start of this function.
+    12. You may need to filter out some calls. Right now, it's only the matrix we want when RBX != 2.
+
+Steps to use RenderDoc with MCC: 
+    1. Download and build MSDetours.
+    2. Download and build PauseOnLoad. (https://github.com/KodyJKing/PauseOnLoad)
+    3. Add PauseOnLoad to MCC's import list using MSDetours' setdll.exe.
+    4. Launch MCC without anti cheat.
+    5. In RenderDoc: `File > Inject into Process` and select MCC.

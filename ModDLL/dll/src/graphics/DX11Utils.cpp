@@ -87,6 +87,11 @@ float horizontalFovToVertical( float theta, float w, float h ) {
     return 2.0f * atanf( ( h / w ) * tanf( theta / 2 ) );
 }
 
+XMMATRIX cameraMatrix( const Vec3 camPos, const XMMATRIX viewProj ) {
+    XMMATRIX translation = XMMatrixTranslation( camPos.x, camPos.y, camPos.z );
+    return translation * viewProj;
+}
+
 XMMATRIX cameraMatrix(
     const Vec3 camPos, const Vec3 camForward, float fovX,
     float clippingNear, float clippingFar,

@@ -10,7 +10,7 @@ Feb 19 2023
 
 Feb 21 2023
 
-    I removed the old JumpHook in favor of a simpler version that just responsible for installing / removing jump hooks. If I need the convenience of assembly-free hooking, I can add a separate utility for creating trampolines.
+    I removed the old JumpHook in favor of a simpler version that's just responsible for installing / removing jump hooks. If I need the convenience of assembly-free hooking, I can add a separate utility for creating trampolines.
     I might use zydis for runtime code generation. https://github.com/zyantific/zydis
 
 Mar 3 2023
