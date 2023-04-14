@@ -26,7 +26,7 @@ To make sure you have all the necessary DLL dependencies, download the latest re
 
 ## Usage
 
-This mod is developed for the Steam version of MCC. It probably won't work on the Window's Store version.
+This mod is developed for the Steam version of MCC. It probably won't work on the Windows Store version.
 
 Only CE's single player campaign is supported at the moment.
 
