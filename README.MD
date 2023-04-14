@@ -8,7 +8,7 @@
 
 ## Building Release
 
-1. Download the [BugSplat Native SDK](https://app.bugsplat.com/browse/download_item.php?item=native) and set the environment variable `BUGSPLAT_DIR` to point at `./BugSplatNative/BugSplat`
+1. Download the [BugSplat Native SDK](https://app.bugsplat.com/browse/download_item.php?item=native) and set the environment variable `BUGSPLAT_DIR` to point at `../BugSplatNative/BugSplat`
 2. Follow the instructions from `Building Debug`
 
 ## Dev Install
