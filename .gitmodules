@@ -1,0 +1,3 @@
+[submodule "vendor/asmjit/asmjit"]
+	path = vendor/asmjit/asmjit
+	url = https://github.com/asmjit/asmjit.git
