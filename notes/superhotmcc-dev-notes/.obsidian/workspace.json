@@ -18,8 +18,21 @@
                 "source": false
               }
             }
+          },
+          {
+            "id": "09d69c05c71653e2",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Entity Handle to Entity Pointer.md",
+                "mode": "source",
+                "source": false
+              }
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -85,7 +98,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "MASM.md",
+                "file": "Entity Handle to Entity Pointer.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +115,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "MASM.md",
+                "file": "Entity Handle to Entity Pointer.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +138,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "MASM.md"
+                "file": "Entity Handle to Entity Pointer.md"
               }
             }
           }
@@ -146,8 +159,9 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "20fdac7c0aa36829",
+  "active": "09d69c05c71653e2",
   "lastOpenFiles": [
+    "Entity Handle to Entity Pointer.md",
     "MASM.md",
     "Welcome.md"
   ]

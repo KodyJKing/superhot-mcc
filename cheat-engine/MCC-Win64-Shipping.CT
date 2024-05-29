@@ -91,6 +91,13 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
         </CheatEntry>
       </CheatEntries>
     </CheatEntry>
+    <CheatEntry>
+      <ID>5</ID>
+      <Description>"halo1.dll"</Description>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>halo1.dll</Address>
+    </CheatEntry>
   </CheatEntries>
   <CheatCodes>
     <CodeEntry>
@@ -200,6 +207,32 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
         <Byte>83</Byte>
         <Byte>E3</Byte>
       </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Damage Health Function : mov rax,rsp</Description>
+      <AddressString>halo1.dll+B9FBD0</AddressString>
+      <Before>
+        <Byte>89</Byte>
+        <Byte>02</Byte>
+        <Byte>C3</Byte>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+      </Before>
+      <Actual>
+        <Byte>48</Byte>
+        <Byte>8B</Byte>
+        <Byte>C4</Byte>
+      </Actual>
+      <After>
+        <Byte>4C</Byte>
+        <Byte>89</Byte>
+        <Byte>48</Byte>
+        <Byte>20</Byte>
+        <Byte>66</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry GroupHeader="1">
+      <Description/>
     </CodeEntry>
     <CodeEntry GroupHeader="1">
       <Description>Sniper Damage Entity Stack</Description>
@@ -526,6 +559,9 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
         <Byte>70</Byte>
         <Byte>1B</Byte>
       </After>
+    </CodeEntry>
+    <CodeEntry GroupHeader="1">
+      <Description/>
     </CodeEntry>
   </CheatCodes>
   <UserdefinedSymbols/>
@@ -878,4 +914,21 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
       </Elements>
     </Structure>
   </Structures>
+  <LuaScript>function hex(num)
+    return string.format("%X", num)
+end
+
+function prints(s)
+    print(s)
+    return false
+end
+
+</LuaScript>
+  <DisassemblerComments>
+    <DisassemblerComment>
+      <Address>"halo1.dll"+B9FC58</Address>
+      <Comment>rbx now points at damaged entity
+</Comment>
+    </DisassemblerComment>
+  </DisassemblerComments>
 </CheatTable>

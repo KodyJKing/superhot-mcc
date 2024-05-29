@@ -9,15 +9,13 @@ DWORD WINAPI MainThread(LPVOID _hModule) {
     HMODULE hModule = (HMODULE) _hModule;
     Console::alloc();
 
-    std::cout << "SuperHot MCC" << std::endl;
-
     HaloCE::Mod::init();
-
     while (true) {
         if (GetAsyncKeyState(VK_F9) & 1)
             break;
+        HaloCE::Mod::modThreadUpdate();
+        Sleep(1000 / 60);
     }
-
     HaloCE::Mod::free();
 
     // Allow time for hooks to exit.

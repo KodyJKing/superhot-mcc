@@ -1,0 +1,196 @@
+#pragma once
+
+#include <stdint.h>
+#include <functional>
+#include <string>
+
+namespace Halo1 {
+
+    // Todo: Move this into a separate file.
+    struct Vec3 {
+        float x, y, z;
+        std::string toString() {
+            return "Vec( " + std::to_string( x ) + ", " + std::to_string( y ) + ", " + std::to_string( z ) + " )";
+        }
+    };
+
+    class Camera {
+        public:
+        Vec3 pos; 
+        char pad_000C[16]; 
+        uint32_t N00000163; 
+        Vec3 fwd; 
+        Vec3 up; 
+        float fov; 
+    }; 
+
+    // Thanks to Kavawuvi for documentation on the map format and Tag structure.
+    class Tag {
+        public:
+        uint32_t fourCC_A; 
+        uint32_t fourCC_B; 
+        uint32_t fourCC_C; 
+        uint32_t tagID; 
+        uint32_t resourcePathAddress; 
+        uint32_t dataAddress; 
+        char pad_0018[8]; 
+
+        char* getResourcePath();
+        void* getData();
+    };
+
+    class EntityList {
+        public:
+        char pad_0000[32]; 
+        uint16_t capacity; 
+        char pad_0022[14]; 
+        uint16_t count; 
+        int32_t entityListOffset; 
+    }; 
+
+    class Entity {
+        public:
+        uint32_t tagID; 
+        char pad_0004[16]; 
+        uint32_t ageMilis; 
+        Vec3 pos; 
+        Vec3 vel; 
+        Vec3 fwd; 
+        Vec3 up; 
+        Vec3 angularVelocity; 
+        char pad_0054[8]; 
+        Vec3 rootBonePos; 
+        char pad_0068[8]; 
+        uint16_t entityCategory; 
+        char pad_0072[14]; 
+        uint32_t controllerHandle; 
+        char pad_0084[8]; 
+        uint16_t animId; 
+        uint16_t animFrame; 
+        char pad_0090[12]; 
+        float health; 
+        float shield; 
+        char pad_00A4[44]; 
+        uint32_t vehicleHandle; 
+        uint32_t childHandle; 
+        uint32_t parentHandle; 
+        char pad_00DC[292]; 
+        uint32_t projectileParentHandle; 
+        float heat; 
+        float plasmaUsed; 
+        float fuse; 
+        char pad_0210[12]; 
+        float projectileAge; 
+        char pad_0220[8]; 
+        uint8_t ticksSinceLastFired; 
+        char pad_0229[23]; 
+        float plasmaCharge; 
+        char pad_0244[61]; 
+        uint8_t weaponIndex; 
+        char pad_0282[1]; 
+        uint8_t grenadeAnim; 
+        uint8_t weaponAnim; 
+        char pad_0285[1]; 
+        uint16_t ammo; 
+        char pad_0288[2]; 
+        uint16_t clipAmmo; 
+        char pad_028C[112]; 
+        uint8_t frags; 
+        uint8_t plasmas; 
+        char pad_02FE[6]; 
+        uint32_t vehicleRiderHandle; 
+
+        Tag* tag();
+        char* getTagResourcePath();
+        bool fromResourcePath( const char* str );
+    }; 
+
+    class EntityRecord {
+        public:
+        uint16_t id;
+        uint16_t unknown_1;
+        uint16_t unknown_2;
+        uint16_t typeId;
+        int32_t entityArrayOffset;
+
+        Entity* entity();
+    };
+
+    // =======================================================
+
+    enum EntityCategory {
+        EntityCategory_Biped,
+        EntityCategory_Vehicle,
+        EntityCategory_Weapon,
+        EntityCategory_Equipment,
+        EntityCategory_Garbage,
+        EntityCategory_Projectile,
+        EntityCategory_Scenery,
+        EntityCategory_Machine,
+        EntityCategory_Control,
+        EntityCategory_LightFixture,
+        EntityCategory_Placeholder,
+        EntityCategory_SoundScenery,
+    };
+
+    enum TypeID {
+        TypeID_Player = 0x0DE4,
+        TypeID_Marine = 0x0E58,
+        TypeID_Jackal = 0x1184,
+        TypeID_Grunt = 0x0CFC,
+        TypeID_Elite = 0x1110,
+        TypeID_VehicleA = 0x0AF4,
+        TypeID_VehicleB = 0x06E0,
+        TypeID_Projectile = 0x0290,
+    };
+
+    // =======================================================
+
+
+    void init();
+
+    EntityList* getEntityListPointer();
+    Camera* getPlayerCameraPointer();
+    uint32_t getPlayerHandle();
+    char* getMapName();
+
+    bool isOnMap( const char* mapName );
+
+    Tag* getTag( uint32_t tagID );
+
+    uint64_t translateMapAddress( uint32_t address );
+
+    void foreachEntityRecord( std::function<void( EntityRecord* )> cb );
+    void foreachEntityRecordIndexed( std::function<void( EntityRecord*, uint16_t i )> cb );
+
+    Entity* getEntityPointer( EntityRecord* pRecord );
+    Entity* getEntityPointer( uint32_t entityHandle );
+    EntityRecord* getEntityRecord( uint32_t entityHandle );
+    EntityRecord* getEntityRecord( EntityList* pEntityList, uint32_t entityHandle );
+
+    uint32_t indexToEntityHandle( uint16_t index );
+
+    EntityRecord* getPlayerRecord();
+
+    bool isPlayerHandle( uint32_t entityHandle );
+    bool isPlayerControlled( EntityRecord* rec );
+
+    bool isReloading( Entity* entity );
+    bool isDoingMelee( Entity* entity );
+
+    bool isTransport( Entity* entity );
+    bool isRidingTransport( Entity* entity );
+
+    bool printEntity( EntityRecord* pRecord );
+    void printEntities();
+
+    extern float fovScale;
+    extern float clippingNear;
+    extern float clippingFar;
+    // HRESULT getCameraMatrix( float w, float h, XMMATRIX& result );
+    Vec3 projectPoint( float w, float h, const Vec3 point );
+
+    bool isCameraLoaded();
+    bool isGameLoaded();
+
+}

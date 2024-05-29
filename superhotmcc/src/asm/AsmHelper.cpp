@@ -5,6 +5,28 @@ namespace AsmHelper {
 
     using namespace asmjit::x86;
 
+    // Todo: Look into using fxsave/fxrstor in push/pop.
+
+    /*
+        Stack after push:
+            [rbp-0x00] = rbp (old)
+            [rbp-0x08] = rflags
+            [rbp-0x10] = rax
+            [rbp-0x18] = rcx
+            [rbp-0x20] = rdx
+            [rbp-0x28] = r8
+            [rbp-0x30] = r9
+            [rbp-0x38] = r10
+            [rbp-0x40] = r11
+            [rbp-0x48] = rbx
+            ...
+            [rsp+0x50] = xmm5
+            [rsp+0x40] = xmm4
+            [rsp+0x30] = xmm3
+            [rsp+0x20] = xmm2
+            [rsp+0x10] = xmm1
+            [rsp+0x00] = xmm0
+    */
     void push(asmjit::x86::Assembler& a) {
        // Save rsp to rbp
         a.push(rbp);
@@ -58,4 +80,8 @@ namespace AsmHelper {
         // Restore rbp
         a.pop(rbp);
     }
+
+    asmjit::x86::Mem rbpFromStack() { return asmjit::x86::Mem(rbp,  0x00); }
+    asmjit::x86::Mem rbxFromStack() { return asmjit::x86::Mem(rbp, -0x48); }
+
 }
