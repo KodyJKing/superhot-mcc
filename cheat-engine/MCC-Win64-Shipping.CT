@@ -98,6 +98,50 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
       <VariableType>4 Bytes</VariableType>
       <Address>halo1.dll</Address>
     </CheatEntry>
+    <CheatEntry>
+      <ID>6</ID>
+      <Description>"mapBase"</Description>
+      <ShowAsHex>1</ShowAsHex>
+      <VariableType>Array of byte</VariableType>
+      <ByteLength>16</ByteLength>
+      <Address>halo1.dll+2B22744</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>9</ID>
+      <Description>"playerHandle"</Description>
+      <ShowAsHex>1</ShowAsHex>
+      <VariableType>4 Bytes</VariableType>
+      <Address>halo1.dll+29A6480</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>11</ID>
+      <Description>"playerHandle candidates"</Description>
+      <Options moAlwaysHideChildren="1" moManualExpandCollapse="1"/>
+      <GroupHeader>1</GroupHeader>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>7</ID>
+          <Description>"No description"</Description>
+          <ShowAsHex>1</ShowAsHex>
+          <VariableType>4 Bytes</VariableType>
+          <Address>halo1.dll+1E3AC10</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>8</ID>
+          <Description>"No description"</Description>
+          <ShowAsHex>1</ShowAsHex>
+          <VariableType>4 Bytes</VariableType>
+          <Address>halo1.dll+24E2C54</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>10</ID>
+          <Description>"No description"</Description>
+          <ShowAsHex>1</ShowAsHex>
+          <VariableType>4 Bytes</VariableType>
+          <Address>halo1.dll+2DA0034</Address>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
   </CheatEntries>
   <CheatCodes>
     <CodeEntry>
@@ -360,7 +404,7 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
       </After>
     </CodeEntry>
     <CodeEntry>
-      <Description>Code :call halo1.dll+B3A06C</Description>
+      <Description>Code :call halo1.dll+B3A06C &lt; Call Update Entity (1) (rare)</Description>
       <AddressString>halo1.dll+B358C1</AddressString>
       <Before>
         <Byte>0B</Byte>
@@ -562,6 +606,31 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
     </CodeEntry>
     <CodeEntry GroupHeader="1">
       <Description/>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Code :call 7FFEFFC6A06C &lt; Call Update Entity (2) (common)</Description>
+      <AddressString>halo1.dll+B35873</AddressString>
+      <Before>
+        <Byte>74</Byte>
+        <Byte>0F</Byte>
+        <Byte>41</Byte>
+        <Byte>8B</Byte>
+        <Byte>CB</Byte>
+      </Before>
+      <Actual>
+        <Byte>E8</Byte>
+        <Byte>F4</Byte>
+        <Byte>47</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>4C</Byte>
+        <Byte>8B</Byte>
+        <Byte>15</Byte>
+        <Byte>C9</Byte>
+        <Byte>C9</Byte>
+      </After>
     </CodeEntry>
   </CheatCodes>
   <UserdefinedSymbols/>

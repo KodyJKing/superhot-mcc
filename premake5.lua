@@ -18,7 +18,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.platform}"
 
 group "Dependencies"
    include "vendor/minhook"
-   include "vendor/zydis"
+   -- include "vendor/zydis"
    include "vendor/asmjit"
 group ""
 

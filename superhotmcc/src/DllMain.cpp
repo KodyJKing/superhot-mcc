@@ -3,11 +3,14 @@
 #include <filesystem>
 #include "utils/Console.hpp"
 #include "haloce/Mod.hpp"
+#include "MinHook.h"
 
 // MainThread
 DWORD WINAPI MainThread(LPVOID _hModule) {
     HMODULE hModule = (HMODULE) _hModule;
     Console::alloc();
+
+    MH_Initialize();
 
     HaloCE::Mod::init();
     while (true) {
@@ -17,6 +20,8 @@ DWORD WINAPI MainThread(LPVOID _hModule) {
         Sleep(1000 / 60);
     }
     HaloCE::Mod::free();
+
+    MH_Uninitialize();
 
     // Allow time for hooks to exit.
     Sleep(100);

@@ -18,13 +18,17 @@ project "superhotmcc"
     includedirs {
         "src",
         "../vendor/asmjit/asmjit/src",
+        "../vendor/minhook/include",
     }
 
     pchheader "pch.h"
     pchsource "pch.cpp"
     forceincludes "pch.h"
 
-    links { "asmjit" }
+    links { 
+        "asmjit",
+        "MinHook"
+    }
 
     filter "configurations:Debug"
         runtime "Debug"

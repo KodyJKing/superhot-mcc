@@ -1,0 +1,1 @@
+- Hook the update function (the one calls updateEntity). We need this to do entity independent updates like updating time-scale.
