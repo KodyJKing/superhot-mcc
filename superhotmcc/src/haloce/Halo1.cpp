@@ -46,31 +46,45 @@ namespace Halo1 {
     static const uintptr_t entityArrayOffset = 0x2D9CDF8;
     static const uintptr_t pEntityListOffset = 0x1C42248;
     // static const uintptr_t playerCamOffset = 0x2F00D64;    // Old offset
-    static const uintptr_t playerHandleOffset = 0x1DD27D0; // Old offset
+    static const uintptr_t playerHandleOffset = 0x29A6480; // Validate me!
 
     EntityList* getEntityListPointer() { return *(EntityList**) ( dllBase + pEntityListOffset ); }
     uintptr_t getEntityArrayBase() { return *(uintptr_t*) ( dllBase + entityArrayOffset ); }
     // Camera* getPlayerCameraPointer() { return (Camera*) ( dllBase + playerCamOffset ); }
-    uint32_t getPlayerHandle() { 
-        std::cout << "Error: getPlayerHandle has not been updated" << std::endl;
-        Beep( 750, 300 );
-        Beep( 750, 300 );
+    uint32_t getPlayerHandle() { return *(uint32_t*) ( dllBase + playerHandleOffset ); }
 
-        return *(uint32_t*) ( dllBase + playerHandleOffset ); 
-    }
+    // No longer includes file path, only the map name.
     char* getMapName() {
-        std::cout << "Error: getMapName has not been updated" << std::endl;
-        Beep( 750, 300 );
-        Beep( 750, 300 );
+        MapHeader* header = getMapHeader();
+        if ( !header ) return nullptr;
+        return header->mapName;
+    }
 
-        char** stringPtr = (char**) ( dllBase + 0x02C81358U ); // Old offset
-        if ( !isAllocated( (uintptr_t) stringPtr ) )
+    bool checkMapHeader(MapHeader* header) {
+        if (!header) {
+            std::cout << "Error: header is null" << std::endl;
+            return false;
+        }
+        if ( !isAllocated( (uintptr_t) header ) ) {
+            std::cout << "Error: header is not allocated" << std::endl;
+            return false;
+        }
+        if (header->magicHeader != 1751474532) {
+            std::cout << "Error: magicHeader is not 1751474532" << std::endl;
+            return false;
+        }
+        if (header->magicFooter != 1718579060) {
+            std::cout << "Error: magicFooter is not 1718579060" << std::endl;
+            std::cout << offsetof(MapHeader, magicFooter) << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    MapHeader* getMapHeader() {
+        MapHeader* result = (MapHeader*) ( dllBase + 0x2B22744U );
+        if ( !checkMapHeader( result ) )
             return nullptr;
-
-        char* result = ( *stringPtr ) + 0x0C;
-        if ( !isAllocated( (uintptr_t) result ) )
-            return nullptr;
-
         return result;
     }
 
@@ -78,19 +92,16 @@ namespace Halo1 {
         auto actualMapName = getMapName();
         if ( !actualMapName )
             return false;
-        return strncmp( mapName, actualMapName, strnlen( mapName, 256 ) ) == 0;
+        return strncmp( mapName, actualMapName, strnlen( mapName, 32 ) ) == 0;
     }
 
     uint64_t translateMapAddress( uint32_t address ) {
-        // uint64_t relocatedMapBase = *(uint64_t*) ( dllBase + 0x2F01D98U ); // Validate update and remove me.
-        // uint64_t mapBase = *(uint64_t*) ( dllBase + 0x3008370U );          // Validate update and remove me.
         uint64_t relocatedMapBase = *(uint64_t*) ( dllBase + 0x2D9CE10U );
         uint64_t mapBase = *(uint64_t*) ( dllBase + 0x2EA3410U );
         return address + ( relocatedMapBase - mapBase );
     }
 
     Tag* getTag( uint32_t tagID ) {
-        // Tag* tagArray = *(Tag**) ( dllBase + 0x1DB1390U ); // Validate update and remove me.
         Tag* tagArray = *(Tag**) ( dllBase + 0x1C34FB0U );
         return &tagArray[tagID & 0xFFFF];
     }
