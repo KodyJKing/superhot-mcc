@@ -1,1 +1,9 @@
 - Hook the update function (the one calls updateEntity). We need this to do entity independent updates like updating time-scale.
+- PlayerController
+    - Port to C++.
+    - Reverse engineer the `actions` field.
+        - Controls shoot, jump, grenade, crouch, melee, flashlight
+        - Doesn't control walk, zoom or look.
+- PlayerCamera
+    - Find in Cheat Engine.
+    - Port to C++
