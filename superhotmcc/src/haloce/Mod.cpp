@@ -9,12 +9,33 @@
 #include "asm/AsmHelper.hpp"
 #include "Mod.hpp"
 #include "Halo1.hpp"
+#include "Rewind.hpp"
 
 namespace HaloCE::Mod {
 
     namespace x86 = asmjit::x86;
 
     uintptr_t halo1 = 0;
+
+    // Returns true if the entity should be updated.
+    bool preEntityUpdate( uint32_t entityHandle, Halo1::EntityRecord* entityRecord, Halo1::Entity* entity ) {
+        Rewind::snapshot( entityRecord );
+        return true;
+    }
+
+    void postEntityUpdate( uint32_t entityHandle, Halo1::EntityRecord* entityRecord, Halo1::Entity* entity ) {
+        float globalTimeScale = 0.5f;
+        float timeScale = globalTimeScale;
+
+        if (
+            entityRecord->typeId == Halo1::TypeID_Player ||
+            Halo1::isRidingTransport( entity ) ||
+            Halo1::isTransport( entity )
+        )
+            timeScale = 1.0f;
+
+        Rewind::rewind( entityRecord, timeScale, globalTimeScale );
+    }
 
     namespace FunctionHooks {
         typedef uint64_t (*updateEntity_t)( uint32_t entityHandle );
@@ -24,11 +45,13 @@ namespace HaloCE::Mod {
             if (!rec) return oUpdateEntity( entityHandle);
             auto entity = rec->entity();
             if (!entity) return oUpdateEntity( entityHandle );
-            Halo1::EntityCategory cat = (Halo1::EntityCategory) entity->entityCategory;
-            if (cat == Halo1::EntityCategory_Biped) {
-                return 1; // No updates for bipeds.
-            }
-            return oUpdateEntity( entityHandle );
+
+            uint64_t result = 1;
+            if ( preEntityUpdate( entityHandle, rec, entity ) )
+                result = oUpdateEntity( entityHandle );
+            postEntityUpdate( entityHandle, rec, entity );
+
+            return result;
         }
 
         void init() {
@@ -96,7 +119,7 @@ namespace HaloCE::Mod {
         }
     }
 
-    void printExtraDebugInfo();
+    void printInitDebugInfo();
 
     void init() {
         const std::string moduleName = "halo1.dll";
@@ -106,59 +129,70 @@ namespace HaloCE::Mod {
         Halo1::init();
 
         FunctionHooks::init();
-        JumpHooks::init();
+        // JumpHooks::init();
 
-        printExtraDebugInfo();
+        printInitDebugInfo();
     }
 
     void free() {
         FunctionHooks::free();
-        JumpHooks::free();
+        // JumpHooks::free();
     }
 
-    void printExtraDebugInfo() {
-        // Print offset of Entity.entityCategory
-        std::cout << "Entity.entityCategory offset: " << (void*) offsetof( Halo1::Entity, entityCategory ) << std::endl;
+    void printInitDebugInfo() {
+        // std::cout << "Entity.entityCategory offset: " << (void*) offsetof( Halo1::Entity, entityCategory ) << std::endl;
+
+        // std::cout << "pos offset: " << (void*) offsetof( Halo1::Camera, pos ) << std::endl;
+        // std::cout << "fov offset: " << (void*) offsetof( Halo1::Camera, fov ) << std::endl;
+        // std::cout << "fwd offset: " << (void*) offsetof( Halo1::Camera, fwd ) << std::endl;
+        // std::cout << "up offset: " << (void*) offsetof( Halo1::Camera, up ) << std::endl;
+
+        std::cout << "animFrame offset: " << (void*) offsetof( Halo1::Entity, animFrame ) << std::endl;
+    }
+
+    void printDebugInfo() {
+        // Print player camera pointer.
+        // std::cout << "Player camera: " << (void*) Halo1::getPlayerCameraPointer() << std::endl;
+
+        // Print player handle
+        // std::cout << "Player handle: " << (void*) Halo1::getPlayerHandle() << std::endl;
+
+        // // Print isGameLoaded.
+        // std::cout << "isGameLoaded: " << Halo1::isGameLoaded() << std::endl;
+
+        // Print all entity pointers.
+        // std::cout << std::endl;
+        // Halo1::foreachEntityRecord( []( Halo1::EntityRecord* entityRecord ) {
+        //     if ( !entityRecord ) 
+        //         return true;
+
+        //     Halo1::Entity* entity = entityRecord->entity();
+        //     std::cout << "Entity: " << (void*) entity << std::endl;
+
+        //     // Print entity tag resource path.
+        //     if (entity) {
+        //         char* resourcePath = entity->getTagResourcePath();
+        //         if ( resourcePath )
+        //             std::cout << "Tag: " << resourcePath << std::endl;
+        //     }
+
+        //     std::cout << std::endl;
+
+        //     return true;
+        // });
+
+        // // Print map header pointer.
+        // auto mapHeader = Halo1::getMapHeader();
+        // std::cout << "Map header: " << (void*) mapHeader << std::endl;
+        // if ( mapHeader ) {
+        //     std::cout << "Map name at: " << (void*) mapHeader->mapName << std::endl;
+        //     std::cout << "Map name: " << mapHeader->mapName << std::endl;
+        // }
     }
 
     void modThreadUpdate() {
         if ( GetAsyncKeyState( VK_F1 ) & 1 ) {
-
-            // Print player handle
-            std::cout << "Player handle: " << (void*) Halo1::getPlayerHandle() << std::endl;
-
-            // // Print isGameLoaded.
-            // std::cout << "isGameLoaded: " << Halo1::isGameLoaded() << std::endl;
-
-            // Print all entity pointers.
-            // std::cout << std::endl;
-            // Halo1::foreachEntityRecord( []( Halo1::EntityRecord* entityRecord ) {
-            //     if ( !entityRecord ) 
-            //         return true;
-
-            //     Halo1::Entity* entity = entityRecord->entity();
-            //     std::cout << "Entity: " << (void*) entity << std::endl;
-
-            //     // Print entity tag resource path.
-            //     if (entity) {
-            //         char* resourcePath = entity->getTagResourcePath();
-            //         if ( resourcePath )
-            //             std::cout << "Tag: " << resourcePath << std::endl;
-            //     }
-
-            //     std::cout << std::endl;
-
-            //     return true;
-            // });
-
-            // // Print map header pointer.
-            // auto mapHeader = Halo1::getMapHeader();
-            // std::cout << "Map header: " << (void*) mapHeader << std::endl;
-            // if ( mapHeader ) {
-            //     std::cout << "Map name at: " << (void*) mapHeader->mapName << std::endl;
-            //     std::cout << "Map name: " << mapHeader->mapName << std::endl;
-            // }
-
+            printDebugInfo();
         }
     }
 

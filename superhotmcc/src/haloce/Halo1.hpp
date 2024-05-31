@@ -3,26 +3,20 @@
 #include <stdint.h>
 #include <functional>
 #include <string>
+#include "math/Vectors.hpp"
 
 namespace Halo1 {
 
-    // Todo: Move this into a separate file.
-    struct Vec3 {
-        float x, y, z;
-        std::string toString() {
-            return "Vec( " + std::to_string( x ) + ", " + std::to_string( y ) + ", " + std::to_string( z ) + " )";
-        }
+    #pragma pack(push, 1)
+    struct Camera {
+        char pad0[4];
+        Vec3 pos;
+        char pad1[16];
+        float fov;
+        Vec3 fwd;
+        Vec3 up;
     };
-
-    class Camera {
-        public:
-        Vec3 pos; 
-        char pad_000C[16]; 
-        uint32_t N00000163; 
-        Vec3 fwd; 
-        Vec3 up; 
-        float fov; 
-    }; 
+    #pragma pack(pop)
 
     // Thanks to Kavawuvi for documentation on the map format and Tag structure.
     class Tag {
@@ -133,6 +127,7 @@ namespace Halo1 {
         char pad1[0x794];
         uint32_t magicFooter; // Should be 1718579060 ('foot' in ascii fourcc)
     };
+    #pragma pack(pop)
 
     // =======================================================
 

@@ -8,19 +8,18 @@ Grenade counts live on the player entity, so the quickest way to find the player
 
 The `damageEntity` function is an important entry point for analysis. After you found the player entity, you can find their health at offset `0x9C` and their shield at offset `0xA0`.
 
+## EntityArray and EntityRecordArray
+
+Rather than passing around raw pointers, halo uses 32-bit handles which are used to index entities. We need two globals to translate handles to pointers: `EntityArray` and `EntityRecordArray`. You can find these in the `damageEntity` function. The first thing the function does is translate the handle for the damaged entity to a pointer. The handle is the first parameter to the function.
+
+See [[Entity Handle to Entity Pointer]] for the specifics of how lookup works. Also see `Halo1.cpp:getEntityPointer` and `Halo1.cpp:getEntityListPointer` (EntityRecordArray is also called EntityList for historical reasons).
+
 ## Player handle global
 
 Set a breakpoint at the start of the damage entity function and print `RCX` (the first parameter) to find the player handle.
 
 There should be a global that holds the player entity handle. When you scan for it, there will be a few results. You need to test on a few levels to find the correct one.
 
-## EntityArray and EntityRecordArray
-
-Since halo doesn't pass raw pointers around, you will need a way to translate entity handles to entity pointers. The begining of the `damageEntity` function should contain an example of this translation code. The damaged entity handle will be the first parameter to the function.
-
-`EntityRecordArray` contains a list of `EntityRecord`s, which among other things, contain an offset into the `EntityArray`, which contains the actual entity data. `EntityRecord.entityArrayOffset` is at offset `0x8`. `EntityRecord` is 12 bytes long.
-
-See [[Entity Handle to Entity Pointer]] for the specifics of how lookup works. Also see `Halo1.cpp:getEntityPointer` and `Halo1.cpp:getEntityListPointer` (EntityRecordArray is also called EntityList for historical reasons).
 
 ## TagArray
 
@@ -28,7 +27,7 @@ There should be a global that points to the map's tag array.
 
 To find this, look for instructions that access the first field of any entity (the entity's tagId). Load that function up in Ghidra and look for a calculation that adds that field to a global. You may have to step inside a function call to find the global.
 
-See the Tag structure in `Halo1.hpp:Tag`.
+See `Halo1.hpp:Tag` and `Halo1.cpp:getTag`.
 
 ## Map address translation
 
@@ -36,18 +35,13 @@ Things like tag data and tag names are stored in the map file. Tag headers point
 
 ## UpdateEntity and Update functions
 
-To find this function, set a breakpoint in `damageEntity`. Step out of the function several times (atleast 6), saving each call in your Cheat Engine address list. After seeing an indirect call, stepping out one more time will take you into the updateEntity function (this could change).
+To find `updateEntity`, set a breakpoint in `damageEntity`. Step out of the function several times (atleast 6), saving each call in your Cheat Engine address list. After seeing an indirect call, stepping out one more time will take you into the updateEntity function (this could change).
 
-The call right above updateEntity will be the update function.
+The call right above `updateEntity` will be the `update` function.
 
 ## PlayerController
 
 `PlayerController` contains things like player angles and input data. It also contains a handle to the target under their reticle for some reason. Looking for this is the easiest way to find this structure.
-
-### Find `PlayerController.targetHandle` in memory.
-This field gives the handle to an enemy entity under your reticle if it turns your reticle red. The value is `FFFFFFFF` when no target is under the reticle. Scan for a 32-bit value with unknown initial value.
-
-#### Verifying
 
 You will find several results with the same value. 
 
@@ -56,6 +50,10 @@ Memory browse with floating point view and look for one that seems to contain yo
 The `PlayerController.targetHandle` should be at offset `0x1A4`, so verify that some instruction accesses the address you found with that offset.
 
 The correct structure will also have the player handle at offset `0x10`.
+
+## Camera
+
+The easiest way to find the camera structure is to scan for fov changes as you change zoom on a sniper/pistol. The fov is stored in radians. It is at offset `0x20` from the camera structure. The camera is a global, so it will be at a static address (green results in Cheat Engine). You may see another fov value before the camera structure. The one you want will be after position, forward and up vectors. See `Halo1.hpp:Camera`.
 
 # See Also
 

@@ -355,6 +355,30 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
         <Byte>FF</Byte>
       </After>
     </CodeEntry>
+    <CodeEntry>
+      <Description>Read Camera.fov :movups xmm0,[rax+20]</Description>
+      <AddressString>halo1.dll+B162FE</AddressString>
+      <Before>
+        <Byte>0F</Byte>
+        <Byte>11</Byte>
+        <Byte>4C</Byte>
+        <Byte>1A</Byte>
+        <Byte>28</Byte>
+      </Before>
+      <Actual>
+        <Byte>0F</Byte>
+        <Byte>10</Byte>
+        <Byte>40</Byte>
+        <Byte>20</Byte>
+      </Actual>
+      <After>
+        <Byte>42</Byte>
+        <Byte>0F</Byte>
+        <Byte>11</Byte>
+        <Byte>44</Byte>
+        <Byte>1A</Byte>
+      </After>
+    </CodeEntry>
     <CodeEntry GroupHeader="1">
       <Description/>
     </CodeEntry>
@@ -765,7 +789,12 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
       </After>
     </CodeEntry>
   </CheatCodes>
-  <UserdefinedSymbols/>
+  <UserdefinedSymbols>
+    <SymbolEntry>
+      <Name>speedhack_wantedspeed</Name>
+      <Address>20DEEE60000</Address>
+    </SymbolEntry>
+  </UserdefinedSymbols>
   <Structures StructVersion="2">
     <Structure Name="Entity" AutoFill="0" AutoCreate="1" DefaultHex="0" AutoDestroy="0" DoNotSaveLocal="0" RLECompression="1" AutoCreateStructsize="4096">
       <Elements>
@@ -1184,6 +1213,22 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
         <Element Offset="873" Vartype="Byte" Bytesize="1" RLECount="3" OffsetHex="00000369" DisplayMethod="unsigned integer"/>
         <Element Offset="876" Vartype="4 Bytes" Bytesize="4" OffsetHex="0000036C" DisplayMethod="hexadecimal"/>
         <Element Offset="880" Vartype="4 Bytes" Bytesize="4" RLECount="804" OffsetHex="00000370" DisplayMethod="unsigned integer"/>
+      </Elements>
+    </Structure>
+    <Structure Name="Camera" AutoFill="0" AutoCreate="1" DefaultHex="0" AutoDestroy="0" DoNotSaveLocal="0" RLECompression="1" AutoCreateStructsize="4096">
+      <Elements>
+        <Element Offset="0" Vartype="4 Bytes" Bytesize="4" OffsetHex="00000000" DisplayMethod="hexadecimal"/>
+        <Element Offset="4" Vartype="Float" Bytesize="4" OffsetHex="00000004" Description="pos.x" DisplayMethod="unsigned integer"/>
+        <Element Offset="8" Vartype="Float" Bytesize="4" OffsetHex="00000008" Description="pos.y" DisplayMethod="unsigned integer"/>
+        <Element Offset="12" Vartype="Float" Bytesize="4" OffsetHex="0000000C" Description="pos.z" DisplayMethod="unsigned integer"/>
+        <Element Offset="16" Vartype="Float" Bytesize="4" RLECount="4" OffsetHex="00000010" DisplayMethod="unsigned integer"/>
+        <Element Offset="32" Vartype="Float" Bytesize="4" OffsetHex="00000020" Description="fov" DisplayMethod="unsigned integer"/>
+        <Element Offset="36" Vartype="Float" Bytesize="4" OffsetHex="00000024" Description="fwd.x" DisplayMethod="unsigned integer"/>
+        <Element Offset="40" Vartype="Float" Bytesize="4" OffsetHex="00000028" Description="fwd.y" DisplayMethod="unsigned integer"/>
+        <Element Offset="44" Vartype="Float" Bytesize="4" OffsetHex="0000002C" Description="fwd.z" DisplayMethod="unsigned integer"/>
+        <Element Offset="48" Vartype="Float" Bytesize="4" OffsetHex="00000030" Description="up.x" DisplayMethod="unsigned integer"/>
+        <Element Offset="52" Vartype="Float" Bytesize="4" OffsetHex="00000034" Description="up.y" DisplayMethod="unsigned integer"/>
+        <Element Offset="56" Vartype="Float" Bytesize="4" OffsetHex="00000038" Description="up.z" DisplayMethod="unsigned integer"/>
       </Elements>
     </Structure>
   </Structures>
