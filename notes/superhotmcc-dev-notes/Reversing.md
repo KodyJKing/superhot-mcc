@@ -2,7 +2,7 @@ Document the process of reversing *everything* here so we can find things again 
 
 ## Player entity
 
-Grenade counts live on the player entity, so the quickest way to find the player entity is to throw grenades and scan for changes.
+Grenade counts live on the player entity. Finding them is the fastest way to find the player entity. They are single byte values. Frags should be at offset `0x2FC`.
 
 ## Damage entity function
 
