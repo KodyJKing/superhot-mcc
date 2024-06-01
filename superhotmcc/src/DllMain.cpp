@@ -4,6 +4,7 @@
 #include "utils/Console.hpp"
 #include "haloce/Mod.hpp"
 #include "MinHook.h"
+#include "overlay/Overlay.hpp"
 
 // MainThread
 DWORD WINAPI MainThread(LPVOID _hModule) {
@@ -11,6 +12,8 @@ DWORD WINAPI MainThread(LPVOID _hModule) {
     Console::alloc();
 
     MH_Initialize();
+
+    // Overlay::init();
 
     HaloCE::Mod::init();
     while (true) {
@@ -20,6 +23,8 @@ DWORD WINAPI MainThread(LPVOID _hModule) {
         Sleep(1000 / 60);
     }
     HaloCE::Mod::free();
+
+    // Overlay::free();
 
     MH_Uninitialize();
 
