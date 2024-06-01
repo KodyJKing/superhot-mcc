@@ -22,57 +22,13 @@ using namespace Halo1;
 #define REWIND_INCREASES(field, type) REWIND_INCREASES_WITH_TIMESCALE(field, type, timescale)
 #define REWIND_DECREASES(field, type) REWIND_DECREASES_WITH_TIMESCALE(field, type, timescale)
 
-#define SAVE(field) snap.##field = entity->field
-
 namespace Rewind {
 
-    void snapshot( EntityRecord* rec, Snapshot& snap ) {
+    void rewindAnimFrame( Entity* entity, float timescale, Entity& snap );
+    void rewindRotation( Entity* entity, float timescale, Entity& snap );
+    void rewindFireCooldown( Entity* entity, float timescale, Entity& snap );
 
-        Entity* entity = getEntityPointer( rec );
-        if ( !entity )
-            return;
-
-        SAVE( pos );
-        SAVE( vel );
-        SAVE( parentHandle );
-        SAVE( animFrame );
-        SAVE( ageMilis );
-
-        switch ( (EntityCategory) entity->entityCategory ) {
-            case EntityCategory_Biped: {
-                SAVE( shield );
-                break;
-            }
-            case EntityCategory_Weapon: {
-                SAVE( ticksSinceLastFired );
-                SAVE( heat );
-                break;
-            }
-            case EntityCategory_Projectile: {
-                SAVE( projectileAge );
-                SAVE( fuse );
-                SAVE( fwd );
-                SAVE( up );
-                break;
-            }
-            case EntityCategory_Vehicle: {
-                SAVE( angularVelocity );
-                SAVE( fwd );
-                SAVE( up );
-                break;
-            }
-            default: {
-                break;
-            }
-        }
-
-    }
-
-    void rewindAnimFrame( Entity* entity, float timescale, Snapshot& snap );
-    void rewindRotation( Entity* entity, float timescale, Snapshot& snap );
-    void rewindFireCooldown( Entity* entity, float timescale, Snapshot& snap );
-
-    void rewind( EntityRecord* rec, float timescale, float globalTimescale, Snapshot& snap ) {
+    void rewind( EntityRecord* rec, float timescale, float globalTimescale, Entity& snap ) {
             
         Entity* entity = getEntityPointer( rec );
         if ( !entity )
@@ -127,7 +83,7 @@ namespace Rewind {
 
     }
 
-    void rewindFireCooldown( Entity* entity, float timescale, Snapshot& snap ) {
+    void rewindFireCooldown( Entity* entity, float timescale, Entity& snap ) {
         static const float timescaleThreshold = 0.6f;
         if ( timescale > timescaleThreshold )
             return;
@@ -140,7 +96,7 @@ namespace Rewind {
         }
     }
 
-    void rewindAnimFrame( Entity* entity, float timescale, Snapshot& snap ) {
+    void rewindAnimFrame( Entity* entity, float timescale, Entity& snap ) {
         auto dAnimFrame = entity->animFrame - snap.animFrame;
         if ( dAnimFrame > 0 ) {
             float framesToAdd = floorf( dAnimFrame * timescale );
@@ -152,7 +108,7 @@ namespace Rewind {
         }
     }
 
-    void rewindRotation( Entity* entity, float timescale, Snapshot& snap) {
+    void rewindRotation( Entity* entity, float timescale, Entity& snap) {
         entity->fwd = Vec3::lerp( snap.fwd, entity->fwd, timescale ).normalize();
         entity->up = Vec3::lerp( snap.up, entity->up, timescale ).rejection(entity->fwd).normalize();
     }

@@ -17,41 +17,37 @@ namespace HaloCE::Mod {
 
     uintptr_t halo1 = 0;
 
-    // Returns true if the entity should be updated.
-    bool preEntityUpdate( uint32_t entityHandle, Halo1::EntityRecord* entityRecord, Halo1::Entity* entity, Rewind::Snapshot& snap ) {
-        Rewind::snapshot( entityRecord, snap );
-        return true;
-    }
-
-    void postEntityUpdate( uint32_t entityHandle, Halo1::EntityRecord* entityRecord, Halo1::Entity* entity, Rewind::Snapshot& snap ) {
-        float globalTimeScale = 0.5f;
-        float timeScale = globalTimeScale;
-
-        if (
-            entityRecord->typeId == Halo1::TypeID_Player ||
-            Halo1::isRidingTransport( entity ) ||
-            Halo1::isTransport( entity )
-        )
-            timeScale = 1.0f;
-
-        Rewind::rewind( entityRecord, timeScale, globalTimeScale, snap );
-    }
-
     namespace FunctionHooks {
+        
         typedef uint64_t (*updateEntity_t)( uint32_t entityHandle );
-        updateEntity_t oUpdateEntity = nullptr;
+
+        updateEntity_t originalUpdateEntity = nullptr;
+
         uint64_t hkUpdateEntity( uint32_t entityHandle ) {
+
             auto rec = Halo1::getEntityRecord( entityHandle );
-            if (!rec) return oUpdateEntity( entityHandle);
+            if (!rec) 
+                return originalUpdateEntity( entityHandle);
             auto entity = rec->entity();
-            if (!entity) return oUpdateEntity( entityHandle );
+            if (!entity) 
+                return originalUpdateEntity( entityHandle );
 
-            Rewind::Snapshot snap;
+            // Snapshot the entity.
+            Halo1::Entity snap = *entity;
 
-            uint64_t result = 1;
-            if ( preEntityUpdate( entityHandle, rec, entity, snap ) )
-                result = oUpdateEntity( entityHandle );
-            postEntityUpdate( entityHandle, rec, entity, snap );
+            uint64_t result = originalUpdateEntity( entityHandle );
+
+            // Internpolate old and new entity states according to timescale.
+            float globalTimeScale = 0.25f;
+            float timeScale = globalTimeScale;
+            if (
+                rec->typeId == Halo1::TypeID_Player ||
+                Halo1::isRidingTransport( entity ) ||
+                Halo1::isTransport( entity )
+            )
+                timeScale = 1.0f;
+            Rewind::rewind( rec, timeScale, globalTimeScale, snap );
+
 
             return result;
         }
@@ -59,13 +55,14 @@ namespace HaloCE::Mod {
         void init() {
             void* pUpdateEntity = (void*) (halo1 + 0xB3A06CU);
             std::cout << "UpdateEntity: " << pUpdateEntity << std::endl;
-            MH_CreateHook( pUpdateEntity, hkUpdateEntity, (void**) &oUpdateEntity );
+            MH_CreateHook( pUpdateEntity, hkUpdateEntity, (void**) &originalUpdateEntity );
             MH_EnableHook( pUpdateEntity );
         }
 
         void free() {
-            MH_DisableHook( (void*) oUpdateEntity );
+            MH_DisableHook( (void*) originalUpdateEntity );
         }
+
     }
 
     // This may be going away. We only really need to hook the updateEntity function.
