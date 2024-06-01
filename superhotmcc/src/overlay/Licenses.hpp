@@ -1,3 +1,10 @@
+/*
+   Use these regex replacements on new licenses:
+      \" -> \\"
+      \\ -> \\\\
+      \n -> \\n\\\n
+*/
+
 namespace Licenses {
 
 const char* imGui = 
