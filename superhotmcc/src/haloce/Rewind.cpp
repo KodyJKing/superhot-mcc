@@ -1,46 +1,32 @@
 #include "Halo1.hpp"
 #include <iostream>
+#include "Rewind.hpp"
 
 using namespace Halo1;
 
 #define REWIND_WITH_TIMESCALE(field, type, timescale) \
-    { auto delta_##field = entity->field - old_##field; \
-    entity->field = old_##field + (type)(delta_##field * timescale); }
+    { auto delta_##field = entity->field - snap.##field; \
+    entity->field = snap.##field + (type)(delta_##field * timescale); }
 
 #define REWIND_INCREASES_WITH_TIMESCALE(field, type, timescale) \
-    { auto delta_##field = entity->field - old_##field; \
+    { auto delta_##field = entity->field - snap.##field; \
     if (delta_##field > (type) 0) \
-        entity->field = old_##field + (type)(delta_##field * timescale); }
+        entity->field = snap.##field + (type)(delta_##field * timescale); }
 
 #define REWIND_DECREASES_WITH_TIMESCALE(field, type, timescale) \
-    { auto delta_##field = entity->field - old_##field; \
+    { auto delta_##field = entity->field - snap.##field; \
     if (delta_##field < (type) 0) \
-        entity->field = old_##field + (type)(delta_##field * timescale); }
+        entity->field = snap.##field + (type)(delta_##field * timescale); }
 
 #define REWIND(field, type) REWIND_WITH_TIMESCALE(field, type, timescale)
 #define REWIND_INCREASES(field, type) REWIND_INCREASES_WITH_TIMESCALE(field, type, timescale)
 #define REWIND_DECREASES(field, type) REWIND_DECREASES_WITH_TIMESCALE(field, type, timescale)
 
-#define SAVE(field) old_##field = entity->field
+#define SAVE(field) snap.##field = entity->field
 
 namespace Rewind {
 
-    // Fields
-    static Vec3 old_pos, old_vel, old_fwd, old_up, old_angularVelocity;
-    static float old_fuse, old_heat, old_projectileAge, old_shield;
-    static uint32_t old_parentHandle, old_ageMilis;
-    static uint16_t old_animFrame;
-    static uint8_t old_ticksSinceLastFired;
-
-    // struct Snapshot {
-    //     Vec3 pos, vel, fwd, up, angularVelocity;
-    //     float fuse, heat, projectileAge, shield;
-    //     uint32_t parentHandle, ageMilis;
-    //     uint16_t animFrame;
-    //     uint8_t ticksSinceLastFired;
-    // };
-
-    void snapshot( EntityRecord* rec ) {
+    void snapshot( EntityRecord* rec, Snapshot& snap ) {
 
         Entity* entity = getEntityPointer( rec );
         if ( !entity )
@@ -82,23 +68,23 @@ namespace Rewind {
 
     }
 
-    void rewindAnimFrame( Entity* entity, float timescale );
-    void rewindRotation( Entity* entity, float timescale );
-    void rewindFireCooldown( Entity* entity, float timescale );
+    void rewindAnimFrame( Entity* entity, float timescale, Snapshot& snap );
+    void rewindRotation( Entity* entity, float timescale, Snapshot& snap );
+    void rewindFireCooldown( Entity* entity, float timescale, Snapshot& snap );
 
-    void rewind( EntityRecord* rec, float timescale, float globalTimescale ) {
+    void rewind( EntityRecord* rec, float timescale, float globalTimescale, Snapshot& snap ) {
             
         Entity* entity = getEntityPointer( rec );
         if ( !entity )
             return;
         
         // Position isn't updated when an entity is mounted, so don't rewind position on unmount.
-        if ( entity->parentHandle == old_parentHandle )
+        if ( entity->parentHandle == snap.parentHandle )
             REWIND( pos, Vec3 );
 
         REWIND( vel, Vec3 );
 
-        rewindAnimFrame( entity, timescale );
+        rewindAnimFrame( entity, timescale, snap );
         REWIND( ageMilis, uint32_t );
 
         switch ( (EntityCategory) entity->entityCategory ) {
@@ -110,13 +96,13 @@ namespace Rewind {
             case EntityCategory_Weapon: {
                 // Weapon heat shouldn't update when player isn't moving.
                 REWIND_DECREASES_WITH_TIMESCALE( heat, float, globalTimescale );
-                rewindFireCooldown( entity, globalTimescale );
+                rewindFireCooldown( entity, globalTimescale, snap );
                 break;
             }
             case EntityCategory_Projectile: {
                 REWIND( projectileAge, float );
                 REWIND( fuse, float );
-                rewindRotation( entity, timescale );
+                rewindRotation( entity, timescale, snap );
 
                 // Do not allow these projectiles to accelerate / decelerate.
                 if (
@@ -125,13 +111,13 @@ namespace Rewind {
                     entity->fromResourcePath( "weapons\\plasma rifle\\bolt" ) ||
                     entity->fromResourcePath( "vehicles\\scorpion\\bullet" )
                     )
-                    entity->vel = old_vel;
+                    entity->vel = snap.vel;
 
                 break;
             }
             case EntityCategory_Vehicle: {
                 REWIND( angularVelocity, Vec3 );
-                rewindRotation( entity, timescale );
+                rewindRotation( entity, timescale, snap );
                 break;
             }
             default: {
@@ -141,41 +127,34 @@ namespace Rewind {
 
     }
 
-    void rewindFireCooldown( Entity* entity, float timescale ) {
+    void rewindFireCooldown( Entity* entity, float timescale, Snapshot& snap ) {
         static const float timescaleThreshold = 0.6f;
         if ( timescale > timescaleThreshold )
             return;
-        auto diff = entity->ticksSinceLastFired - old_ticksSinceLastFired;
+        auto diff = entity->ticksSinceLastFired - snap.ticksSinceLastFired;
         if ( diff == 1 ) {
-            entity->ticksSinceLastFired = old_ticksSinceLastFired;
+            entity->ticksSinceLastFired = snap.ticksSinceLastFired;
             float u = (float) rand() / RAND_MAX;
             if ( u < timescale )
                 entity->ticksSinceLastFired++;
         }
     }
 
-    void rewindAnimFrame( Entity* entity, float timescale ) {
-
-        auto dAnimFrame = entity->animFrame - old_animFrame;
-
+    void rewindAnimFrame( Entity* entity, float timescale, Snapshot& snap ) {
+        auto dAnimFrame = entity->animFrame - snap.animFrame;
         if ( dAnimFrame > 0 ) {
-
-            uint16_t framesToAdd = (uint16_t) floorf( dAnimFrame * timescale );
-
+            float framesToAdd = floorf( dAnimFrame * timescale );
             float lostFrames = dAnimFrame * timescale - framesToAdd;
             float u = (float) rand() / RAND_MAX;
-
             if ( u < lostFrames )
                 framesToAdd++;
-
-            entity->animFrame = old_animFrame + framesToAdd;
+            entity->animFrame = snap.animFrame + (uint16_t) framesToAdd;
         }
-
     }
 
-    void rewindRotation( Entity* entity, float timescale ) {
-        entity->fwd = Vec3::lerp( old_fwd, entity->fwd, timescale ).normalize();
-        entity->up = Vec3::lerp( old_up, entity->up, timescale ).rejection(entity->fwd).normalize();
+    void rewindRotation( Entity* entity, float timescale, Snapshot& snap) {
+        entity->fwd = Vec3::lerp( snap.fwd, entity->fwd, timescale ).normalize();
+        entity->up = Vec3::lerp( snap.up, entity->up, timescale ).rejection(entity->fwd).normalize();
     }
 
 }

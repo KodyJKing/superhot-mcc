@@ -124,6 +124,12 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
       <Options moManualExpandCollapse="1"/>
       <GroupHeader>1</GroupHeader>
     </CheatEntry>
+    <CheatEntry>
+      <ID>31</ID>
+      <Description>"animFrame"</Description>
+      <VariableType>2 Bytes</VariableType>
+      <Address>264BDB028BC+8E</Address>
+    </CheatEntry>
   </CheatEntries>
   <CheatCodes>
     <CodeEntry>
@@ -786,6 +792,84 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
         <Byte>40</Byte>
         <Byte>58</Byte>
         <Byte>48</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry GroupHeader="1">
+      <Description/>
+    </CodeEntry>
+    <CodeEntry GroupHeader="1">
+      <Description>Set Entity.animFrame</Description>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Code :mov [rbx+02],r8w</Description>
+      <AddressString>halo1.dll+C417C1</AddressString>
+      <Before>
+        <Byte>00</Byte>
+        <Byte>66</Byte>
+        <Byte>45</Byte>
+        <Byte>03</Byte>
+        <Byte>C1</Byte>
+      </Before>
+      <Actual>
+        <Byte>66</Byte>
+        <Byte>44</Byte>
+        <Byte>89</Byte>
+        <Byte>43</Byte>
+        <Byte>02</Byte>
+      </Actual>
+      <After>
+        <Byte>0F</Byte>
+        <Byte>B7</Byte>
+        <Byte>42</Byte>
+        <Byte>22</Byte>
+        <Byte>66</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Code :mov [rax],cx</Description>
+      <AddressString>halo1.dll+B0B054</AddressString>
+      <Before>
+        <Byte>0F</Byte>
+        <Byte>44</Byte>
+        <Byte>C1</Byte>
+        <Byte>33</Byte>
+        <Byte>C9</Byte>
+      </Before>
+      <Actual>
+        <Byte>66</Byte>
+        <Byte>89</Byte>
+        <Byte>08</Byte>
+      </Actual>
+      <After>
+        <Byte>C3</Byte>
+        <Byte>48</Byte>
+        <Byte>89</Byte>
+        <Byte>5C</Byte>
+        <Byte>24</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Code :mov [rbx+02],cx</Description>
+      <AddressString>halo1.dll+C4180C</AddressString>
+      <Before>
+        <Byte>00</Byte>
+        <Byte>41</Byte>
+        <Byte>0F</Byte>
+        <Byte>B7</Byte>
+        <Byte>CC</Byte>
+      </Before>
+      <Actual>
+        <Byte>66</Byte>
+        <Byte>89</Byte>
+        <Byte>4B</Byte>
+        <Byte>02</Byte>
+      </Actual>
+      <After>
+        <Byte>EB</Byte>
+        <Byte>2D</Byte>
+        <Byte>41</Byte>
+        <Byte>0F</Byte>
+        <Byte>BF</Byte>
       </After>
     </CodeEntry>
   </CheatCodes>

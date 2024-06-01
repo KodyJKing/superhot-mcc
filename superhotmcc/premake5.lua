@@ -13,12 +13,18 @@ project "superhotmcc"
         "pch.cpp",
         "src/**.hpp",
         "src/**.cpp",
+        "../vendor/imgui/*.h", 
+        "../vendor/imgui/*.cpp",
+        "../vendor/imgui/backends/imgui_impl_win32.*",
+        "../vendor/imgui/backends/imgui_impl_dx11.*",
     }
 
     includedirs {
         "src",
         "../vendor/asmjit/asmjit/src",
         "../vendor/minhook/include",
+        "../vendor/imgui/backends",
+        "../vendor/imgui",
     }
 
     pchheader "pch.h"

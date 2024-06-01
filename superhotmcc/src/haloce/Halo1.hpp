@@ -97,7 +97,7 @@ namespace Halo1 {
         Tag* tag();
         char* getTagResourcePath();
         bool fromResourcePath( const char* str );
-    }; 
+    };
 
     class EntityRecord {
         public:

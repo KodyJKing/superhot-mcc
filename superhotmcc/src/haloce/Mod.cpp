@@ -18,12 +18,12 @@ namespace HaloCE::Mod {
     uintptr_t halo1 = 0;
 
     // Returns true if the entity should be updated.
-    bool preEntityUpdate( uint32_t entityHandle, Halo1::EntityRecord* entityRecord, Halo1::Entity* entity ) {
-        Rewind::snapshot( entityRecord );
+    bool preEntityUpdate( uint32_t entityHandle, Halo1::EntityRecord* entityRecord, Halo1::Entity* entity, Rewind::Snapshot& snap ) {
+        Rewind::snapshot( entityRecord, snap );
         return true;
     }
 
-    void postEntityUpdate( uint32_t entityHandle, Halo1::EntityRecord* entityRecord, Halo1::Entity* entity ) {
+    void postEntityUpdate( uint32_t entityHandle, Halo1::EntityRecord* entityRecord, Halo1::Entity* entity, Rewind::Snapshot& snap ) {
         float globalTimeScale = 0.5f;
         float timeScale = globalTimeScale;
 
@@ -34,7 +34,7 @@ namespace HaloCE::Mod {
         )
             timeScale = 1.0f;
 
-        Rewind::rewind( entityRecord, timeScale, globalTimeScale );
+        Rewind::rewind( entityRecord, timeScale, globalTimeScale, snap );
     }
 
     namespace FunctionHooks {
@@ -46,10 +46,12 @@ namespace HaloCE::Mod {
             auto entity = rec->entity();
             if (!entity) return oUpdateEntity( entityHandle );
 
+            Rewind::Snapshot snap;
+
             uint64_t result = 1;
-            if ( preEntityUpdate( entityHandle, rec, entity ) )
+            if ( preEntityUpdate( entityHandle, rec, entity, snap ) )
                 result = oUpdateEntity( entityHandle );
-            postEntityUpdate( entityHandle, rec, entity );
+            postEntityUpdate( entityHandle, rec, entity, snap );
 
             return result;
         }
