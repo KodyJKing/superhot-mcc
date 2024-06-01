@@ -1,17 +1,7 @@
 #include "Halo1.hpp"
 #include <Windows.h>
 #include <iostream>
-
-namespace {
-
-    bool isAllocated( uintptr_t address ) {
-        MEMORY_BASIC_INFORMATION mbi;
-        if ( !VirtualQuery( (LPCVOID) address, &mbi, sizeof( mbi ) ) )
-            return false;
-        return mbi.State == MEM_COMMIT;
-    }
-
-}
+#include "memory/Memory.hpp"
 
 namespace Halo1 {
 
@@ -65,7 +55,7 @@ namespace Halo1 {
             std::cout << "Error: header is null" << std::endl;
             return false;
         }
-        if ( !isAllocated( (uintptr_t) header ) ) {
+        if ( !Memory::isAllocated( (uintptr_t) header ) ) {
             std::cout << "Error: header is not allocated" << std::endl;
             return false;
         }
@@ -220,8 +210,8 @@ namespace Halo1 {
 
     // =======================
 
-    bool isEntityListLoaded() { return isAllocated( (uintptr_t) getEntityListPointer() ); }
-    bool isEntityArrayLoaded() { return isAllocated( (uintptr_t) getEntityArrayBase() ); }
+    bool isEntityListLoaded() { return Memory::isAllocated( (uintptr_t) getEntityListPointer() ); }
+    bool isEntityArrayLoaded() { return Memory::isAllocated( (uintptr_t) getEntityArrayBase() ); }
     bool isGameLoaded() { return GetModuleHandleA( "halo1.dll" ) && /*Halo1::isCameraLoaded() &&*/ isEntityListLoaded() && isEntityArrayLoaded(); }
 
 }

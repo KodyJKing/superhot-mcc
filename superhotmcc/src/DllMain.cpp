@@ -10,22 +10,23 @@
 DWORD WINAPI MainThread(LPVOID _hModule) {
     HMODULE hModule = (HMODULE) _hModule;
     Console::alloc();
+    Console::toggleConsole();
 
     MH_Initialize();
-
-    // Overlay::init();
-
+    Overlay::init();
     HaloCE::Mod::init();
+    
     while (true) {
         if (GetAsyncKeyState(VK_F9) & 1)
             break;
+        if (GetAsyncKeyState(VK_F2) & 1)
+            Console::toggleConsole();
         HaloCE::Mod::modThreadUpdate();
         Sleep(1000 / 60);
     }
+    
     HaloCE::Mod::free();
-
-    // Overlay::free();
-
+    Overlay::free();
     MH_Uninitialize();
 
     // Allow time for hooks to exit.

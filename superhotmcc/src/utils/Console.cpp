@@ -20,4 +20,22 @@ namespace Console {
         fclose(f);
         FreeConsole();
     }
+
+    bool isConsoleVisible() {
+        HWND console = GetConsoleWindow();
+        return IsWindowVisible(console) && !IsIconic(console);
+    }
+
+    void toggleConsole() {
+        HWND console = GetConsoleWindow();
+        if (isConsoleVisible()) {
+            ShowWindow(console, SW_HIDE);
+        } else {
+            if (IsIconic(console))
+                ShowWindow(console, SW_RESTORE);
+            else
+                ShowWindow(console, SW_SHOW);
+            SetWindowPos(console, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+        }
+    }
 }

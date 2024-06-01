@@ -114,21 +114,21 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
       </CheatEntries>
     </CheatEntry>
     <CheatEntry>
-      <ID>30</ID>
-      <Description>"------------------------------------------------------------------"</Description>
-      <GroupHeader>1</GroupHeader>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>27</ID>
-      <Description>"tmp"</Description>
-      <Options moManualExpandCollapse="1"/>
-      <GroupHeader>1</GroupHeader>
-    </CheatEntry>
-    <CheatEntry>
       <ID>31</ID>
-      <Description>"animFrame"</Description>
-      <VariableType>2 Bytes</VariableType>
-      <Address>264BDB028BC+8E</Address>
+      <Description>"gameRunning"</Description>
+      <VariableType>Byte</VariableType>
+      <Address>"mcc-win64-shipping.exe"+3FFCA93</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>32</ID>
+      <Description>"pauseMenuOpen"</Description>
+      <VariableType>Byte</VariableType>
+      <Address>"mcc-win64-shipping.exe"+3FFCA9F</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>30</ID>
+      <Description>"=== Temporary =========================================="</Description>
+      <GroupHeader>1</GroupHeader>
     </CheatEntry>
   </CheatEntries>
   <CheatCodes>
@@ -873,12 +873,7 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
       </After>
     </CodeEntry>
   </CheatCodes>
-  <UserdefinedSymbols>
-    <SymbolEntry>
-      <Name>speedhack_wantedspeed</Name>
-      <Address>20DEEE60000</Address>
-    </SymbolEntry>
-  </UserdefinedSymbols>
+  <UserdefinedSymbols/>
   <Structures StructVersion="2">
     <Structure Name="Entity" AutoFill="0" AutoCreate="1" DefaultHex="0" AutoDestroy="0" DoNotSaveLocal="0" RLECompression="1" AutoCreateStructsize="4096">
       <Elements>

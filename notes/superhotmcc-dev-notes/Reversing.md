@@ -55,6 +55,10 @@ The correct structure will also have the player handle at offset `0x10`.
 
 The easiest way to find the camera structure is to scan for fov changes as you change zoom on a sniper/pistol. The fov is stored in radians. It is at offset `0x20` from the camera structure. The camera is a global, so it will be at a static address (green results in Cheat Engine). You may see another fov value before the camera structure. The one you want will be after position, forward and up vectors. See `Halo1.hpp:Camera`.
 
+## Is Game Paused Global
+
+Just search for 1 when paused and 0 when unpaused. You can restrict the search to `MCC-Win64-Shipping.exe` in Cheat Engine.
+
 # See Also
 
 [Kavawuvi's map file documentation](https://opencarnage.net/index.php?/topic/6693-halo-map-file-structure-revision-212/)

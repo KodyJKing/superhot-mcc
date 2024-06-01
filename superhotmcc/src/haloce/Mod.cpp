@@ -1,3 +1,4 @@
+#include "Mod.hpp"
 #include <Windows.h>
 #include <iostream>
 #include <vector>
@@ -7,7 +8,6 @@
 #include "memory/Allocation.hpp"
 #include "asm/Hook.hpp"
 #include "asm/AsmHelper.hpp"
-#include "Mod.hpp"
 #include "Halo1.hpp"
 #include "Rewind.hpp"
 
@@ -38,7 +38,7 @@ namespace HaloCE::Mod {
             uint64_t result = originalUpdateEntity( entityHandle );
 
             // Internpolate old and new entity states according to timescale.
-            float globalTimeScale = 0.25f;
+            float globalTimeScale = settings.timeScale;
             float timeScale = globalTimeScale;
             if (
                 rec->typeId == Halo1::TypeID_Player ||

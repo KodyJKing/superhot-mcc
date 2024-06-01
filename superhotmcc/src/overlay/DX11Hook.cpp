@@ -1,5 +1,5 @@
 /*
-    Contains modified code from UniversalHookX, provided by bruhmoment21 under the MIT License.
+    This is modified code from UniversalHookX, provided by bruhmoment21 under the MIT License.
 */
 
 #include <Windows.h>
