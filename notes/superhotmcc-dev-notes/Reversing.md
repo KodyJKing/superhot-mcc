@@ -6,7 +6,7 @@ Grenade counts live on the player entity. Finding them is the fastest way to fin
 
 ## Damage entity function
 
-The `damageEntity` function is an important entry point for analysis. After you found the player entity, you can find their health at offset `0x9C` and their shield at offset `0xA0`.
+The `damageEntity` function is an important entry point for analysis. After you found the player entity, you can find their health at offset `0x9C` and their shield at offset `0xA0`. Just set a data breakpoint on health and step on a grenade.
 
 ## EntityArray and EntityRecordArray
 
