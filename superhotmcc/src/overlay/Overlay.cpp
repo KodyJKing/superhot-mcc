@@ -6,10 +6,15 @@
 #include "halomcc/HaloMCC.hpp"
 #include "haloce/UI.hpp"
 #include "Licenses.hpp"
+#include "overlay/ESP.hpp"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 namespace Overlay {
+
+    struct Settings {
+        bool showESP = true;
+    } settings = {};
 
     void initializeContext(HWND targetWindow) {
         if (ImGui::GetCurrentContext( ))
@@ -40,13 +45,13 @@ namespace Overlay {
         // Tabs
         if (ImGui::BeginTabBar("SuperHot MCC Tabs")) {
             if (ImGui::BeginTabItem("Settings")) {
+                ImGui::Checkbox("ESP", &settings.showESP);
                 HaloCE::Mod::UI::settings();
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("About")) {
                 ImGui::Text("Superhot MCC 1.0.0 by Kody King");
                 credits();
-                HaloCE::Mod::UI::about();
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Debug")) {
@@ -59,12 +64,45 @@ namespace Overlay {
         ImGui::End();
     }
 
+    void esp() {
+        ESP::updateScreenSize();
+
+        ImGui::Begin(
+            "__ESP", 0,
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar |
+                ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse |
+                ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoBringToFrontOnFocus |
+                ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMouseInputs
+        );
+        {
+
+            // Set Window position to top left corner
+            ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+
+            // Set Window size to full screen
+            ImGui::SetWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y), ImGuiCond_Always);
+
+            HaloCE::Mod::UI::esp();
+        }
+        ImGui::End();
+    }
+
+    void checkHotkeys() {
+        if (ImGui::IsKeyPressed(ImGuiKey_F1, false))
+            settings.showESP = !settings.showESP;
+    }
+
     void render() {
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
+        checkHotkeys();
+
         if ( HaloMCC::isPauseMenuOpen() )
             mainModWindow();
+        if ( settings.showESP )
+            esp();
 
         ImGui::EndFrame();
     }

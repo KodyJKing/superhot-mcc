@@ -30,7 +30,7 @@ DWORD WINAPI MainThread(LPVOID _hModule) {
     MH_Uninitialize();
 
     // Allow time for hooks to exit.
-    Sleep(100);
+    Sleep(200);
 
     Console::free();
 

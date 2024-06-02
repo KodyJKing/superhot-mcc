@@ -212,6 +212,7 @@ namespace Halo1 {
 
     bool isEntityListLoaded() { return Memory::isAllocated( (uintptr_t) getEntityListPointer() ); }
     bool isEntityArrayLoaded() { return Memory::isAllocated( (uintptr_t) getEntityArrayBase() ); }
-    bool isGameLoaded() { return GetModuleHandleA( "halo1.dll" ) && /*Halo1::isCameraLoaded() &&*/ isEntityListLoaded() && isEntityArrayLoaded(); }
+    bool isCameraLoaded() { return Memory::isAllocated( (uintptr_t) getPlayerCameraPointer() ); }
+    bool isGameLoaded() { return GetModuleHandleA( "halo1.dll" ) && Halo1::isCameraLoaded() && isEntityListLoaded() && isEntityArrayLoaded(); }
 
 }

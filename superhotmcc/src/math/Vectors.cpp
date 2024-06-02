@@ -42,3 +42,31 @@ Vec3 Vec3::rejection(Vec3 axis) {
 Vec3 Vec3::lerp( Vec3& a, Vec3& b, float t ) {
     return a + (b - a) * t;
 }
+
+Vec3 Camera::left() {
+    return up.cross( fwd ).normalize();
+}
+
+Vec3 Camera::project(Vec3 p) {
+    Vec3 toP = p - pos;
+    Vec3 left = this->left();
+
+    float x = toP.dot( left );
+    float y = toP.dot( up );
+    float z = toP.dot( fwd );
+
+    float scale = 1.0f / z / tanf(fov / 2);
+
+    x *= scale;
+    y *= scale;
+
+    if (verticalFov)
+        x *= height / width;
+    else
+        y *= width / height;
+
+    x = (1 - x) * width / 2;
+    y = (1 - y) * height / 2;
+    
+    return Vec3{ x, y, z };
+}

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 
 struct Vec3 {
@@ -27,4 +29,12 @@ struct Vec3 {
     Vec3 rejection(Vec3 axis);
 
     static Vec3 lerp( Vec3& a, Vec3& b, float t );
+};
+
+struct Camera {
+    Vec3 pos, fwd, up;
+    float fov, width, height;
+    bool verticalFov;
+    Vec3 left();
+    Vec3 project(Vec3 p);
 };
