@@ -46,6 +46,8 @@ namespace Overlay {
         if (ImGui::BeginTabBar("SuperHot MCC Tabs")) {
             if (ImGui::BeginTabItem("Settings")) {
                 ImGui::Checkbox("ESP", &settings.showESP);
+                if (ImGui::IsItemHovered()) ImGui::SetTooltip("Show debug ESP (F1)");
+
                 HaloCE::Mod::UI::settings();
                 ImGui::EndTabItem();
             }
