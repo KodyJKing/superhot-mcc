@@ -40,7 +40,7 @@ namespace Rewind {
 
         REWIND( vel, Vec3 );
 
-        rewindAnimFrame( entity, timescale, snap );
+        // rewindAnimFrame( entity, timescale, snap );
         REWIND( ageMilis, uint32_t );
 
         switch ( (EntityCategory) entity->entityCategory ) {

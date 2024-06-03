@@ -33,7 +33,26 @@ struct Vec3 {
 
 struct Quaternion {
     float x, y, z, w;
+
+    Quaternion operator+( Quaternion other );
+    Quaternion operator-( Quaternion other );
+    Quaternion operator*( Quaternion other );
+    Quaternion operator/( Quaternion other );
+    Quaternion operator*( float scalar );
+    Quaternion operator/( float scalar );
+    Quaternion& operator+=( Quaternion other );
+    Quaternion& operator-=( Quaternion other );
+    Quaternion& operator*=( Quaternion other );
+    Quaternion& operator/=( Quaternion other );
+    Quaternion& operator*=( float scalar );
+    Quaternion& operator/=( float scalar );
+
+    float lengthSquared();
+    float length();
+    float dot( Quaternion other );
+    Quaternion conjugate();
     Quaternion normalize();
+    Quaternion nlerp( Quaternion& other, float t);
 };
 
 struct Camera {

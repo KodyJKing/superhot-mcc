@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 #include "asmjit/x86.h"
 #include "MinHook.h"
 #include "utils/Utils.hpp"
@@ -18,27 +19,48 @@ namespace HaloCE::Mod {
     uintptr_t halo1 = 0;
 
     namespace FunctionHooks {
+
+        struct AnimationState {
+            uint32_t entityHandle;
+            uint16_t animId;
+            uint16_t frame;
+            float frameProgress = 0;
+            Halo1::Transform* bones;
+
+            // Todo: This system leaks memory. Add a last update time and regularly clear out stale animation states.
+        };
+        // Bones pointer to animation state.
+        std::unordered_map<uint64_t, AnimationState> animationStates;
+
+        AnimationState* getAnimationState( Halo1::Entity* entity ) {
+            auto bones = entity->getBoneTransforms();
+            if (!bones) return nullptr;
+            auto bonesPtr = (uint64_t) bones;
+            if ( !animationStates.count( bonesPtr ) )
+                animationStates[bonesPtr] = AnimationState{};
+            return &animationStates[bonesPtr];
+        }
         
         typedef uint64_t (*updateEntity_t)( uint32_t entityHandle );
         updateEntity_t originalUpdateEntity = nullptr;
+        //
         uint64_t hkUpdateEntity( uint32_t entityHandle ) {
-            if (!settings.enableTimeScale) 
-                return originalUpdateEntity( entityHandle );
 
             auto rec = Halo1::getEntityRecord( entityHandle );
             if (!rec) 
                 return originalUpdateEntity( entityHandle);
+                
             auto entity = rec->entity();
-            if (!entity) 
+            if (!entity)  
+                return originalUpdateEntity( entityHandle );
+                
+            if (!settings.enableTimeScale) 
                 return originalUpdateEntity( entityHandle );
 
             // Snapshot the entity.
             Halo1::Entity snap = *entity;
-            auto boneSnap = entity->copyBoneTransforms();
 
-            uint64_t result = originalUpdateEntity( entityHandle );
-
-            // Interpolate old and new entity states according to timescale.
+            // Compute timescale.
             float globalTimeScale = settings.timeScale;
             float timeScale = globalTimeScale;
             if (
@@ -47,26 +69,83 @@ namespace HaloCE::Mod {
                 Halo1::isTransport( entity )
             )
                 timeScale = 1.0f;
+
+            // Store bone transforms for rewind.
+            auto bones = entity->getBoneTransforms();
+            auto animState = getAnimationState( entity );
+            if (animState) {
+                animState->entityHandle = entityHandle;
+                animState->animId = entity->animId;
+                animState->frame = entity->animFrame;
+                animState->bones = bones;
+                animState->frameProgress += timeScale;
+            }
+
+            // Do update
+            uint64_t result = originalUpdateEntity( entityHandle );
+
+            // Interpolate old and new entity states according to timescale.
             Rewind::rewind( rec, timeScale, globalTimeScale, snap );
 
-            // Restore bone transforms. This is just a test.
-            auto bones = entity->getBoneTransforms();
-            if (bones)
-                for ( uint16_t i = 0; i < entity->boneCount(); i++ )
-                    bones[i] = boneSnap[i];
+            // Advance animation frame once we've progressed through a whole frame.
+            if (animState) {
+                if (entity->animId != animState->animId) {
+                    animState->frameProgress = 0;
+                } else {
+                    if (animState->frameProgress >= 1)
+                        animState->frameProgress = 0;
+                    else
+                        entity->animFrame = animState->frame;
+                }
+            }
 
             return result;
         }
 
         typedef void (*animateBones_t)(uint64_t param1, void* animation, uint16_t frame, Halo1::Transform* bones);
         animateBones_t originalAnimateBones = nullptr;
+        //
         void hkAnimateBones(uint64_t param1, void* animation, uint16_t frame, Halo1::Transform* bones) {
-            // uint16_t boneCount = Halo1::boneCount(animation);
+            if (!settings.enableTimeScale || !animationStates.count((uint64_t) bones))
+                return originalAnimateBones(param1, animation, frame, bones);
 
-            // This seems to be idempotent. We can call it twice with no effect.
-            // We may be able to interpolate animations by calling this once for the current frame and once for the next frame.
+            auto animState = animationStates[(uint64_t) bones];
+
+            if (animState.frame == frame)
+                return originalAnimateBones(param1, animation, frame, bones);
+            
+            uint16_t boneCount = Halo1::boneCount(animation);
+
+            // Get initial bone state.
+            originalAnimateBones(param1, animation, animState.frame, bones);
+
+            // Save a snapshot.
+            auto entity = Halo1::getEntityPointer( animState.entityHandle );
+            std::vector<Halo1::Transform> boneSnap = entity->copyBoneTransforms();
+            for (uint16_t i = 0; i < boneCount; i++)
+                bones[i] = boneSnap[i];
+
+            // Get target bone state.
             originalAnimateBones(param1, animation, frame, bones);
-            originalAnimateBones(param1, animation, frame, bones);
+
+            // Interpolate bone state.
+            float progress = animState.frameProgress;
+            for ( uint16_t i = 0; i < boneCount; i++ ) {
+                auto& bone = bones[i];
+                auto& snap = boneSnap[i];
+                Quaternion rotation = snap.rotation.nlerp(bone.rotation, progress);
+                Vec3 translation = Vec3::lerp(snap.translation, bone.translation, progress);
+                float w = snap.w + (bone.w - snap.w) * progress;
+                bone.rotation = rotation;
+                bone.translation = translation;
+                bone.w = w;
+            }
+
+            // uint64_t index = (uint64_t) bones;
+            // float phase = (float) (index >> 0 & 0xFFFF) * 0.1f;
+            // float scale = sinf(GetTickCount64() * 0.01f + phase) * .2f + 1.2f;
+            // for (uint16_t i = 0; i < boneCount; i++)
+            //     bones[i].w = scale;
         }
 
         void init() {
