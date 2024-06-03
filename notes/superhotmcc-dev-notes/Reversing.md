@@ -59,6 +59,14 @@ The easiest way to find the camera structure is to scan for fov changes as you c
 
 Just search for 1 when paused and 0 when unpaused. You can restrict the search to `MCC-Win64-Shipping.exe` in Cheat Engine.
 
+## Animations
+
+Bone poses live directly on the Entity structure, though they have varying offset from the entity base. `Entity.field_0x1aa` holds the offset from entity base to the bones array. Bone poses use encoding `struct Transform { Quaternion rotation; Vec4 translation; }`. When viewing an entity in memory, look for a region where every 8th float is 1.
+
+`Transform.translation.w` might actually be scale.
+
+I've only reversed the `Animation` structure enough to find `boneCount`. See `Halo1.cpp:Entity::boneCount` for information on how animations are accessed.
+
 # See Also
 
 [Kavawuvi's map file documentation](https://opencarnage.net/index.php?/topic/6693-halo-map-file-structure-revision-212/)

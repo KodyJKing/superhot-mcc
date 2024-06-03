@@ -29,6 +29,40 @@ namespace Halo1 {
         return resourcePath && strncmp( resourcePath, str, 1024 ) == 0;
     }
 
+    uint16_t boneCount(void* anim) {
+        return Memory::safeRead<uint16_t>( (uintptr_t) anim + 0x2c ).value_or( 0 );
+    }
+
+    uint16_t Entity::boneCount() {
+        auto animSetTag = Halo1::getTag(animSetTagID);
+        if ( !animSetTag ) return 0;
+        void* animSetData = animSetTag->getData();
+        if ( !animSetData ) return 0;
+        uint32_t animArrayAddress = Memory::safeRead<uint32_t>( (uintptr_t) animSetData + 0x78 ).value_or( 0 );
+        uintptr_t animArray = Halo1::translateMapAddress( animArrayAddress );
+        if ( !animArray ) return 0;
+        int animIndex = 0;
+        size_t sizeOfAnimation = 0xb4;
+        uintptr_t anim = animArray + animIndex * sizeOfAnimation;
+        return Halo1::boneCount( (void*) anim );
+    }
+
+    Transform* Entity::getBoneTransforms() {
+        uint16_t bonesOffset = Memory::safeRead<uint16_t>( (uintptr_t) this + 0x1AA ).value_or( 0 ); // field_0x1AA is not included in our Entity struct for now.
+        if ( !bonesOffset ) return nullptr;
+        return (Transform*) ( (uintptr_t) this + bonesOffset );
+    }
+
+    std::vector<Transform> Entity::copyBoneTransforms() {
+        std::vector<Transform> result;
+        auto boneCount = this->boneCount();
+        if ( !boneCount ) return result;
+        auto bones = this->getBoneTransforms();
+        for ( uint16_t i = 0; i < boneCount; i++ )
+            result.push_back( bones[i] );
+        return result;
+    }
+
     // ===============
 
     // === Pointers ===
@@ -52,20 +86,20 @@ namespace Halo1 {
 
     bool checkMapHeader(MapHeader* header) {
         if (!header) {
-            std::cout << "Error: header is null" << std::endl;
+            // std::cout << "Error: header is null" << std::endl;
             return false;
         }
         if ( !Memory::isAllocated( (uintptr_t) header ) ) {
-            std::cout << "Error: header is not allocated" << std::endl;
+            // std::cout << "Error: header is not allocated" << std::endl;
             return false;
         }
         if (header->magicHeader != 1751474532) {
-            std::cout << "Error: magicHeader is not 1751474532" << std::endl;
+            // std::cout << "Error: magicHeader is not 1751474532" << std::endl;
             return false;
         }
         if (header->magicFooter != 1718579060) {
-            std::cout << "Error: magicFooter is not 1718579060" << std::endl;
-            std::cout << offsetof(MapHeader, magicFooter) << std::endl;
+            // std::cout << "Error: magicFooter is not 1718579060" << std::endl;
+            // std::cout << offsetof(MapHeader, magicFooter) << std::endl;
             return false;
         }
         return true;
@@ -85,6 +119,11 @@ namespace Halo1 {
         return strncmp( mapName, actualMapName, strnlen( mapName, 32 ) ) == 0;
     }
 
+    bool isMapLoaded() {
+        auto header = getMapHeader();
+        return header && Memory::isAllocated( (uintptr_t) header ) && checkMapHeader( header );
+    }
+
     uint64_t translateMapAddress( uint32_t address ) {
         uint64_t relocatedMapBase = *(uint64_t*) ( dllBase + 0x2D9CE10U );
         uint64_t mapBase = *(uint64_t*) ( dllBase + 0x2EA3410U );
@@ -92,6 +131,8 @@ namespace Halo1 {
     }
 
     Tag* getTag( uint32_t tagID ) {
+        if (tagID == NULL_HANDLE)
+            return nullptr;
         Tag* tagArray = *(Tag**) ( dllBase + 0x1C34FB0U );
         return &tagArray[tagID & 0xFFFF];
     }
@@ -213,6 +254,6 @@ namespace Halo1 {
     bool isEntityListLoaded() { return Memory::isAllocated( (uintptr_t) getEntityListPointer() ); }
     bool isEntityArrayLoaded() { return Memory::isAllocated( (uintptr_t) getEntityArrayBase() ); }
     bool isCameraLoaded() { return Memory::isAllocated( (uintptr_t) getPlayerCameraPointer() ); }
-    bool isGameLoaded() { return GetModuleHandleA( "halo1.dll" ) && Halo1::isCameraLoaded() && isEntityListLoaded() && isEntityArrayLoaded(); }
+    bool isGameLoaded() { return GetModuleHandleA( "halo1.dll" ) && isMapLoaded() && Halo1::isCameraLoaded() && isEntityListLoaded() && isEntityArrayLoaded(); }
 
 }

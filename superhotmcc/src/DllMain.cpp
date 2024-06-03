@@ -19,7 +19,7 @@ DWORD WINAPI MainThread(LPVOID _hModule) {
     while (true) {
         if (GetAsyncKeyState(VK_F9) & 1)
             break;
-        if (GetAsyncKeyState(VK_F2) & 1)
+        if (GetAsyncKeyState(VK_F8) & 1)
             Console::toggleConsole();
         HaloCE::Mod::modThreadUpdate();
         Sleep(1000 / 60);

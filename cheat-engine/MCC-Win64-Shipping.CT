@@ -4,6 +4,7 @@
     <CheatEntry>
       <ID>5</ID>
       <Description>"halo1.dll"</Description>
+      <ShowAsHex>1</ShowAsHex>
       <ShowAsSigned>0</ShowAsSigned>
       <VariableType>4 Bytes</VariableType>
       <Address>halo1.dll</Address>
@@ -383,6 +384,31 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
         <Byte>11</Byte>
         <Byte>44</Byte>
         <Byte>1A</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Call animateEntity_1 :call halo1.dll+C41984</Description>
+      <AddressString>halo1.dll+B3A7B8</AddressString>
+      <Before>
+        <Byte>8B</Byte>
+        <Byte>D7</Byte>
+        <Byte>49</Byte>
+        <Byte>8B</Byte>
+        <Byte>CA</Byte>
+      </Before>
+      <Actual>
+        <Byte>E8</Byte>
+        <Byte>C7</Byte>
+        <Byte>71</Byte>
+        <Byte>10</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>45</Byte>
+        <Byte>8A</Byte>
+        <Byte>7F</Byte>
+        <Byte>3A</Byte>
+        <Byte>B8</Byte>
       </After>
     </CodeEntry>
     <CodeEntry GroupHeader="1">
@@ -872,6 +898,62 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
         <Byte>BF</Byte>
       </After>
     </CodeEntry>
+    <CodeEntry GroupHeader="1">
+      <Description/>
+    </CodeEntry>
+    <CodeEntry GroupHeader="1">
+      <Description>Write Quat</Description>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Code :movss [r14],xmm0 - nop to break entity animation</Description>
+      <AddressString>halo1.dll+C41AE1</AddressString>
+      <Before>
+        <Byte>C0</Byte>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>59</Byte>
+        <Byte>C6</Byte>
+      </Before>
+      <Actual>
+        <Byte>F3</Byte>
+        <Byte>41</Byte>
+        <Byte>0F</Byte>
+        <Byte>11</Byte>
+        <Byte>06</Byte>
+      </Actual>
+      <After>
+        <Byte>0F</Byte>
+        <Byte>BF</Byte>
+        <Byte>46</Byte>
+        <Byte>02</Byte>
+        <Byte>66</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Code :movss [r8],xmm2</Description>
+      <AddressString>halo1.dll+B6B61F</AddressString>
+      <Before>
+        <Byte>D1</Byte>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>5C</Byte>
+        <Byte>D0</Byte>
+      </Before>
+      <Actual>
+        <Byte>F3</Byte>
+        <Byte>41</Byte>
+        <Byte>0F</Byte>
+        <Byte>11</Byte>
+        <Byte>10</Byte>
+      </Actual>
+      <After>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>10</Byte>
+        <Byte>5A</Byte>
+        <Byte>04</Byte>
+      </After>
+    </CodeEntry>
   </CheatCodes>
   <UserdefinedSymbols/>
   <Structures StructVersion="2">
@@ -908,7 +990,7 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
         <Element Offset="124" Vartype="4 Bytes" Bytesize="4" OffsetHex="0000007C" DisplayMethod="hexadecimal"/>
         <Element Offset="128" Vartype="4 Bytes" Bytesize="4" OffsetHex="00000080" Description="controllerHandle" DisplayMethod="hexadecimal"/>
         <Element Offset="132" Vartype="4 Bytes" Bytesize="4" OffsetHex="00000084" DisplayMethod="unsigned integer"/>
-        <Element Offset="136" Vartype="4 Bytes" Bytesize="4" OffsetHex="00000088" DisplayMethod="hexadecimal"/>
+        <Element Offset="136" Vartype="4 Bytes" Bytesize="4" OffsetHex="00000088" Description="animSetTagID" DisplayMethod="hexadecimal"/>
         <Element Offset="140" Vartype="2 Bytes" Bytesize="2" OffsetHex="0000008C" Description="animID" DisplayMethod="hexadecimal"/>
         <Element Offset="142" Vartype="2 Bytes" Bytesize="2" OffsetHex="0000008E" Description="animFrame" DisplayMethod="unsigned integer"/>
         <Element Offset="144" Vartype="4 Bytes" Bytesize="4" OffsetHex="00000090" DisplayMethod="unsigned integer"/>

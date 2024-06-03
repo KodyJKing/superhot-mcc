@@ -3,7 +3,10 @@
 #include <stdint.h>
 #include <functional>
 #include <string>
+#include <vector>
 #include "math/Vectors.hpp"
+
+#define NULL_HANDLE 0xFFFFFFFF
 
 namespace Halo1 {
 
@@ -40,7 +43,15 @@ namespace Halo1 {
         char pad_0022[14]; 
         uint16_t count; 
         int32_t entityListOffset; 
-    }; 
+    };
+
+    #pragma pack(push, 1)
+    struct Transform {
+        Quaternion rotation;
+        Vec3 translation;
+        float w;
+    };
+    #pragma pack(pop)
 
     class Entity {
         public:
@@ -58,7 +69,8 @@ namespace Halo1 {
         uint16_t entityCategory; 
         char pad_0072[14]; 
         uint32_t controllerHandle; 
-        char pad_0084[8]; 
+        char pad_0084[4];
+        uint32_t animSetTagID;
         uint16_t animId; 
         uint16_t animFrame; 
         char pad_0090[12]; 
@@ -92,11 +104,15 @@ namespace Halo1 {
         uint8_t frags; 
         uint8_t plasmas; 
         char pad_02FE[6]; 
-        uint32_t vehicleRiderHandle; 
+        uint32_t vehicleRiderHandle;
 
         Tag* tag();
         char* getTagResourcePath();
         bool fromResourcePath( const char* str );
+
+        uint16_t boneCount();
+        Transform* getBoneTransforms();
+        std::vector<Transform> copyBoneTransforms();
     };
 
     class EntityRecord {
@@ -161,7 +177,7 @@ namespace Halo1 {
 
 
     void init();
-
+    
     EntityList* getEntityListPointer();
     Camera* getPlayerCameraPointer();
     uint32_t getPlayerHandle();
@@ -173,6 +189,8 @@ namespace Halo1 {
     Tag* getTag( uint32_t tagID );
 
     uint64_t translateMapAddress( uint32_t address );
+
+    uint16_t boneCount(void * anim);
 
     void foreachEntityRecord( std::function<void( EntityRecord* )> cb );
     void foreachEntityRecordIndexed( std::function<void( EntityRecord*, uint16_t i )> cb );

@@ -93,6 +93,7 @@ namespace Overlay {
     void checkHotkeys() {
         if (ImGui::IsKeyPressed(ImGuiKey_F1, false))
             settings.showESP = !settings.showESP;
+        HaloCE::Mod::UI::checkHotKeys();
     }
 
     void render() {

@@ -31,6 +31,11 @@ struct Vec3 {
     static Vec3 lerp( Vec3& a, Vec3& b, float t );
 };
 
+struct Quaternion {
+    float x, y, z, w;
+    Quaternion normalize();
+};
+
 struct Camera {
     Vec3 pos, fwd, up;
     float fov, width, height;

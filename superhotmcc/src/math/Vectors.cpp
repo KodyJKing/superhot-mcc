@@ -43,6 +43,11 @@ Vec3 Vec3::lerp( Vec3& a, Vec3& b, float t ) {
     return a + (b - a) * t;
 }
 
+Quaternion Quaternion::normalize() {
+    float len = sqrt( x * x + y * y + z * z + w * w );
+    return Quaternion{ x / len, y / len, z / len, w / len };
+}
+
 Vec3 Camera::left() {
     return up.cross( fwd ).normalize();
 }

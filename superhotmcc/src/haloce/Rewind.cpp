@@ -53,6 +53,8 @@ namespace Rewind {
                 // Weapon heat shouldn't update when player isn't moving.
                 REWIND_DECREASES_WITH_TIMESCALE( heat, float, globalTimescale );
                 rewindFireCooldown( entity, globalTimescale, snap );
+                if (entity->parentHandle == NULL_HANDLE)
+                    rewindRotation( entity, timescale, snap );
                 break;
             }
             case EntityCategory_Projectile: {
@@ -66,7 +68,7 @@ namespace Rewind {
                     entity->fromResourcePath( "weapons\\pistol\\bullet" ) ||
                     entity->fromResourcePath( "weapons\\plasma rifle\\bolt" ) ||
                     entity->fromResourcePath( "vehicles\\scorpion\\bullet" )
-                    )
+                )
                     entity->vel = snap.vel;
 
                 break;

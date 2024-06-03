@@ -20,10 +20,10 @@ namespace HaloCE::Mod {
     namespace FunctionHooks {
         
         typedef uint64_t (*updateEntity_t)( uint32_t entityHandle );
-
         updateEntity_t originalUpdateEntity = nullptr;
-
         uint64_t hkUpdateEntity( uint32_t entityHandle ) {
+            if (!settings.enableTimeScale) 
+                return originalUpdateEntity( entityHandle );
 
             auto rec = Halo1::getEntityRecord( entityHandle );
             if (!rec) 
@@ -34,10 +34,11 @@ namespace HaloCE::Mod {
 
             // Snapshot the entity.
             Halo1::Entity snap = *entity;
+            auto boneSnap = entity->copyBoneTransforms();
 
             uint64_t result = originalUpdateEntity( entityHandle );
 
-            // Internpolate old and new entity states according to timescale.
+            // Interpolate old and new entity states according to timescale.
             float globalTimeScale = settings.timeScale;
             float timeScale = globalTimeScale;
             if (
@@ -48,8 +49,24 @@ namespace HaloCE::Mod {
                 timeScale = 1.0f;
             Rewind::rewind( rec, timeScale, globalTimeScale, snap );
 
+            // Restore bone transforms. This is just a test.
+            auto bones = entity->getBoneTransforms();
+            if (bones)
+                for ( uint16_t i = 0; i < entity->boneCount(); i++ )
+                    bones[i] = boneSnap[i];
 
             return result;
+        }
+
+        typedef void (*animateBones_t)(uint64_t param1, void* animation, uint16_t frame, Halo1::Transform* bones);
+        animateBones_t originalAnimateBones = nullptr;
+        void hkAnimateBones(uint64_t param1, void* animation, uint16_t frame, Halo1::Transform* bones) {
+            // uint16_t boneCount = Halo1::boneCount(animation);
+
+            // This seems to be idempotent. We can call it twice with no effect.
+            // We may be able to interpolate animations by calling this once for the current frame and once for the next frame.
+            originalAnimateBones(param1, animation, frame, bones);
+            originalAnimateBones(param1, animation, frame, bones);
         }
 
         void init() {
@@ -57,6 +74,11 @@ namespace HaloCE::Mod {
             std::cout << "UpdateEntity: " << pUpdateEntity << std::endl;
             MH_CreateHook( pUpdateEntity, hkUpdateEntity, (void**) &originalUpdateEntity );
             MH_EnableHook( pUpdateEntity );
+
+            void* pAnimateBones = (void*) (halo1 + 0xC41984U);
+            std::cout << "AnimateBones: " << pAnimateBones << std::endl;
+            MH_CreateHook( pAnimateBones, hkAnimateBones, (void**) &originalAnimateBones );
+            MH_EnableHook( pAnimateBones );
         }
 
         void free() {

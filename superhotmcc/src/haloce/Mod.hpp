@@ -3,7 +3,8 @@
 namespace HaloCE::Mod {
 
     inline struct Settings {
-        float timeScale = 0.5f;
+        float timeScale = 0.1f;
+        bool enableTimeScale = false;
     } settings = {};
 
     void init();
