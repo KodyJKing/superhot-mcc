@@ -13,7 +13,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 namespace Overlay {
 
     struct Settings {
-        bool showESP = true;
+        bool showESP = false;
     } settings = {};
 
     void initializeContext(HWND targetWindow) {

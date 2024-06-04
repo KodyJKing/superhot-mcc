@@ -53,11 +53,6 @@ Quaternion Quaternion::operator+( Quaternion b ) { return Quaternion{ x + b.x, y
 Quaternion Quaternion::operator-( Quaternion b ) { return Quaternion{ x - b.x, y - b.y, z - b.z, w - b.w }; }
 Quaternion Quaternion::operator*( Quaternion b ) {
     return Quaternion{
-        // w * b.x + x * b.w + y * b.z - z * b.y,
-        // w * b.y + y * b.w + z * b.x - x * b.z,
-        // w * b.z + z * b.w + x * b.y - y * b.x,
-        // w * b.w - x * b.x - y * b.y - z * b.z
-
         w * b.x + x * b.w + y * b.z - z * b.y, 
         w * b.y - x * b.z + y * b.w + z * b.x, 
         w * b.z + x * b.y - y * b.x + z * b.w,
@@ -81,11 +76,19 @@ float Quaternion::length() { return sqrt( x * x + y * y + z * z + w * w ); }
 float Quaternion::dot( Quaternion b ) { return x * b.x + y * b.y + z * b.z + w * b.w; }
 Quaternion Quaternion::normalize() { return *this / length(); }
 Quaternion Quaternion::conjugate() { return Quaternion{ -x, -y, -z, w }; }
-Quaternion Quaternion::nlerp( Quaternion& b, float t) {
-    Quaternion c = b;
-    if (this->dot(b) < 0.0f)
+
+Quaternion Quaternion::nlerp( Quaternion& b, float t, bool shortestPath) {
+    Quaternion c = *this;
+    if (shortestPath && b.dot(c) < 0.0f)
         c *= -1.0f;
-    return (*this * (1.0f - t) + c * t).normalize();
+    return (c * (1.0f - t) + b * t).normalize();
+}
+
+Quaternion Quaternion::pow( float exponent ) {
+    float angle = acosf(w) * 2.0f;
+    float newAngle = angle * exponent;
+    float mult = sinf(newAngle / 2.0) / sinf(angle / 2.0);
+    return Quaternion{ x * mult, y * mult, z * mult, cosf(newAngle / 2.0) };
 }
 
 ////////////////////////////////////////

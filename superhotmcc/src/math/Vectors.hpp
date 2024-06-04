@@ -52,7 +52,8 @@ struct Quaternion {
     float dot( Quaternion other );
     Quaternion conjugate();
     Quaternion normalize();
-    Quaternion nlerp( Quaternion& other, float t);
+    Quaternion nlerp( Quaternion& other, float t, bool shortestPath = true );
+    Quaternion pow( float exponent );
 };
 
 struct Camera {

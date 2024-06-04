@@ -49,7 +49,7 @@ namespace Halo1 {
     struct Transform {
         Quaternion rotation;
         Vec3 translation;
-        float w;
+        float scale;
     };
     #pragma pack(pop)
 

@@ -18,27 +18,49 @@ namespace HaloCE::Mod {
 
     uintptr_t halo1 = 0;
 
+    uint64_t updateCount = 0;
+
+    // Associates bone interpolation state with an entity.
+    struct AnimationState {
+        uint16_t animId;
+        uint16_t frame;
+        float frameProgress = 0;
+        uint64_t lastUpdate = 0; 
+    };
+    // Bones pointer to animation state.
+    std::unordered_map<uint64_t, AnimationState> animationStates;
+
+    AnimationState* getAnimationState( Halo1::Entity* entity ) {
+        auto bones = entity->getBoneTransforms();
+        if (!bones) return nullptr;
+        auto bonesPtr = (uint64_t) bones;
+        if ( !animationStates.count( bonesPtr ) )
+            animationStates[bonesPtr] = AnimationState{};
+        return &animationStates[bonesPtr];
+    }
+    
     namespace FunctionHooks {
 
-        struct AnimationState {
-            uint32_t entityHandle;
-            uint16_t animId;
-            uint16_t frame;
-            float frameProgress = 0;
-            Halo1::Transform* bones;
+        typedef void (*updateAllEntities_t)( void );
+        updateAllEntities_t originalUpdateAllEntities = nullptr;
+        //
+        void hkUpdateAllEntities() {
+            originalUpdateAllEntities();
 
-            // Todo: This system leaks memory. Add a last update time and regularly clear out stale animation states.
-        };
-        // Bones pointer to animation state.
-        std::unordered_map<uint64_t, AnimationState> animationStates;
+            // Clear out stale animation states.
+            std::vector<uint64_t> staleStates;
+            for (auto& [bonesPtr, state] : animationStates) {
+                if (updateCount - state.lastUpdate > 10)
+                    staleStates.push_back( bonesPtr );
+            }
+            for (auto bonesPtr : staleStates) {
+                // std::cout << "Clearing stale animation state for bones at " << (void*) bonesPtr << std::endl;
+                animationStates.erase( bonesPtr );
+            }
+            // if (updateCount % 120 == 0)
+            //     std::cout << "Animation states: " << animationStates.size() << std::endl;
 
-        AnimationState* getAnimationState( Halo1::Entity* entity ) {
-            auto bones = entity->getBoneTransforms();
-            if (!bones) return nullptr;
-            auto bonesPtr = (uint64_t) bones;
-            if ( !animationStates.count( bonesPtr ) )
-                animationStates[bonesPtr] = AnimationState{};
-            return &animationStates[bonesPtr];
+            updateCount++;
         }
         
         typedef uint64_t (*updateEntity_t)( uint32_t entityHandle );
@@ -70,15 +92,16 @@ namespace HaloCE::Mod {
             )
                 timeScale = 1.0f;
 
-            // Store bone transforms for rewind.
-            auto bones = entity->getBoneTransforms();
-            auto animState = getAnimationState( entity );
-            if (animState) {
-                animState->entityHandle = entityHandle;
-                animState->animId = entity->animId;
-                animState->frame = entity->animFrame;
-                animState->bones = bones;
-                animState->frameProgress += timeScale;
+            // Update animation progress for bipeds.
+            AnimationState* animState = nullptr;
+            if (entity->entityCategory == Halo1::EntityCategory_Biped) {
+                animState = getAnimationState( entity );
+                if (animState) {
+                    animState->animId = entity->animId;
+                    animState->frame = entity->animFrame;
+                    animState->frameProgress += timeScale;
+                    animState->lastUpdate = updateCount;
+                }
             }
 
             // Do update
@@ -106,24 +129,27 @@ namespace HaloCE::Mod {
         animateBones_t originalAnimateBones = nullptr;
         //
         void hkAnimateBones(uint64_t param1, void* animation, uint16_t frame, Halo1::Transform* bones) {
-            if (!settings.enableTimeScale || !animationStates.count((uint64_t) bones))
+            if (
+                !settings.enableTimeScale || 
+                !settings.poseInterpolation ||
+                !animationStates.count((uint64_t) bones)
+            )
                 return originalAnimateBones(param1, animation, frame, bones);
 
             auto animState = animationStates[(uint64_t) bones];
-
             if (animState.frame == frame)
                 return originalAnimateBones(param1, animation, frame, bones);
-            
-            uint16_t boneCount = Halo1::boneCount(animation);
+
+            // Todo: Interpolate poses in transitions between different animations, not just frames.
 
             // Get initial bone state.
             originalAnimateBones(param1, animation, animState.frame, bones);
 
             // Save a snapshot.
-            auto entity = Halo1::getEntityPointer( animState.entityHandle );
-            std::vector<Halo1::Transform> boneSnap = entity->copyBoneTransforms();
+            uint16_t boneCount = Halo1::boneCount(animation);
+            std::vector<Halo1::Transform> boneSnap;
             for (uint16_t i = 0; i < boneCount; i++)
-                bones[i] = boneSnap[i];
+                boneSnap.push_back(bones[i]);
 
             // Get target bone state.
             originalAnimateBones(param1, animation, frame, bones);
@@ -133,19 +159,10 @@ namespace HaloCE::Mod {
             for ( uint16_t i = 0; i < boneCount; i++ ) {
                 auto& bone = bones[i];
                 auto& snap = boneSnap[i];
-                Quaternion rotation = snap.rotation.nlerp(bone.rotation, progress);
-                Vec3 translation = Vec3::lerp(snap.translation, bone.translation, progress);
-                float w = snap.w + (bone.w - snap.w) * progress;
-                bone.rotation = rotation;
-                bone.translation = translation;
-                bone.w = w;
+                bone.rotation = snap.rotation.nlerp(bone.rotation, progress);
+                bone.translation = Vec3::lerp(snap.translation, bone.translation, progress);
+                bone.scale = snap.scale + (bone.scale - snap.scale) * progress;
             }
-
-            // uint64_t index = (uint64_t) bones;
-            // float phase = (float) (index >> 0 & 0xFFFF) * 0.1f;
-            // float scale = sinf(GetTickCount64() * 0.01f + phase) * .2f + 1.2f;
-            // for (uint16_t i = 0; i < boneCount; i++)
-            //     bones[i].w = scale;
         }
 
         void init() {
@@ -158,10 +175,17 @@ namespace HaloCE::Mod {
             std::cout << "AnimateBones: " << pAnimateBones << std::endl;
             MH_CreateHook( pAnimateBones, hkAnimateBones, (void**) &originalAnimateBones );
             MH_EnableHook( pAnimateBones );
+
+            void* pUpdateAllEntities = (void*) (halo1 + 0xB35654U);
+            std::cout << "UpdateAllEntities: " << pUpdateAllEntities << std::endl;
+            MH_CreateHook( pUpdateAllEntities, hkUpdateAllEntities, (void**) &originalUpdateAllEntities );
+            MH_EnableHook( pUpdateAllEntities );
         }
 
         void free() {
             MH_DisableHook( (void*) originalUpdateEntity );
+            MH_DisableHook( (void*) originalAnimateBones );
+            MH_DisableHook( (void*) originalUpdateAllEntities );
         }
 
     }
@@ -247,39 +271,12 @@ namespace HaloCE::Mod {
         // std::cout << "fwd offset: " << (void*) offsetof( Halo1::Camera, fwd ) << std::endl;
         // std::cout << "up offset: " << (void*) offsetof( Halo1::Camera, up ) << std::endl;
 
-        std::cout << "animFrame offset: " << (void*) offsetof( Halo1::Entity, animFrame ) << std::endl;
+        // std::cout << "animFrame offset: " << (void*) offsetof( Halo1::Entity, animFrame ) << std::endl;
     }
 
     void printDebugInfo() {
-        // Print player camera pointer.
-        // std::cout << "Player camera: " << (void*) Halo1::getPlayerCameraPointer() << std::endl;
-
         // Print player handle
         // std::cout << "Player handle: " << (void*) Halo1::getPlayerHandle() << std::endl;
-
-        // // Print isGameLoaded.
-        // std::cout << "isGameLoaded: " << Halo1::isGameLoaded() << std::endl;
-
-        // Print all entity pointers.
-        // std::cout << std::endl;
-        // Halo1::foreachEntityRecord( []( Halo1::EntityRecord* entityRecord ) {
-        //     if ( !entityRecord ) 
-        //         return true;
-
-        //     Halo1::Entity* entity = entityRecord->entity();
-        //     std::cout << "Entity: " << (void*) entity << std::endl;
-
-        //     // Print entity tag resource path.
-        //     if (entity) {
-        //         char* resourcePath = entity->getTagResourcePath();
-        //         if ( resourcePath )
-        //             std::cout << "Tag: " << resourcePath << std::endl;
-        //     }
-
-        //     std::cout << std::endl;
-
-        //     return true;
-        // });
 
         // // Print map header pointer.
         // auto mapHeader = Halo1::getMapHeader();

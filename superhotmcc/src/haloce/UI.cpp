@@ -20,14 +20,18 @@ namespace HaloCE::Mod::UI {
         ImGui::SliderInt( "Speed", &timeScalePercent, 0, 100, "%d%%" );
         ImGui::PopItemWidth();
         HaloCE::Mod::settings.timeScale = timeScalePercent / 100.0f;
+
+        ImGui::Checkbox("Pose Interpolation", &HaloCE::Mod::settings.poseInterpolation);
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Enable pose interpolation (F3)");
     }
 
     void debug() {}
 
     void checkHotKeys() {
-        // F2 toggles timescaling
         if (ImGui::IsKeyPressed( ImGuiKey_F2, false ))
             HaloCE::Mod::settings.enableTimeScale = !HaloCE::Mod::settings.enableTimeScale;
+        if (ImGui::IsKeyPressed( ImGuiKey_F3, false ))
+            HaloCE::Mod::settings.poseInterpolation = !HaloCE::Mod::settings.poseInterpolation;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////

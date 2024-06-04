@@ -47,6 +47,7 @@ namespace Rewind {
             case EntityCategory_Biped: {
                 // Shields shouldn't update when player isn't moving.
                 REWIND_INCREASES_WITH_TIMESCALE( shield, float, globalTimescale );
+                rewindRotation( entity, timescale, snap ); // Experimental!!!
                 break;
             }
             case EntityCategory_Weapon: {
