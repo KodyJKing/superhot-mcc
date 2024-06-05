@@ -34,8 +34,8 @@ namespace HaloCE::Mod::UI {
             static std::vector<int> searchResults;
             static uint64_t lastSearchTick = GetTickCount64();
             uint64_t tick = GetTickCount64();
-            bool debounce = tick - lastSearchTick < 1000;
-            if (!(debounce && focused) && search[0] != 0 && strcmp(search, lastSearch) != 0) {
+            bool debounce = focused && (tick - lastSearchTick < 1000);
+            if (!debounce && search[0] != 0 && strcmp(search, lastSearch) != 0) {
                 searchResults.clear();
                 int i = 0;
                 while (true) {
@@ -94,6 +94,12 @@ namespace HaloCE::Mod::UI {
                     ImGui::Text("%d: NULL", index);
                 }
             };
+
+            if (search[0] != 0)  {
+                int numPages = (int) ceil( searchResults.size() / (float) tagsPerPage );
+                ImGui::SameLine();
+                ImGui::Text("(%d results, %d pages)", searchResults.size(), numPages);
+            }
 
             ImGui::Separator();
 

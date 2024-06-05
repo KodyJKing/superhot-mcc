@@ -238,32 +238,31 @@ namespace HaloCE::Mod {
     std::vector<Memory::PatchPtr> patches;
     void patchTags() {
         // Limit plasma pistol rate of fire.
-        const int projTagIndex = 1;
+        const int projTagIndex = 0;
         auto plasmaPistolTag = Halo1::findTag( "weapons\\plasma pistol\\plasma pistol", "weap" );
         std::cout << "Plasma Pistol tag: " << plasmaPistolTag << std::endl;
         auto projData = Halo1::getProjectileData( plasmaPistolTag, projTagIndex );
         std::cout << "Plasma Pistol Projectile data: " << projData << std::endl;
         if (!projData) return;
-        patches.push_back( Memory::createPatch( projData->minRateOfFire, 1.0f ) );
-        patches.push_back( Memory::createPatch( projData->maxRateOfFire, 1.0f ) );
+        patches.push_back( Memory::createPatch( projData->minRateOfFire, 15.0f ) );
+        patches.push_back( Memory::createPatch( projData->maxRateOfFire, 15.0f ) );
 
-        // Test setting sniper rof really high.
-        {
-            auto assaultRifleTag = Halo1::findTag( "weapons\\assault rifle\\assault rifle", "weap" );
-            auto assaultProjData = Halo1::getProjectileData( assaultRifleTag, 0 );
-            if (!assaultProjData) return;
-            uint32_t assaultFlags = *(uint32_t*) assaultProjData;
+        // { // Test setting sniper rof really high.
+        //     auto assaultRifleTag = Halo1::findTag( "weapons\\assault rifle\\assault rifle", "weap" );
+        //     auto assaultProjData = Halo1::getProjectileData( assaultRifleTag, 0 );
+        //     if (!assaultProjData) return;
+        //     uint32_t assaultFlags = *(uint32_t*) assaultProjData;
 
-            auto sniperTag = Halo1::findTag( "weapons\\sniper rifle\\sniper rifle", "weap" );
-            std::cout << "Sniper Rifle tag: " << sniperTag << std::endl;
-            auto sniperProjData = Halo1::getProjectileData( sniperTag, 0 );
-            std::cout << "Sniper Rifle Projectile data: " << sniperProjData << std::endl;
-            if (!sniperProjData) return;
-            uint32_t* flags = (uint32_t*) sniperProjData;
-            patches.push_back( Memory::createPatch( *flags, assaultFlags ) );
-            patches.push_back( Memory::createPatch( sniperProjData->minRateOfFire, 100.0f ) );
-            patches.push_back( Memory::createPatch( sniperProjData->maxRateOfFire, 100.0f ) );
-        }
+        //     auto sniperTag = Halo1::findTag( "weapons\\sniper rifle\\sniper rifle", "weap" );
+        //     std::cout << "Sniper Rifle tag: " << sniperTag << std::endl;
+        //     auto sniperProjData = Halo1::getProjectileData( sniperTag, 0 );
+        //     std::cout << "Sniper Rifle Projectile data: " << sniperProjData << std::endl;
+        //     if (!sniperProjData) return;
+        //     uint32_t* flags = (uint32_t*) sniperProjData;
+        //     patches.push_back( Memory::createPatch( *flags, assaultFlags ) );
+        //     patches.push_back( Memory::createPatch( sniperProjData->minRateOfFire, 100.0f ) );
+        //     patches.push_back( Memory::createPatch( sniperProjData->maxRateOfFire, 100.0f ) );
+        // }
     }
     void unpatchTags() {
         patches.clear();
