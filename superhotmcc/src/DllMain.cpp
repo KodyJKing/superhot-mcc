@@ -5,6 +5,7 @@
 #include "haloce/Mod.hpp"
 #include "MinHook.h"
 #include "overlay/Overlay.hpp"
+#include "utils/UnloadLock.hpp"
 
 // MainThread
 DWORD WINAPI MainThread(LPVOID _hModule) {
@@ -25,12 +26,13 @@ DWORD WINAPI MainThread(LPVOID _hModule) {
         Sleep(1000 / 60);
     }
     
+    waitForSafeUnload();
     HaloCE::Mod::free();
     Overlay::free();
     MH_Uninitialize();
 
-    // Allow time for hooks to exit.
-    Sleep(200);
+    waitForSafeUnload();
+    Sleep(200); // Extra time for hooks to exit.
 
     Console::free();
 

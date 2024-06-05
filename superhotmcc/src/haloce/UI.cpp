@@ -6,11 +6,116 @@
 #include "halomcc/HaloMCC.hpp"
 #include <iostream>
 #include <vector>
+#include <string>
+#include <functional>
 #include "utils/Strings.hpp"
 #include "memory/Memory.hpp"
 #include "TimeScale.hpp"
 
 namespace HaloCE::Mod::UI {
+
+    bool showTagBrowser = false;
+    void tagBrowser() {
+        ImGui::Begin("Tag Browser", &showTagBrowser, ImGuiWindowFlags_AlwaysAutoResize);
+        
+            // Pagination
+            static int tagsPerPage = 50;
+            static int page = 0;
+            ImGui::InputInt("Page size", &tagsPerPage);
+            if (tagsPerPage < 1) tagsPerPage = 1;
+            ImGui::InputInt("Page", &page);
+            if (page < 0) page = 0;
+
+            // Search
+            static char search[512] = {0};
+            ImGui::InputText("Search", search, 512);
+            bool focused = ImGui::IsItemActive();
+            static char lastSearch[512] = {0};
+            static std::vector<int> searchResults;
+            static uint64_t lastSearchTick = GetTickCount64();
+            uint64_t tick = GetTickCount64();
+            bool debounce = tick - lastSearchTick < 1000;
+            if (!(debounce && focused) && search[0] != 0 && strcmp(search, lastSearch) != 0) {
+                searchResults.clear();
+                int i = 0;
+                while (true) {
+                    auto tag = Halo1::getTag(i);
+                    if (!Halo1::tagExists(tag)) break;
+                    auto path = tag->getResourcePath();
+                    std::string pathStr = path;
+                    std::string searchStr = search;
+                    std::transform(pathStr.begin(), pathStr.end(), pathStr.begin(), ::tolower);
+                    std::transform(searchStr.begin(), searchStr.end(), searchStr.begin(), ::tolower);
+                    if (pathStr.find(searchStr) != std::string::npos)
+                        searchResults.push_back(i);
+                    i++;
+                }
+                strcpy_s( lastSearch, search );
+                lastSearchTick = tick;
+            }
+
+            // Render tag item
+            auto renderTag = [&](int index) {
+                auto tag = Halo1::getTag(index);
+                if (Halo1::tagExists(tag)) {
+                    auto path = tag->getResourcePath();
+                    if (!Halo1::validTagPath(path)) {
+                        ImGui::Text("%d: NULL", index);
+                    } else {
+                        char text[2048] = {0};
+
+                        ImGui::Text("%04d:", index);
+
+                        ImGui::SameLine();
+                        sprintf_s( text, "%p", tag );
+                        ImGui::Text( "%s", text );
+                        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy tag pointer to clipboard");
+                        if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) ImGui::SetClipboardText( text );
+
+                        ImGui::SameLine();
+                        auto fourCCStr = tag->fourCCStr();
+                        ImGui::Text("%s", fourCCStr.c_str());
+                        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy GroupID to clipboard");
+                        if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) ImGui::SetClipboardText( fourCCStr.c_str() );
+
+                        ImGui::SameLine();
+                        auto data = tag->getData();
+                        sprintf_s( text, "%p", data );
+                        ImGui::Text("%s", text);
+                        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy data pointer to clipboard");
+                        if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) ImGui::SetClipboardText( text );
+
+                        ImGui::SameLine();
+                        ImGui::Text("%s", path);
+                        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy path to clipboard");
+                        if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) ImGui::SetClipboardText( path );
+                    }
+                } else {
+                    ImGui::Text("%d: NULL", index);
+                }
+            };
+
+            ImGui::Separator();
+
+            if (search[0] != 0) {
+                // Render search results
+                int pageBase = page * tagsPerPage;
+                for (int i = 0; i < tagsPerPage && i + pageBase < searchResults.size(); i++) {
+                    int j = pageBase + i;
+                    int index = searchResults[j];
+                    renderTag(index);
+                }
+            } else {
+                // Render all tags
+                for (int i = 0; i < tagsPerPage; i++) {
+                    int index = page * tagsPerPage + i;
+                    auto tag = Halo1::getTag(index);
+                    renderTag(index);
+                }
+            }
+
+        ImGui::End();
+    }
 
     void settings() {
         ImGui::Checkbox("##Enable Time Scale", &HaloCE::Mod::settings.enableTimeScale);
@@ -27,10 +132,31 @@ namespace HaloCE::Mod::UI {
     }
 
     void debug() {
-        // ImGui::Text("Tick: %llu", HaloCE::Mod::tickCount);
-        // ImGui::Text("Animation States: %d", HaloCE::Mod::animationStates.size());
-        ImGui::Text("Time Scale: %.2f", TimeScale::timescale);
-        // ImGui::Text("Pose Interpolation: %s", HaloCE::Mod::settings.poseInterpolation ? "On" : "Off");
+        // Translate map address
+        ImGui::BeginChild("##Translate Map Address", ImVec2(0, 0), ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY);
+            ImGui::Text("Translate Map Address");
+            static char address[255] = {0};
+            ImGui::InputText("##Address", address, 255);
+            static uint32_t mapAddress = 0;
+            try {
+                mapAddress = std::stoul( address, nullptr, 16 );
+            } catch (...) {
+                mapAddress = 0;
+            }
+            uint64_t translated = Halo1::translateMapAddress( mapAddress );
+            ImGui::Text("-> %p", (void*) translated);
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy translated address to clipboard");
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+                char text[255] = {0};
+                snprintf( text, 255, "%p", (void*) translated );
+                ImGui::SetClipboardText( text );
+            }
+        ImGui::EndChild();
+
+        if (ImGui::Button("Tag Browser"))
+            showTagBrowser = true;
+        if (showTagBrowser)
+            tagBrowser();
     }
 
     void checkHotKeys() {
@@ -108,11 +234,9 @@ namespace HaloCE::Mod::UI {
             VIEW_TOGGLE(tagID);
             if (paused || view.tagID) ImGui::Text("Tag ID: %X", entity->tagID);
 
-            auto fourccA = Strings::fourccToString( tag->fourCC_A );
-            auto fourccB = Strings::fourccToString( tag->fourCC_B );
-            auto fourccC = Strings::fourccToString( tag->fourCC_C );
+            std::string fourCCStr = tag->fourCCStr();
             VIEW_TOGGLE(tagCC);
-            if (paused || view.tagCC) ImGui::Text("Tag CC: %s>%s>%s", fourccC.c_str(), fourccB.c_str(), fourccA.c_str());
+            if (paused || view.tagCC) ImGui::Text("Tag GroupID: %s", fourCCStr.c_str());
             
             VIEW_TOGGLE(tagPath);
             const char* path = tag->getResourcePath();

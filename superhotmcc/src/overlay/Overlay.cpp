@@ -7,6 +7,7 @@
 #include "haloce/UI.hpp"
 #include "Licenses.hpp"
 #include "overlay/ESP.hpp"
+#include "utils/UnloadLock.hpp"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -103,6 +104,8 @@ namespace Overlay {
     }
 
     void render() {
+        UnloadLock lock; // Prevent unloading while rendering
+
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 

@@ -34,7 +34,25 @@ namespace Halo1 {
 
         char* getResourcePath();
         void* getData();
+        std::string fourCCStr();
     };
+
+    #pragma pack(push, 1)
+    struct ArrayPointer {
+        uint32_t count;
+        uint32_t offset; // Use translateMapAddress to get the actual pointer
+    };
+    struct WeaponTagData {
+        char pad_0000[0x4FC];
+        ArrayPointer projectileData;
+    };
+    struct ProjectileData {
+        char pad_0000[0x4];
+        float minRateOfFire;
+        float maxRateOfFire;
+        char pad_000C[0x108];
+    }; // Size = 0x114
+    #pragma pack(pop)
 
     class EntityList {
         public:
@@ -187,8 +205,14 @@ namespace Halo1 {
     bool isOnMap( const char* mapName );
 
     Tag* getTag( uint32_t tagID );
+    Tag * findTag(const char * path, const char * fourCC);
+    Tag * findTag(const char * path, uint32_t fourCC);
+    bool validTagPath(const char * path);
+    bool tagExists(Tag * tag);
 
     uint64_t translateMapAddress( uint32_t address );
+
+    ProjectileData * getProjectileData(Tag * tag, uint32_t projectileIndex);
 
     uint16_t boneCount(void * anim);
 

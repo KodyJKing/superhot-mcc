@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <iostream>
 #include "memory/Memory.hpp"
+#include "utils/Strings.hpp"
 
 namespace Halo1 {
 
@@ -17,6 +18,12 @@ namespace Halo1 {
 
     char* Tag::getResourcePath() { return (char*) translateMapAddress( resourcePathAddress ); }
     void* Tag::getData() { return (void*) translateMapAddress( dataAddress ); }
+    std::string Tag::fourCCStr() {
+        auto fourccA = Strings::fourccToString( fourCC_A );
+        auto fourccB = Strings::fourccToString( fourCC_B );
+        auto fourccC = Strings::fourccToString( fourCC_C );
+        return fourccC + ">" + fourccB + ">" + fourccA;
+    }
 
     Tag* Entity::tag() { return Halo1::getTag( tagID ); }
     char* Entity::getTagResourcePath() {
@@ -135,6 +142,59 @@ namespace Halo1 {
             return nullptr;
         Tag* tagArray = *(Tag**) ( dllBase + 0x1C34FB0U );
         return &tagArray[tagID & 0xFFFF];
+    }
+
+    Tag* findTag( const char* path, uint32_t fourCC) {
+        if ( !validTagPath( path ) ) return nullptr;
+        Tag* tagArray = *(Tag**) ( dllBase + 0x1C34FB0U );
+        for ( uint32_t i = 0; i < 0x10000; i++ ) {
+            auto tag = &tagArray[i];
+            if ( !tagExists( tag ) ) break;
+            if ( strcmp( tag->getResourcePath(), path ) == 0 && tag->fourCC_A == fourCC )
+                return tag;
+        }
+        return nullptr;
+    }
+
+    Tag* findTag( const char* path, const char* fourCC ) {
+        uint32_t fourCCValue = Strings::stringToFourcc( fourCC );
+        return findTag( path, fourCCValue );
+    }
+
+    ProjectileData* getProjectileData( Tag* tag, uint32_t projectileIndex) {
+        if ( !tag ) return nullptr;
+        auto data = (WeaponTagData*) tag->getData();
+        if ( !data ) return nullptr;
+        if (data->projectileData.count <= projectileIndex) return nullptr;
+        auto projectileData = (ProjectileData*) translateMapAddress( data->projectileData.offset );
+        return &projectileData[projectileIndex];
+    }
+
+    bool validTagPath( const char* path ) {
+        // Must match [a-zA-Z0-9_ \.\\-]+
+        // Must be atleast 3 characters long.
+        // Also must contain atleast one backslash.
+        int backslashCount = 0;
+        for ( size_t i = 0; i < 512; i++ ) {
+            char c = path[i];
+            if ( c == 0 ) 
+                return backslashCount > 0 && i > 2;
+            if ( 
+                !(c >= 'a' && c <= 'z') &&
+                !(c >= 'A' && c <= 'Z') &&
+                !(c >= '0' && c <= '9') && 
+                c != '_'   && c != ' '  &&
+                c != '\\'  && c != '.'  && c != '-'
+            )
+                return false;
+            if ( c == '\\' ) 
+                backslashCount++;
+        }
+        return true;
+    }
+    
+    bool tagExists( Tag* tag ) {
+        return tag && Memory::isAllocated( (uintptr_t) tag->getData() ) && Memory::isAllocated( (uintptr_t) tag->getResourcePath() );
     }
 
     EntityRecord* getEntityRecord( EntityList* pEntityList, uint32_t entityHandle ) {

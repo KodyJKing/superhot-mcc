@@ -1,6 +1,8 @@
 #pragma once
 #include <Windows.h>
 #include <optional>
+#include <vector>
+#include <memory>
 
 namespace Memory {
 
@@ -33,6 +35,34 @@ namespace Memory {
         bool result = safeWriteFast(address, value);
         VirtualProtect((LPVOID)address, sizeof(T), oldProtect, &oldProtect);
         return result;
+    }
+
+    class Patch {
+        public:
+            Patch(void* address, std::vector<uint8_t>& patchBytes) : m_address(address) {
+                m_originalBytes.resize(patchBytes.size());
+                ReadProcessMemory(GetCurrentProcess(), address, m_originalBytes.data(), patchBytes.size(), NULL);
+                WriteProcessMemory(GetCurrentProcess(), address, patchBytes.data(), patchBytes.size(), NULL);
+            }
+            ~Patch() {
+                WriteProcessMemory(GetCurrentProcess(), m_address, m_originalBytes.data(), m_originalBytes.size(), NULL);
+            }
+        private:
+            std::vector<uint8_t> m_originalBytes;
+            void* m_address;
+    };
+
+    using PatchPtr = std::shared_ptr<Patch>;
+
+    static PatchPtr createPatch(void* address, std::vector<uint8_t> patchBytes) {
+        return std::make_shared<Patch>(address, patchBytes);
+    }
+
+    template<typename T>
+    PatchPtr createPatch(T& lValue, T value) {
+        std::vector<uint8_t> patchBytes(sizeof(T));
+        memcpy(patchBytes.data(), &value, sizeof(T));
+        return createPatch(&lValue, patchBytes);
     }
     
 }
