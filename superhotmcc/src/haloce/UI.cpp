@@ -271,13 +271,13 @@ namespace HaloCE::Mod::UI {
             if (paused || view.bones) {
                 auto boneTransforms = entity->getBoneTransforms();
                 ImGui::Text("Bones: %p", boneTransforms);
-                ImGui::BeginChild("Bones", ImVec2(0, 0), ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY);
+                ImGui::BeginChild("Bones", ImVec2(0, 0), ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY | ImGuiChildFlags_AutoResizeX);
                 if (boneTransforms) {
                     for (int i = 0; i < entity->boneCount(); i++) {
                         auto bone = boneTransforms[i];
                         auto pos = bone.translation;
                         auto rot = bone.rotation;
-                        ImGui::Text("  %d: {%.2f, %.2f, %.2f, %.2f} {%.2f, %.2f, %.2f}", i, rot.x, rot.y, rot.z, rot.w, pos.x, pos.y, pos.z);
+                        ImGui::Text("%d: {%.2f, %.2f, %.2f, %.2f} {%.2f, %.2f, %.2f}", i, rot.x, rot.y, rot.z, rot.w, pos.x, pos.y, pos.z);
                     }
                 }
                 ImGui::EndChild();

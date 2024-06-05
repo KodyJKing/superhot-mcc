@@ -1015,7 +1015,10 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
         <Element Offset="372" Vartype="4 Bytes" Bytesize="4" RLECount="2" OffsetHex="00000174" DisplayMethod="unsigned integer"/>
         <Element Offset="380" Vartype="Double" Bytesize="8" OffsetHex="0000017C" DisplayMethod="unsigned integer"/>
         <Element Offset="388" Vartype="Float" Bytesize="4" RLECount="8" OffsetHex="00000184" DisplayMethod="unsigned integer"/>
-        <Element Offset="420" Vartype="4 Bytes" Bytesize="4" RLECount="5" OffsetHex="000001A4" DisplayMethod="hexadecimal"/>
+        <Element Offset="420" Vartype="4 Bytes" Bytesize="4" OffsetHex="000001A4" DisplayMethod="hexadecimal"/>
+        <Element Offset="424" Vartype="2 Bytes" Bytesize="2" OffsetHex="000001A8" Description="bonesByteCOunt" DisplayMethod="unsigned integer"/>
+        <Element Offset="426" Vartype="2 Bytes" Bytesize="2" OffsetHex="000001AA" Description="bonesOffset" DisplayMethod="hexadecimal"/>
+        <Element Offset="428" Vartype="4 Bytes" Bytesize="4" RLECount="3" OffsetHex="000001AC" DisplayMethod="hexadecimal"/>
         <Element Offset="440" Vartype="4 Bytes" Bytesize="4" RLECount="5" OffsetHex="000001B8" DisplayMethod="unsigned integer"/>
         <Element Offset="460" Vartype="4 Bytes" Bytesize="4" OffsetHex="000001CC" Description="previousWeaponOwnerHandle" DisplayMethod="hexadecimal"/>
         <Element Offset="464" Vartype="4 Bytes" Bytesize="4" OffsetHex="000001D0" DisplayMethod="unsigned integer"/>

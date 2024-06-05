@@ -10,18 +10,7 @@
 
 namespace Halo1 {
 
-    #pragma pack(push, 1)
-    struct Camera {
-        char pad0[4];
-        Vec3 pos;
-        char pad1[16];
-        float fov;
-        Vec3 fwd;
-        Vec3 up;
-    };
-    #pragma pack(pop)
-
-    // Thanks to Kavawuvi for documentation on the map format and Tag structure.
+    // Thanks to Kavawuvi for documentation on the map format and tag structure.
     class Tag {
         public:
         uint32_t fourCC_A; 
@@ -38,20 +27,53 @@ namespace Halo1 {
     };
 
     #pragma pack(push, 1)
-    struct ArrayPointer {
-        uint32_t count;
-        uint32_t offset; // Use translateMapAddress to get the actual pointer
-    };
-    struct WeaponTagData {
-        char pad_0000[0x4FC];
-        ArrayPointer projectileData;
-    };
-    struct ProjectileData {
-        char pad_0000[0x4];
-        float minRateOfFire;
-        float maxRateOfFire;
-        char pad_000C[0x108];
-    }; // Size = 0x114
+        struct MapHeader {
+            uint32_t magicHeader; // Should be 1751474532 ('head' in ascii fourcc)
+            uint32_t cacheVersion;
+            uint32_t fileSize;
+            uint32_t paddingLength; // Only used on Xbox
+            uint32_t tagDataOffset;
+            uint32_t tagDataSize;
+            char pad0[8];
+            char mapName[32];
+            char buildVersion[32];
+            uint32_t scenarioType;
+            uint32_t checksum;
+            char pad1[0x794];
+            uint32_t magicFooter; // Should be 1718579060 ('foot' in ascii fourcc)
+        };
+
+        struct ArrayPointer {
+            uint32_t count;
+            uint32_t offset; // Use translateMapAddress to get the actual pointer
+        };
+        
+        struct WeaponTagData {
+            char pad_0000[0x4FC];
+            ArrayPointer projectileData;
+        };
+
+        struct ProjectileData {
+            char pad_0000[0x4];
+            float minRateOfFire;
+            float maxRateOfFire;
+            char pad_000C[0x108];
+        }; // Size = 0x114
+
+        struct Camera {
+            char pad0[4];
+            Vec3 pos;
+            char pad1[16];
+            float fov;
+            Vec3 fwd;
+            Vec3 up;
+        };
+
+        struct Transform {
+            Quaternion rotation;
+            Vec3 translation;
+            float scale;
+        };
     #pragma pack(pop)
 
     class EntityList {
@@ -62,14 +84,6 @@ namespace Halo1 {
         uint16_t count; 
         int32_t entityListOffset; 
     };
-
-    #pragma pack(push, 1)
-    struct Transform {
-        Quaternion rotation;
-        Vec3 translation;
-        float scale;
-    };
-    #pragma pack(pop)
 
     class Entity {
         public:
@@ -97,8 +111,11 @@ namespace Halo1 {
         char pad_00A4[44]; 
         uint32_t vehicleHandle; 
         uint32_t childHandle; 
-        uint32_t parentHandle; 
-        char pad_00DC[292]; 
+        uint32_t parentHandle;
+        char pad_00DC[204];
+        uint16_t bonesByteCount;
+        uint16_t bonesOffset;
+        char pad_01AC[84];
         uint32_t projectileParentHandle; 
         float heat; 
         float plasmaUsed; 
@@ -143,25 +160,6 @@ namespace Halo1 {
 
         Entity* entity();
     };
-
-    // Thanks again to Kavawuvi
-    #pragma pack(push, 1)
-    struct MapHeader {
-        uint32_t magicHeader; // Should be 1751474532 ('head' in ascii fourcc)
-        uint32_t cacheVersion;
-        uint32_t fileSize;
-        uint32_t paddingLength; // Only used on Xbox
-        uint32_t tagDataOffset;
-        uint32_t tagDataSize;
-        char pad0[8];
-        char mapName[32];
-        char buildVersion[32];
-        uint32_t scenarioType;
-        uint32_t checksum;
-        char pad1[0x794];
-        uint32_t magicFooter; // Should be 1718579060 ('foot' in ascii fourcc)
-    };
-    #pragma pack(pop)
 
     // =======================================================
 

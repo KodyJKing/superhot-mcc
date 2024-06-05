@@ -41,21 +41,24 @@ namespace Halo1 {
     }
 
     uint16_t Entity::boneCount() {
-        auto animSetTag = Halo1::getTag(animSetTagID);
-        if ( !animSetTag ) return 0;
-        void* animSetData = animSetTag->getData();
-        if ( !animSetData ) return 0;
-        uint32_t animArrayAddress = Memory::safeRead<uint32_t>( (uintptr_t) animSetData + 0x78 ).value_or( 0 );
-        uintptr_t animArray = Halo1::translateMapAddress( animArrayAddress );
-        if ( !animArray ) return 0;
-        int animIndex = 0;
-        size_t sizeOfAnimation = 0xb4;
-        uintptr_t anim = animArray + animIndex * sizeOfAnimation;
-        return Halo1::boneCount( (void*) anim );
+        return bonesByteCount / sizeof( Transform );
+
+        // This is a good example of how to traverse animation tag data, so I'm keeping it around.
+        //
+        // auto animSetTag = Halo1::getTag(animSetTagID);
+        // if ( !animSetTag ) return 0;
+        // void* animSetData = animSetTag->getData();
+        // if ( !animSetData ) return 0;
+        // uint32_t animArrayAddress = Memory::safeRead<uint32_t>( (uintptr_t) animSetData + 0x78 ).value_or( 0 );
+        // uintptr_t animArray = Halo1::translateMapAddress( animArrayAddress );
+        // if ( !animArray ) return 0;
+        // int animIndex = 0;
+        // size_t sizeOfAnimation = 0xb4;
+        // uintptr_t anim = animArray + animIndex * sizeOfAnimation;
+        // return Halo1::boneCount( (void*) anim );
     }
 
     Transform* Entity::getBoneTransforms() {
-        uint16_t bonesOffset = Memory::safeRead<uint16_t>( (uintptr_t) this + 0x1AA ).value_or( 0 ); // field_0x1AA is not included in our Entity struct for now.
         if ( !bonesOffset ) return nullptr;
         return (Transform*) ( (uintptr_t) this + bonesOffset );
     }

@@ -15,7 +15,7 @@ namespace TimeScale {
     static const float walkingSpeed = 0.07f;
 
     static float minTimescale = 0.05f;
-    static float activityDecayRate = 0.05f;
+    static float activityDecayRate = 0.2f;
 
     static float rotationActivityCoefficient = 100.0f;
     static float rotationSpeedSmoothing = 0.75f;
