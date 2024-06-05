@@ -8,6 +8,7 @@
 #include <vector>
 #include "utils/Strings.hpp"
 #include "memory/Memory.hpp"
+#include "TimeScale.hpp"
 
 namespace HaloCE::Mod::UI {
 
@@ -25,7 +26,12 @@ namespace HaloCE::Mod::UI {
         if (ImGui::IsItemHovered()) ImGui::SetTooltip("Enable pose interpolation (F3)");
     }
 
-    void debug() {}
+    void debug() {
+        // ImGui::Text("Tick: %llu", HaloCE::Mod::tickCount);
+        // ImGui::Text("Animation States: %d", HaloCE::Mod::animationStates.size());
+        ImGui::Text("Time Scale: %.2f", TimeScale::timescale);
+        // ImGui::Text("Pose Interpolation: %s", HaloCE::Mod::settings.poseInterpolation ? "On" : "Off");
+    }
 
     void checkHotKeys() {
         if (ImGui::IsKeyPressed( ImGuiKey_F2, false ))
@@ -152,7 +158,7 @@ namespace HaloCE::Mod::UI {
 
     void espWindow() {
         bool paused = HaloMCC::isGamePaused();
-        ImGuiWindowFlags flags = 0;
+        ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize;
         if (!paused)
             flags |= ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove 
                   | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar
@@ -225,6 +231,8 @@ namespace HaloCE::Mod::UI {
 
         if (!Halo1::isGameLoaded())
             return;
+
+        ImGui::ProgressBar( TimeScale::timescale, ImVec2(200.0f, 0.0f) );
 
         espWindow();
 

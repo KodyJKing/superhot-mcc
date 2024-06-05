@@ -46,6 +46,10 @@ Vec3 Vec3::lerp( Vec3& a, Vec3& b, float t ) {
     return a + (b - a) * t;
 }
 
+Vec3 Vec3::lerp( Vec3& b, float t ) {
+    return *this + (b - *this) * t;
+}
+
 ////////////////////////////////////////
 // Quaternion
 
@@ -87,8 +91,8 @@ Quaternion Quaternion::nlerp( Quaternion& b, float t, bool shortestPath) {
 Quaternion Quaternion::pow( float exponent ) {
     float angle = acosf(w) * 2.0f;
     float newAngle = angle * exponent;
-    float mult = sinf(newAngle / 2.0) / sinf(angle / 2.0);
-    return Quaternion{ x * mult, y * mult, z * mult, cosf(newAngle / 2.0) };
+    float mult = sinf(newAngle / 2.0f) / sinf(angle / 2.0f);
+    return Quaternion{ x * mult, y * mult, z * mult, cosf(newAngle / 2.0f) };
 }
 
 ////////////////////////////////////////

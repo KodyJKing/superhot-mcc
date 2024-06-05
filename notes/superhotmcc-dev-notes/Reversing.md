@@ -70,3 +70,5 @@ I've only reversed the `Animation` structure enough to find `boneCount`. See `Ha
 # See Also
 
 [Kavawuvi's map file documentation](https://opencarnage.net/index.php?/topic/6693-halo-map-file-structure-revision-212/)
+
+https://c20.reclaimers.net/h1/tags/

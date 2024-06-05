@@ -11,24 +11,45 @@
 #include "asm/AsmHelper.hpp"
 #include "Halo1.hpp"
 #include "Rewind.hpp"
+#include "TimeScale.hpp"
 
 namespace HaloCE::Mod {
 
     namespace x86 = asmjit::x86;
 
+    // Deadzoning is intended to prevent discrete actions (like spawning projectiles) from being spammed when an entity should be nearly frozen.
+    float timescaleUpdateDeadzone = 0.05f;
+
+    float playerDamageMultiplier = 3.0f;
+    float npcDamageMultiplier = 2.0f;
+
     uintptr_t halo1 = 0;
 
-    uint64_t updateCount = 0;
-
-    // Associates bone interpolation state with an entity.
+    // Data associated with entity for pose interpolation.
     struct AnimationState {
         uint16_t animId;
         uint16_t frame;
         float frameProgress = 0;
-        uint64_t lastUpdate = 0; 
+        uint64_t lastUpdateTick = 0; 
     };
     // Bones pointer to animation state.
     std::unordered_map<uint64_t, AnimationState> animationStates;
+    
+    uint64_t tickCount = 0;
+
+    void clearStaleAnimationStates() {
+        std::vector<uint64_t> staleStates;
+        for (auto& [bonesPtr, state] : animationStates) {
+            if (tickCount - state.lastUpdateTick > 10)
+                staleStates.push_back( bonesPtr );
+        }
+        for (auto bonesPtr : staleStates) {
+            // std::cout << "Clearing stale animation state for bones at " << (void*) bonesPtr << std::endl;
+            animationStates.erase( bonesPtr );
+        }
+        // if (tickCount % 120 == 0)
+        //     std::cout << "Animation states: " << animationStates.size() << std::endl;
+    }
 
     AnimationState* getAnimationState( Halo1::Entity* entity ) {
         auto bones = entity->getBoneTransforms();
@@ -39,158 +60,201 @@ namespace HaloCE::Mod {
         return &animationStates[bonesPtr];
     }
     
-    namespace FunctionHooks {
+    typedef void (*updateAllEntities_t)( void );
+    updateAllEntities_t originalUpdateAllEntities = nullptr;
+    //
+    void hkUpdateAllEntities() {
+        TimeScale::update();
+        originalUpdateAllEntities();
+        clearStaleAnimationStates();
+        tickCount++;
+    }
+    
+    typedef uint64_t (*updateEntity_t)( uint32_t entityHandle );
+    updateEntity_t originalUpdateEntity = nullptr;
+    //
+    uint64_t hkUpdateEntity( uint32_t entityHandle ) {
 
-        typedef void (*updateAllEntities_t)( void );
-        updateAllEntities_t originalUpdateAllEntities = nullptr;
-        //
-        void hkUpdateAllEntities() {
-            originalUpdateAllEntities();
+        auto rec = Halo1::getEntityRecord( entityHandle );
+        if (!rec) 
+            return originalUpdateEntity( entityHandle);
+            
+        auto entity = rec->entity();
+        if (!entity)  
+            return originalUpdateEntity( entityHandle );
+            
+        if (!settings.enableTimeScale) 
+            return originalUpdateEntity( entityHandle );
 
-            // Clear out stale animation states.
-            std::vector<uint64_t> staleStates;
-            for (auto& [bonesPtr, state] : animationStates) {
-                if (updateCount - state.lastUpdate > 10)
-                    staleStates.push_back( bonesPtr );
-            }
-            for (auto bonesPtr : staleStates) {
-                // std::cout << "Clearing stale animation state for bones at " << (void*) bonesPtr << std::endl;
-                animationStates.erase( bonesPtr );
-            }
-            // if (updateCount % 120 == 0)
-            //     std::cout << "Animation states: " << animationStates.size() << std::endl;
+        // Snapshot the entity.
+        Halo1::Entity snap = *entity;
 
-            updateCount++;
-        }
+        // Compute timescale.
+        float globalTimeScale = TimeScale::timescale; // settings.timeScale;
+        float timeScale = globalTimeScale;
+        if (
+            rec->typeId == Halo1::TypeID_Player ||
+            Halo1::isRidingTransport( entity ) ||
+            Halo1::isTransport( entity )
+        )
+            timeScale = 1.0f;
         
-        typedef uint64_t (*updateEntity_t)( uint32_t entityHandle );
-        updateEntity_t originalUpdateEntity = nullptr;
-        //
-        uint64_t hkUpdateEntity( uint32_t entityHandle ) {
+        // if (
+        //     timeScale < timescaleUpdateDeadzone &&
+        //     entity->entityCategory == Halo1::EntityCategory_Weapon
+        // )
+        //     return 1;
 
-            auto rec = Halo1::getEntityRecord( entityHandle );
-            if (!rec) 
-                return originalUpdateEntity( entityHandle);
-                
-            auto entity = rec->entity();
-            if (!entity)  
-                return originalUpdateEntity( entityHandle );
-                
-            if (!settings.enableTimeScale) 
-                return originalUpdateEntity( entityHandle );
-
-            // Snapshot the entity.
-            Halo1::Entity snap = *entity;
-
-            // Compute timescale.
-            float globalTimeScale = settings.timeScale;
-            float timeScale = globalTimeScale;
-            if (
-                rec->typeId == Halo1::TypeID_Player ||
-                Halo1::isRidingTransport( entity ) ||
-                Halo1::isTransport( entity )
-            )
-                timeScale = 1.0f;
-
-            // Update animation progress for bipeds.
-            AnimationState* animState = nullptr;
-            if (entity->entityCategory == Halo1::EntityCategory_Biped) {
-                animState = getAnimationState( entity );
-                if (animState) {
-                    animState->animId = entity->animId;
-                    animState->frame = entity->animFrame;
-                    animState->frameProgress += timeScale;
-                    animState->lastUpdate = updateCount;
-                }
-            }
-
-            // Do update
-            uint64_t result = originalUpdateEntity( entityHandle );
-
-            // Interpolate old and new entity states according to timescale.
-            Rewind::rewind( rec, timeScale, globalTimeScale, snap );
-
-            // Advance animation frame once we've progressed through a whole frame.
+        // Advance animation progress by timescale.
+        AnimationState* animState = nullptr;
+        if (entity->entityCategory == Halo1::EntityCategory_Biped) {
+            animState = getAnimationState( entity );
             if (animState) {
-                if (entity->animId != animState->animId) {
+                animState->animId = entity->animId;
+                animState->frame = entity->animFrame;
+                animState->frameProgress += timeScale;
+                animState->lastUpdateTick = tickCount;
+            }
+        }
+
+        // Do update
+        uint64_t result = originalUpdateEntity( entityHandle );
+
+        // Interpolate old and new entity states according to timescale.
+        Rewind::rewind( rec, timeScale, globalTimeScale, snap );
+
+        // Advance animation frame once we've progressed through a whole frame.
+        if (animState) {
+            if (entity->animId != animState->animId) {
+                animState->frameProgress = 0;
+            } else {
+                if (animState->frameProgress >= 1)
                     animState->frameProgress = 0;
-                } else {
-                    if (animState->frameProgress >= 1)
-                        animState->frameProgress = 0;
-                    else
-                        entity->animFrame = animState->frame;
-                }
-            }
-
-            return result;
-        }
-
-        typedef void (*animateBones_t)(uint64_t param1, void* animation, uint16_t frame, Halo1::Transform* bones);
-        animateBones_t originalAnimateBones = nullptr;
-        //
-        void hkAnimateBones(uint64_t param1, void* animation, uint16_t frame, Halo1::Transform* bones) {
-            if (
-                !settings.enableTimeScale || 
-                !settings.poseInterpolation ||
-                !animationStates.count((uint64_t) bones)
-            )
-                return originalAnimateBones(param1, animation, frame, bones);
-
-            auto animState = animationStates[(uint64_t) bones];
-            if (animState.frame == frame)
-                return originalAnimateBones(param1, animation, frame, bones);
-
-            // Todo: Interpolate poses in transitions between different animations, not just frames.
-
-            // Get initial bone state.
-            originalAnimateBones(param1, animation, animState.frame, bones);
-
-            // Save a snapshot.
-            uint16_t boneCount = Halo1::boneCount(animation);
-            std::vector<Halo1::Transform> boneSnap;
-            for (uint16_t i = 0; i < boneCount; i++)
-                boneSnap.push_back(bones[i]);
-
-            // Get target bone state.
-            originalAnimateBones(param1, animation, frame, bones);
-
-            // Interpolate bone state.
-            float progress = animState.frameProgress;
-            for ( uint16_t i = 0; i < boneCount; i++ ) {
-                auto& bone = bones[i];
-                auto& snap = boneSnap[i];
-                bone.rotation = snap.rotation.nlerp(bone.rotation, progress);
-                bone.translation = Vec3::lerp(snap.translation, bone.translation, progress);
-                bone.scale = snap.scale + (bone.scale - snap.scale) * progress;
+                else
+                    entity->animFrame = animState->frame;
             }
         }
 
-        void init() {
-            void* pUpdateEntity = (void*) (halo1 + 0xB3A06CU);
-            std::cout << "UpdateEntity: " << pUpdateEntity << std::endl;
-            MH_CreateHook( pUpdateEntity, hkUpdateEntity, (void**) &originalUpdateEntity );
-            MH_EnableHook( pUpdateEntity );
-
-            void* pAnimateBones = (void*) (halo1 + 0xC41984U);
-            std::cout << "AnimateBones: " << pAnimateBones << std::endl;
-            MH_CreateHook( pAnimateBones, hkAnimateBones, (void**) &originalAnimateBones );
-            MH_EnableHook( pAnimateBones );
-
-            void* pUpdateAllEntities = (void*) (halo1 + 0xB35654U);
-            std::cout << "UpdateAllEntities: " << pUpdateAllEntities << std::endl;
-            MH_CreateHook( pUpdateAllEntities, hkUpdateAllEntities, (void**) &originalUpdateAllEntities );
-            MH_EnableHook( pUpdateAllEntities );
-        }
-
-        void free() {
-            MH_DisableHook( (void*) originalUpdateEntity );
-            MH_DisableHook( (void*) originalAnimateBones );
-            MH_DisableHook( (void*) originalUpdateAllEntities );
-        }
-
+        return result;
     }
 
-    // This may be going away. We only really need to hook the updateEntity function.
+    typedef void (*animateBones_t)(uint64_t param1, void* animation, uint16_t frame, Halo1::Transform* bones);
+    animateBones_t originalAnimateBones = nullptr;
+    //
+    void hkAnimateBones(uint64_t param1, void* animation, uint16_t frame, Halo1::Transform* bones) {
+        if (
+            !settings.enableTimeScale || 
+            !settings.poseInterpolation ||
+            !animationStates.count((uint64_t) bones)
+        )
+            return originalAnimateBones(param1, animation, frame, bones);
+
+        auto animState = animationStates[(uint64_t) bones];
+        if (animState.frame == frame)
+            return originalAnimateBones(param1, animation, frame, bones);
+
+        // Todo: Interpolate poses in transitions between different animations, not just frames.
+
+        // Get initial bone state.
+        originalAnimateBones(param1, animation, animState.frame, bones);
+
+        // Save a snapshot.
+        uint16_t boneCount = Halo1::boneCount(animation);
+        std::vector<Halo1::Transform> boneSnap;
+        for (uint16_t i = 0; i < boneCount; i++)
+            boneSnap.push_back(bones[i]);
+
+        // Get target bone state.
+        originalAnimateBones(param1, animation, frame, bones);
+
+        // Interpolate bone state.
+        float progress = animState.frameProgress;
+        for ( uint16_t i = 0; i < boneCount; i++ ) {
+            auto& bone = bones[i];
+            auto& snap = boneSnap[i];
+            bone.rotation = snap.rotation.nlerp(bone.rotation, progress);
+            bone.translation = snap.translation.lerp(bone.translation, progress);
+            bone.scale = snap.scale + (bone.scale - snap.scale) * progress;
+        }
+    }
+
+    // From Ghidra:
+    // void damageEntity(EntityHandle entityHandle,ushort param_2,undefined2 param_3,undefined8 param_4,
+    //              byte *param_5,DamageInfo *param_6_damageInfo,ulonglong param_7,longlong param_8,
+    //              uint *param_9,float *param_10,undefined4 *param_11,float param_12_damage,
+    //              char param_13)
+    // Located at: halo1.dll+B9FBD0
+    typedef void (*damageEntity_t)(uint32_t entityHandle, uint16_t param_2, uint16_t param_3, uint64_t param_4, uint8_t* param_5, void* param_6, uint64_t param_7, uint64_t param_8, uint32_t* param_9, float* param_10, uint32_t* param_11, float damage, char param_13);
+    damageEntity_t originalDamageEntity = nullptr;
+    //
+    void hkDamageEntity(uint32_t entityHandle, uint16_t param_2, uint16_t param_3, uint64_t param_4, uint8_t* param_5, void* param_6, uint64_t param_7, uint64_t param_8, uint32_t* param_9, float* param_10, uint32_t* param_11, float damage, char param_13) {
+        if (!settings.enableTimeScale)
+            return originalDamageEntity(entityHandle, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, damage, param_13);
+        
+        auto rec = Halo1::getEntityRecord( entityHandle );
+        if (!rec)
+            return originalDamageEntity(entityHandle, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, damage, param_13);
+
+        if (rec->typeId == Halo1::TypeID_Player)
+            damage *= playerDamageMultiplier;
+        else
+            damage *= npcDamageMultiplier;
+
+        return originalDamageEntity(entityHandle, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, damage, param_13);
+    }
+
+    void hookFunctions() {
+        void* pUpdateEntity = (void*) (halo1 + 0xB3A06CU);
+        std::cout << "UpdateEntity: " << pUpdateEntity << std::endl;
+        MH_CreateHook( pUpdateEntity, hkUpdateEntity, (void**) &originalUpdateEntity );
+        MH_EnableHook( pUpdateEntity );
+
+        void* pAnimateBones = (void*) (halo1 + 0xC41984U);
+        std::cout << "AnimateBones: " << pAnimateBones << std::endl;
+        MH_CreateHook( pAnimateBones, hkAnimateBones, (void**) &originalAnimateBones );
+        MH_EnableHook( pAnimateBones );
+
+        void* pUpdateAllEntities = (void*) (halo1 + 0xB35654U);
+        std::cout << "UpdateAllEntities: " << pUpdateAllEntities << std::endl;
+        MH_CreateHook( pUpdateAllEntities, hkUpdateAllEntities, (void**) &originalUpdateAllEntities );
+        MH_EnableHook( pUpdateAllEntities );
+
+        void* pDamageEntity = (void*) (halo1 + 0xB9FBD0U);
+        std::cout << "DamageEntity: " << pDamageEntity << std::endl;
+        MH_CreateHook( pDamageEntity, hkDamageEntity, (void**) &originalDamageEntity );
+        MH_EnableHook( pDamageEntity );
+    }
+
+    void unhookFunctions() {
+        MH_DisableHook( (void*) originalUpdateEntity );
+        MH_DisableHook( (void*) originalAnimateBones );
+        MH_DisableHook( (void*) originalUpdateAllEntities );
+        MH_DisableHook( (void*) originalDamageEntity );
+    }
+
+    void printInitDebugInfo();
+
+    void init() {
+        const std::string moduleName = "halo1.dll";
+        halo1 = (uintptr_t) Utils::waitForModule(moduleName);
+        std::cout << moduleName << ": " << (void*) halo1 << std::endl;
+
+        Halo1::init();
+        hookFunctions();
+        TimeScale::init();
+    }
+
+    void free() {
+        unhookFunctions();
+    }
+
+    // Called by mod dll's thread regularly.
+    void modThreadUpdate() {
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    // Not currently used, but we may use jump hooks in the near future, so let's keep this for reference.
     namespace JumpHooks {
         const size_t codeSize = 0x1000;
         uint8_t* codeMemory = nullptr;
@@ -240,56 +304,6 @@ namespace HaloCE::Mod {
                 VirtualFree( codeMemory, 0, MEM_RELEASE );
                 codeMemory = nullptr;
             }
-        }
-    }
-
-    void printInitDebugInfo();
-
-    void init() {
-        const std::string moduleName = "halo1.dll";
-        halo1 = (uintptr_t) Utils::waitForModule(moduleName);
-        std::cout << moduleName << ": " << (void*) halo1 << std::endl;
-
-        Halo1::init();
-
-        FunctionHooks::init();
-        // JumpHooks::init();
-
-        printInitDebugInfo();
-    }
-
-    void free() {
-        FunctionHooks::free();
-        // JumpHooks::free();
-    }
-
-    void printInitDebugInfo() {
-        // std::cout << "Entity.entityCategory offset: " << (void*) offsetof( Halo1::Entity, entityCategory ) << std::endl;
-
-        // std::cout << "pos offset: " << (void*) offsetof( Halo1::Camera, pos ) << std::endl;
-        // std::cout << "fov offset: " << (void*) offsetof( Halo1::Camera, fov ) << std::endl;
-        // std::cout << "fwd offset: " << (void*) offsetof( Halo1::Camera, fwd ) << std::endl;
-        // std::cout << "up offset: " << (void*) offsetof( Halo1::Camera, up ) << std::endl;
-
-        // std::cout << "animFrame offset: " << (void*) offsetof( Halo1::Entity, animFrame ) << std::endl;
-    }
-
-    void printDebugInfo() {
-        // Print player handle
-        // std::cout << "Player handle: " << (void*) Halo1::getPlayerHandle() << std::endl;
-
-        // // Print map header pointer.
-        // auto mapHeader = Halo1::getMapHeader();
-        // std::cout << "Map header: " << (void*) mapHeader << std::endl;
-        // if ( mapHeader ) {
-        //     std::cout << "Map name at: " << (void*) mapHeader->mapName << std::endl;
-        //     std::cout << "Map name: " << mapHeader->mapName << std::endl;
-        // }
-    }
-
-    void modThreadUpdate() {
-        if ( GetAsyncKeyState( VK_F1 ) & 1 ) {
-            printDebugInfo();
         }
     }
 

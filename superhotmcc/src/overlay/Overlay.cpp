@@ -12,6 +12,12 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 namespace Overlay {
 
+    HWND gameWindow;
+
+    HWND getGameWindow() {
+        return gameWindow;
+    }
+
     struct Settings {
         bool showESP = false;
     } settings = {};
@@ -159,7 +165,6 @@ namespace Overlay {
         }
     }
 
-    HWND gameWindow;
     void init() {
         gameWindow = DX11Hook::findMainWindow();
         DX11Hook::hook(gameWindow);

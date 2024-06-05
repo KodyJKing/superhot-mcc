@@ -29,6 +29,7 @@ struct Vec3 {
     Vec3 rejection(Vec3 axis);
 
     static Vec3 lerp( Vec3& a, Vec3& b, float t );
+    Vec3 lerp( Vec3& other, float t );
 };
 
 struct Quaternion {
