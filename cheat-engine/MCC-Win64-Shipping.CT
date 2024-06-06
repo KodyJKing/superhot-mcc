@@ -1588,13 +1588,13 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
         <Element Offset="2408" Vartype="Double" Bytesize="8" OffsetHex="00000968" DisplayMethod="unsigned integer"/>
         <Element Offset="2416" Vartype="4 Bytes" Bytesize="4" OffsetHex="00000970" DisplayMethod="unsigned integer"/>
         <Element Offset="2420" Vartype="4 Bytes" Bytesize="4" OffsetHex="00000974" DisplayMethod="hexadecimal"/>
-        <Element Offset="2424" Vartype="Float" Bytesize="4" OffsetHex="00000978" Description="Projectile[0].minRateOfFire" DisplayMethod="unsigned integer"/>
-        <Element Offset="2428" Vartype="Float" Bytesize="4" OffsetHex="0000097C" Description="Projectile[0].maxRateOfFire" DisplayMethod="unsigned integer"/>
+        <Element Offset="2424" Vartype="Float" Bytesize="4" OffsetHex="00000978" Description="projectile[0].minRateOfFire" DisplayMethod="unsigned integer"/>
+        <Element Offset="2428" Vartype="Float" Bytesize="4" OffsetHex="0000097C" Description="projectile[0].maxRateOfFire" DisplayMethod="unsigned integer"/>
         <Element Offset="2432" Vartype="4 Bytes" Bytesize="4" RLECount="9" OffsetHex="00000980" DisplayMethod="unsigned integer"/>
         <Element Offset="2468" Vartype="Float" Bytesize="4" RLECount="2" OffsetHex="000009A4" DisplayMethod="unsigned integer"/>
         <Element Offset="2476" Vartype="4 Bytes" Bytesize="4" RLECount="17" OffsetHex="000009AC" DisplayMethod="unsigned integer"/>
-        <Element Offset="2544" Vartype="Float" Bytesize="4" OffsetHex="000009F0" Description="Projectile[0].minSpread" DisplayMethod="unsigned integer"/>
-        <Element Offset="2548" Vartype="Float" Bytesize="4" OffsetHex="000009F4" Description="Projectile[0].maxSpread" DisplayMethod="unsigned integer"/>
+        <Element Offset="2544" Vartype="Float" Bytesize="4" OffsetHex="000009F0" Description="projectile[0].minSpread" DisplayMethod="unsigned integer"/>
+        <Element Offset="2548" Vartype="Float" Bytesize="4" OffsetHex="000009F4" Description="projectile[0].maxSpread" DisplayMethod="unsigned integer"/>
         <Element Offset="2552" Vartype="4 Bytes" Bytesize="4" RLECount="31" OffsetHex="000009F8" DisplayMethod="unsigned integer"/>
         <Element Offset="2676" Vartype="Double" Bytesize="8" OffsetHex="00000A74" DisplayMethod="unsigned integer"/>
         <Element Offset="2684" Vartype="4 Bytes" Bytesize="4" OffsetHex="00000A7C" DisplayMethod="unsigned integer"/>

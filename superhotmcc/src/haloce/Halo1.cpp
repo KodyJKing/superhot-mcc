@@ -18,11 +18,11 @@ namespace Halo1 {
 
     char* Tag::getResourcePath() { return (char*) translateMapAddress( resourcePathAddress ); }
     void* Tag::getData() { return (void*) translateMapAddress( dataAddress ); }
-    std::string Tag::fourCCStr() {
+    std::string Tag::groupIDStr() {
         auto fourccA = Strings::fourccToString( fourCC_A );
         auto fourccB = Strings::fourccToString( fourCC_B );
         auto fourccC = Strings::fourccToString( fourCC_C );
-        return fourccC + ">" + fourccB + ">" + fourccA;
+        return "[" + fourccC + " > " + fourccB + " > " + fourccA + "]";
     }
 
     Tag* Entity::tag() { return Halo1::getTag( tagID ); }

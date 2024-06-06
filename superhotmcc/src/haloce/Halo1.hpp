@@ -23,7 +23,7 @@ namespace Halo1 {
 
         char* getResourcePath();
         void* getData();
-        std::string fourCCStr();
+        std::string groupIDStr();
     };
 
     #pragma pack(push, 1)
