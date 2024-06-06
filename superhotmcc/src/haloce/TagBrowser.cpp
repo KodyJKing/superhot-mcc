@@ -85,14 +85,13 @@ namespace HaloCE::Mod::UI {
 
             bool hasSearch = search[0] != 0 || groupIdFilterIndex != 0;
 
-            // Filter function
             auto filterTag = [&](Halo1::Tag* tag) {
                 auto filterGroupID = ids[groupIdFilterIndex].groupID;
                 if (
                     filterGroupID != GROUP_ID_ALL && 
-                    tag->groupID != filterGroupID &&
-                    tag->parentGroupID != filterGroupID &&
-                    tag->grandparentGroupID != filterGroupID
+                    filterGroupID != tag->groupID &&
+                    filterGroupID != tag->parentGroupID &&
+                    filterGroupID != tag->grandparentGroupID
                 ) 
                     return false;
                 if (search[0] == 0)
@@ -137,7 +136,8 @@ namespace HaloCE::Mod::UI {
                         int i = 0;
                         while (!canceledSearch) {
                             auto tag = Halo1::getTag(i);
-                            if (!Halo1::tagExists(tag)) break;
+                            if (!Halo1::tagExists(tag)) 
+                                break;
                             if (filterTag(tag))
                                 searchResults.push_back(i);
                             i++;
@@ -155,6 +155,13 @@ namespace HaloCE::Mod::UI {
                 } );
                 searchThread.detach();
 
+            }
+
+            if (hasSearch)  {
+                int numPages = (int) ceil( searchResults.size() / (float) tagsPerPage );
+                ImGui::Text("%d results, %d pages", searchResults.size(), numPages);
+                if (page >= numPages) page = numPages - 1;
+                if (page < 0) page = 0;
             }
 
             //////////////////////////////////////////////////////////////////////////
@@ -213,13 +220,7 @@ namespace HaloCE::Mod::UI {
             };
 
             //////////////////////////////////////////////////////////////////////////
-
-            if (hasSearch)  {
-                int numPages = (int) ceil( searchResults.size() / (float) tagsPerPage );
-                ImGui::Text("%d results, %d pages", searchResults.size(), numPages);
-                if (page >= numPages) page = numPages - 1;
-                if (page < 0) page = 0;
-            }
+            // Results
 
             ImGui::Separator();
 

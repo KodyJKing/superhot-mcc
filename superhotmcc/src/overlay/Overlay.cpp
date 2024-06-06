@@ -51,20 +51,19 @@ namespace Overlay {
 
         // Tabs
         if (ImGui::BeginTabBar("SuperHot MCC Tabs")) {
-            if (ImGui::BeginTabItem("Settings")) {
+            if (ImGui::BeginTabItem("Dev")) {
                 ImGui::Checkbox("ESP", &settings.showESP);
                 if (ImGui::IsItemHovered()) ImGui::SetTooltip("Show debug ESP (F1)");
-
+                HaloCE::Mod::UI::debug();
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Settings")) {
                 HaloCE::Mod::UI::settings();
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("About")) {
                 ImGui::Text("Superhot MCC 1.0.0 by Kody King");
                 credits();
-                ImGui::EndTabItem();
-            }
-            if (ImGui::BeginTabItem("Debug")) {
-                HaloCE::Mod::UI::debug();
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();

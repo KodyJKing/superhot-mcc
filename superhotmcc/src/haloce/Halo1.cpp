@@ -164,12 +164,12 @@ namespace Halo1 {
         return findTag( path, fourCCValue );
     }
 
-    ProjectileData* getProjectileData( Tag* tag, uint32_t projectileIndex) {
+    WeaponProjectileData* getProjectileData( Tag* tag, uint32_t projectileIndex) {
         if ( !tag ) return nullptr;
         auto data = (WeaponTagData*) tag->getData();
         if ( !data ) return nullptr;
         if (data->projectileData.count <= projectileIndex) return nullptr;
-        auto projectileData = (ProjectileData*) translateMapAddress( data->projectileData.offset );
+        auto projectileData = (WeaponProjectileData*) translateMapAddress( data->projectileData.offset );
         return &projectileData[projectileIndex];
     }
 

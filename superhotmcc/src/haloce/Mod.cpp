@@ -27,6 +27,44 @@ namespace HaloCE::Mod {
 
     uintptr_t halo1 = 0;
 
+    float getPlayerShield() {
+        auto playerHandle = Halo1::getPlayerHandle();
+        if (!playerHandle) return 0;
+        auto playerRec = Halo1::getEntityRecord( playerHandle );
+        if (!playerRec) return 0;
+        auto player = playerRec->entity();
+        if (!player) return 0;
+        return player->shield;
+    }
+
+    float getGlobalTimeScale() {
+        if (settings.overrideTimeScale)
+            return settings.timeScale;
+            
+        auto result = TimeScale::timescale;
+        
+        if (settings.shieldLimitedTimeScale) {
+            float shield = getPlayerShield();
+            if (shield < 0.0f) shield = 0.0f;
+            if (shield > 1.0f) shield = 1.0f;
+            float slowdown = 1.0f - result;
+            result = 1.0f - slowdown * shield;
+        }
+
+        return result;
+    }
+
+    float timescaleForEntity( Halo1::EntityRecord* rec, Halo1::Entity* entity, float globalTimeScale ) {
+        if (rec->typeId == Halo1::TypeID_Player)
+            return 1.0f;
+        if (Halo1::isRidingTransport( entity ) || Halo1::isTransport( entity ))
+            return 1.0f;
+        return globalTimeScale;
+    }
+
+    //////////////////////////////////////////////////////////////////
+    // Animation state
+
     // Data associated with entity for pose interpolation.
     struct AnimationState {
         uint16_t animId;
@@ -61,6 +99,9 @@ namespace HaloCE::Mod {
             animationStates[bonesPtr] = AnimationState{};
         return &animationStates[bonesPtr];
     }
+
+    //////////////////////////////////////////////////////////////////
+    // Hooks
     
     typedef void (*updateAllEntities_t)( void );
     updateAllEntities_t originalUpdateAllEntities = nullptr;
@@ -95,20 +136,16 @@ namespace HaloCE::Mod {
         Halo1::Entity snap = *entity;
 
         // Compute timescale.
-        float globalTimeScale = TimeScale::timescale; // settings.timeScale;
-        float timeScale = globalTimeScale;
-        if (
-            rec->typeId == Halo1::TypeID_Player ||
-            Halo1::isRidingTransport( entity ) ||
-            Halo1::isTransport( entity )
-        )
-            timeScale = 1.0f;
+        float globalTimeScale = getGlobalTimeScale();
+        float timeScale = timescaleForEntity( rec, entity, globalTimeScale );
         
-        // if (
-        //     timeScale < timescaleUpdateDeadzone &&
-        //     entity->entityCategory == Halo1::EntityCategory_Weapon
-        // )
-        //     return 1;
+        if ( settings.timescaleDeadzoning && timeScale < timescaleUpdateDeadzone ) {
+            return 1;
+
+            // // Skip update with probability 1 - timeScale.
+            // if (rand() / (float) RAND_MAX > timeScale)
+            //     return 1;
+        }
 
         // Advance animation progress by timescale.
         AnimationState* animState = nullptr;
@@ -235,6 +272,8 @@ namespace HaloCE::Mod {
         MH_DisableHook( (void*) originalDamageEntity );
     }
 
+    //////////////////////////////////////////////////////////////////
+
     std::vector<Memory::PatchPtr> patches;
     void patchTags() {
         // Limit plasma pistol rate of fire.
@@ -246,6 +285,24 @@ namespace HaloCE::Mod {
         if (!projData) return;
         patches.push_back( Memory::createPatch( projData->minRateOfFire, 15.0f ) );
         patches.push_back( Memory::createPatch( projData->maxRateOfFire, 15.0f ) );
+
+        std::string hitscanProjectiles[] = {
+            "weapons\\assault rifle\\bullet",
+            "weapons\\pistol\\bullet",
+            "weapons\\sniper rifle\\sniper bullet"
+        };
+
+        for (const std::string& projName : hitscanProjectiles) {
+            auto projTag = Halo1::findTag( projName.c_str(), "proj" );
+            std::cout << projName << " tag: " << projTag << std::endl;
+            auto projData = (Halo1::ProjectileTagData*) projTag->getData();
+            std::cout << projName << " Projectile data: " << projData << std::endl;
+            if (!projData) return;
+
+            const float speed = 1.5f;
+            patches.push_back( Memory::createPatch( projData->initialSpeed, speed ) );
+            patches.push_back( Memory::createPatch( projData->finalSpeed, speed ) );
+        }
 
         // { // Test setting sniper rof really high.
         //     auto assaultRifleTag = Halo1::findTag( "weapons\\assault rifle\\assault rifle", "weap" );

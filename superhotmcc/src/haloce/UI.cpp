@@ -18,45 +18,61 @@
 namespace HaloCE::Mod::UI {
 
     void settings() {
-        ImGui::Checkbox("##Enable Time Scale", &HaloCE::Mod::settings.enableTimeScale);
-        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Enable time scaling (F2)");
-        ImGui::SameLine();
-        int timeScalePercent = (int) (HaloCE::Mod::settings.timeScale * 100.0f);
-        ImGui::PushItemWidth(220);
-        ImGui::SliderInt( "Speed", &timeScalePercent, 0, 100, "%d%%" );
-        ImGui::PopItemWidth();
-        HaloCE::Mod::settings.timeScale = timeScalePercent / 100.0f;
-
-        ImGui::Checkbox("Pose Interpolation", &HaloCE::Mod::settings.poseInterpolation);
-        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Enable pose interpolation (F3)");
     }
 
     void debug() {
-        // Translate map address
-        ImGui::BeginChild("##Translate Map Address", ImVec2(0, 0), ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY);
-            ImGui::Text("Translate Map Address");
-            static char address[255] = {0};
-            ImGui::InputText("##Address", address, 255);
-            static uint32_t mapAddress = 0;
-            try {
-                mapAddress = std::stoul( address, nullptr, 16 );
-            } catch (...) {
-                mapAddress = 0;
-            }
-            uint64_t translated = Halo1::translateMapAddress( mapAddress );
-            ImGui::Text("-> %p", (void*) translated);
-            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy translated address to clipboard");
-            if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                char text[255] = {0};
-                snprintf( text, 255, "%p", (void*) translated );
-                ImGui::SetClipboardText( text );
-            }
-        ImGui::EndChild();
 
-        if (ImGui::Button("Tag Browser"))
-            showTagBrowser = true;
-        if (showTagBrowser)
-            tagBrowser();
+        ImGui::Checkbox("Pose Interpolation", &HaloCE::Mod::settings.poseInterpolation);
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Enable pose interpolation (F3)");
+        
+        if (ImGui::CollapsingHeader("Time Scale", ImGuiTreeNodeFlags_DefaultOpen)) {
+            ImGui::Checkbox("Enable Time Scale", &HaloCE::Mod::settings.enableTimeScale);
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Enable time scaling (F2)");
+
+            ImGui::Checkbox("Override Time Scale", &HaloCE::Mod::settings.overrideTimeScale);
+            int timeScalePercent = (int) (HaloCE::Mod::settings.timeScale * 100.0f);
+            ImGui::PushItemWidth(200);
+            ImGui::SliderInt( "Scale", &timeScalePercent, 0, 100, "%d%%" );
+            ImGui::PopItemWidth();
+            HaloCE::Mod::settings.timeScale = timeScalePercent / 100.0f;
+
+            ImGui::Checkbox("Time Scale Deadzoning", &HaloCE::Mod::settings.timescaleDeadzoning);
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Deadzone time scaling to prevent game from freezing (F4)");
+
+            ImGui::Checkbox("Shield Limited Time Scale", &HaloCE::Mod::settings.shieldLimitedTimeScale);
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Limit time scaling when shields are down (F5)");
+        }
+
+        if (ImGui::CollapsingHeader("Tools")) {
+            // Translate map address
+            ImGui::BeginChild("##Translate Map Address", ImVec2(0, 0), ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY);
+                ImGui::Text("Translate Map Address");
+                static char address[255] = {0};
+                ImGui::InputText("##Address", address, 255);
+                static uint32_t mapAddress = 0;
+                try {
+                    mapAddress = std::stoul( address, nullptr, 16 );
+                } catch (...) {
+                    mapAddress = 0;
+                }
+                if (mapAddress) {
+                    uint64_t translated = Halo1::translateMapAddress( mapAddress );
+                    ImGui::Text("-> %p", (void*) translated);
+                    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy translated address to clipboard");
+                    if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+                        char text[255] = {0};
+                        snprintf( text, 255, "%p", (void*) translated );
+                        ImGui::SetClipboardText( text );
+                    }
+                }
+            ImGui::EndChild();
+
+            if (ImGui::Button("Tag Browser"))
+                showTagBrowser = !showTagBrowser;
+            if (showTagBrowser)
+                tagBrowser();
+        }
+
     }
 
     void checkHotKeys() {
@@ -64,6 +80,10 @@ namespace HaloCE::Mod::UI {
             HaloCE::Mod::settings.enableTimeScale = !HaloCE::Mod::settings.enableTimeScale;
         if (ImGui::IsKeyPressed( ImGuiKey_F3, false ))
             HaloCE::Mod::settings.poseInterpolation = !HaloCE::Mod::settings.poseInterpolation;
+        if (ImGui::IsKeyPressed( ImGuiKey_F4, false ))
+            HaloCE::Mod::settings.timescaleDeadzoning = !HaloCE::Mod::settings.timescaleDeadzoning;
+        if (ImGui::IsKeyPressed( ImGuiKey_F5, false ))
+            HaloCE::Mod::settings.shieldLimitedTimeScale = !HaloCE::Mod::settings.shieldLimitedTimeScale;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -166,7 +186,7 @@ namespace HaloCE::Mod::UI {
                 auto boneTransforms = entity->getBoneTransforms();
                 ImGui::Text("Bones: %p", boneTransforms);
                 ImGui::BeginChild("Bones", ImVec2(0, 0), ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY | ImGuiChildFlags_AutoResizeX);
-                if (boneTransforms) {
+                if (view.bones && boneTransforms) {
                     for (int i = 0; i < entity->boneCount(); i++) {
                         auto bone = boneTransforms[i];
                         auto pos = bone.translation;
@@ -256,7 +276,7 @@ namespace HaloCE::Mod::UI {
         if (!Halo1::isGameLoaded())
             return;
 
-        ImGui::ProgressBar( TimeScale::timescale, ImVec2(200.0f, 0.0f) );
+        ImGui::ProgressBar( getGlobalTimeScale(), ImVec2(200.0f, 0.0f) );
 
         espWindow();
 
