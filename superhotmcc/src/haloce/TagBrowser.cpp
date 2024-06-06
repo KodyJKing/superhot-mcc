@@ -1,84 +1,156 @@
+#include <Windows.h>
+#include <stdint.h>
 #include <thread>
 #include <mutex>
 #include <string>
 #include "imgui.h"
 #include "Halo1.hpp"
+#include "utils/Strings.hpp"
 
 namespace HaloCE::Mod::UI {
 
+    struct GroupID {
+        const char* name;
+        uint32_t groupID;
+    };
+
+    #define GROUP_ID_ALL 0
+
+    GroupID ids[] = {
+        {"All", GROUP_ID_ALL}, // This needs to stay at index 0.
+        {"Weapon", Strings::stringToFourcc("weap")},
+        {"Projectile", Strings::stringToFourcc("proj")},
+        {"Scenenery", Strings::stringToFourcc("scen")},
+        {"Vehicle", Strings::stringToFourcc("vehi")},
+        {"Biped", Strings::stringToFourcc("bipd")},
+        {"Device", Strings::stringToFourcc("devi")},
+        {"Effect", Strings::stringToFourcc("effe")},
+        {"Sound", Strings::stringToFourcc("snd!")},
+        {"Damage", Strings::stringToFourcc("jpt!")},
+        {"Animation", Strings::stringToFourcc("antr")},
+        {"Actor Variant", Strings::stringToFourcc("actv")},
+        {"Bitmap", Strings::stringToFourcc("bitm")},
+        {"Shader", Strings::stringToFourcc("shdr")},
+        {"Light", Strings::stringToFourcc("ligh")},
+    };
+
+    #define NUM_GROUP_IDS (sizeof(ids) / sizeof(GroupID))
+
     bool showTagBrowser = false;
+
     void tagBrowser() {
+
         ImGui::Begin("Tag Browser", &showTagBrowser, ImGuiWindowFlags_AlwaysAutoResize);
         
             //////////////////////////////////////////////////////////////////////////
             // Pagination
             static int tagsPerPage = 50;
             static int page = 0;
-            ImGui::InputInt("Page size", &tagsPerPage);
-            if (tagsPerPage < 1) tagsPerPage = 1;
             ImGui::InputInt("Page", &page);
             if (ImGui::IsWindowHovered())
                 page -= (int) ImGui::GetIO().MouseWheel;
-            if (page < 0) page = 0;
+            if (page < 0) 
+                page = 0;
+            ImGui::SameLine();
+            ImGui::InputInt("Page size", &tagsPerPage);
+            if (tagsPerPage < 1) 
+                tagsPerPage = 1;
 
             //////////////////////////////////////////////////////////////////////////
             // Search
-            
+
+            static int groupIdFilterIndex = 0;
+            static int lastGroupIdFilterIndex = 0;
             static char search[512] = {0};
             static char lastSearch[512] = {0};
             static std::vector<int> searchResults;
 
+            ImGui::Separator();
+            { // GroupID filter input
+                if (ImGui::BeginCombo("##GroupID", ids[groupIdFilterIndex].name)) {
+                    for (int i = 0; i < NUM_GROUP_IDS; i++) {
+                        bool isSelected = groupIdFilterIndex == i;
+                        if (ImGui::Selectable(ids[i].name, isSelected)) {
+                            groupIdFilterIndex = i;
+                        }
+                        if (isSelected) ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+                }
+            }
+
+            ImGui::SameLine();
             ImGui::InputText("Search", search, 512);
             bool focused = ImGui::IsItemActive();
+
+            bool hasSearch = search[0] != 0 || groupIdFilterIndex != 0;
+
+            // Filter function
+            auto filterTag = [&](Halo1::Tag* tag) {
+                auto filterGroupID = ids[groupIdFilterIndex].groupID;
+                if (
+                    filterGroupID != GROUP_ID_ALL && 
+                    tag->groupID != filterGroupID &&
+                    tag->parentGroupID != filterGroupID &&
+                    tag->grandparentGroupID != filterGroupID
+                ) 
+                    return false;
+                if (search[0] == 0)
+                    return true;
+                std::string pathStr = tag->getResourcePath();
+                return pathStr.find(search) != std::string::npos;
+            };
             
-            bool searchChanged = strcmp(search, lastSearch) != 0;
+            bool searchChanged = strcmp(search, lastSearch) != 0 || groupIdFilterIndex != lastGroupIdFilterIndex;
 
             // Debounce search
             static uint64_t lastSearchTick = GetTickCount64();
             uint64_t tick = GetTickCount64();
             bool debounce = focused && (tick - lastSearchTick < 200);
-            bool tooShort = focused && strlen(search) < 3;
             
             static std::mutex searchMutex;
-            if (!tooShort && !debounce && searchChanged && searchMutex.try_lock() ) {
+            if (!debounce && searchChanged && searchMutex.try_lock() ) {
                 searchMutex.unlock();
                 
                 std::thread searchThread = std::thread( [&] {
                     std::lock_guard<std::mutex> lock(searchMutex);
-                    int i = 0;
                     std::string searchStr = search;
-                    std::transform(searchStr.begin(), searchStr.end(), searchStr.begin(), ::tolower);
+
+                    bool canceledSearch = false;
 
                     bool hasLastSearch = lastSearch[0] != 0;
-                    bool lastSearchIsPrefix = hasLastSearch && searchStr.find(lastSearch) == 0;
-                    if (lastSearchIsPrefix) {
-                        // Results will be a subset of previous results.
+                    bool containsLastSearch = hasLastSearch && searchStr.find(lastSearch) != std::string::npos;
+                    bool filterNarrowed = lastGroupIdFilterIndex == groupIdFilterIndex || lastGroupIdFilterIndex == 0;
+                    bool canReuse = containsLastSearch && filterNarrowed;
+                    if (canReuse) {
+                        // Results will be a subset of previous results, filter them.
                         std::vector<int> newResults;
                         for (int index : searchResults) {
                             auto tag = Halo1::getTag(index);
-                            auto path = tag->getResourcePath();
-                            std::string pathStr = path;
-                            std::transform(pathStr.begin(), pathStr.end(), pathStr.begin(), ::tolower);
-                            if (pathStr.find(searchStr) != std::string::npos)
+                            if (filterTag(tag))
                                 newResults.push_back(index);
                         }
                         searchResults = newResults;
                     } else {
                         // Search from scratch
                         searchResults.clear();
-                        while (true) {
+                        int i = 0;
+                        while (!canceledSearch) {
                             auto tag = Halo1::getTag(i);
                             if (!Halo1::tagExists(tag)) break;
-                            auto path = tag->getResourcePath();
-                            std::string pathStr = path;
-                            std::transform(pathStr.begin(), pathStr.end(), pathStr.begin(), ::tolower);
-                            if (pathStr.find(searchStr) != std::string::npos)
+                            if (filterTag(tag))
                                 searchResults.push_back(i);
                             i++;
-                        }
 
+                            // Cancel search if query has changed
+                            if (searchStr != search)
+                                canceledSearch = true;
+                        }
                     }
-                    strcpy_s( lastSearch, searchStr.c_str() );
+                    if (!canceledSearch) {
+                        strcpy_s( lastSearch, searchStr.c_str() );
+                        lastGroupIdFilterIndex = groupIdFilterIndex;
+                    }
                     lastSearchTick = GetTickCount64();
                 } );
                 searchThread.detach();
@@ -142,17 +214,16 @@ namespace HaloCE::Mod::UI {
 
             //////////////////////////////////////////////////////////////////////////
 
-            if (!tooShort)  {
+            if (hasSearch)  {
                 int numPages = (int) ceil( searchResults.size() / (float) tagsPerPage );
-                ImGui::SameLine();
-                ImGui::Text("(%d results, %d pages)", searchResults.size(), numPages);
+                ImGui::Text("%d results, %d pages", searchResults.size(), numPages);
                 if (page >= numPages) page = numPages - 1;
                 if (page < 0) page = 0;
             }
 
             ImGui::Separator();
 
-            if (!tooShort && search[0] != 0) {
+            if (hasSearch) {
                 // Render search results
                 if (searchMutex.try_lock()) {
                     int pageBase = page * tagsPerPage;
@@ -177,6 +248,7 @@ namespace HaloCE::Mod::UI {
             }
 
         ImGui::End();
+
     }
 
 }

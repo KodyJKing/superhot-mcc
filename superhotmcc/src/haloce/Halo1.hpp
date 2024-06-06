@@ -13,9 +13,9 @@ namespace Halo1 {
     // Thanks to Kavawuvi for documentation on the map format and tag structure.
     class Tag {
         public:
-        uint32_t fourCC_A; 
-        uint32_t fourCC_B; 
-        uint32_t fourCC_C; 
+        uint32_t groupID; // Group ID's are fourcc's
+        uint32_t parentGroupID; 
+        uint32_t grandparentGroupID;
         uint32_t tagID; 
         uint32_t resourcePathAddress; 
         uint32_t dataAddress; 

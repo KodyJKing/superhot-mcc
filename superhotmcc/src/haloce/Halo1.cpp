@@ -19,9 +19,9 @@ namespace Halo1 {
     char* Tag::getResourcePath() { return (char*) translateMapAddress( resourcePathAddress ); }
     void* Tag::getData() { return (void*) translateMapAddress( dataAddress ); }
     std::string Tag::groupIDStr() {
-        auto fourccA = Strings::fourccToString( fourCC_A );
-        auto fourccB = Strings::fourccToString( fourCC_B );
-        auto fourccC = Strings::fourccToString( fourCC_C );
+        auto fourccA = Strings::fourccToString( groupID );
+        auto fourccB = Strings::fourccToString( parentGroupID );
+        auto fourccC = Strings::fourccToString( grandparentGroupID );
         return "[" + fourccC + " > " + fourccB + " > " + fourccA + "]";
     }
 
@@ -153,7 +153,7 @@ namespace Halo1 {
         for ( uint32_t i = 0; i < 0x10000; i++ ) {
             auto tag = &tagArray[i];
             if ( !tagExists( tag ) ) break;
-            if ( strcmp( tag->getResourcePath(), path ) == 0 && tag->fourCC_A == fourCC )
+            if ( strcmp( tag->getResourcePath(), path ) == 0 && tag->groupID == fourCC )
                 return tag;
         }
         return nullptr;
