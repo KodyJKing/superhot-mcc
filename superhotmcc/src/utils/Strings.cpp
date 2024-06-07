@@ -30,7 +30,6 @@ namespace Strings {
         b = str[1];
         c = str[2];
         d = str[3];
-        uint32_t fourcc = 0;
         return (a << 24) | (b << 16) | (c << 8) | d;
     }
 

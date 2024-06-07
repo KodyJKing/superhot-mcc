@@ -131,6 +131,12 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
       <Description>"=== Temporary =========================================="</Description>
       <GroupHeader>1</GroupHeader>
     </CheatEntry>
+    <CheatEntry>
+      <ID>33</ID>
+      <Description>"shield"</Description>
+      <VariableType>Float</VariableType>
+      <Address>[playerPtr]+A0</Address>
+    </CheatEntry>
   </CheatEntries>
   <CheatCodes>
     <CodeEntry>
@@ -211,6 +217,31 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
         <Byte>41</Byte>
         <Byte>BF</Byte>
         <Byte>01</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Damage Shield : movss [r14],xmm1</Description>
+      <AddressString>halo1.dll+BA0479</AddressString>
+      <Before>
+        <Byte>09</Byte>
+        <Byte>F3</Byte>
+        <Byte>0F</Byte>
+        <Byte>5C</Byte>
+        <Byte>CA</Byte>
+      </Before>
+      <Actual>
+        <Byte>F3</Byte>
+        <Byte>41</Byte>
+        <Byte>0F</Byte>
+        <Byte>11</Byte>
+        <Byte>0E</Byte>
+      </Actual>
+      <After>
+        <Byte>41</Byte>
+        <Byte>F6</Byte>
+        <Byte>45</Byte>
+        <Byte>00</Byte>
+        <Byte>02</Byte>
       </After>
     </CodeEntry>
     <CodeEntry>
@@ -409,6 +440,30 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
         <Byte>7F</Byte>
         <Byte>3A</Byte>
         <Byte>B8</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Get Shield Dmg Resist Function :sub rsp,28</Description>
+      <AddressString>halo1.dll+B9D114</AddressString>
+      <Before>
+        <Byte>48</Byte>
+        <Byte>83</Byte>
+        <Byte>C4</Byte>
+        <Byte>28</Byte>
+        <Byte>C3</Byte>
+      </Before>
+      <Actual>
+        <Byte>48</Byte>
+        <Byte>83</Byte>
+        <Byte>EC</Byte>
+        <Byte>28</Byte>
+      </Actual>
+      <After>
+        <Byte>0F</Byte>
+        <Byte>B7</Byte>
+        <Byte>C9</Byte>
+        <Byte>41</Byte>
+        <Byte>BA</Byte>
       </After>
     </CodeEntry>
     <CodeEntry GroupHeader="1">

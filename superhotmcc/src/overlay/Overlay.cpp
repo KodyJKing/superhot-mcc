@@ -105,12 +105,18 @@ namespace Overlay {
     void render() {
         UnloadLock lock; // Prevent unloading while rendering
 
+        bool paused = HaloMCC::isPauseMenuOpen();
+
+        auto io = ImGui::GetIO();
+        io.WantCaptureKeyboard = paused;
+        io.WantCaptureMouse = paused;
+
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
         checkHotkeys();
 
-        if ( HaloMCC::isPauseMenuOpen() )
+        if ( paused )
             mainModWindow();
         if ( settings.showESP )
             esp();

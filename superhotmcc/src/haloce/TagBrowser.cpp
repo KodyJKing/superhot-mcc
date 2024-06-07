@@ -17,21 +17,23 @@ namespace HaloCE::Mod::UI {
     #define GROUP_ID_ALL 0
 
     GroupID ids[] = {
-        {"All", GROUP_ID_ALL}, // This needs to stay at index 0.
-        {"Weapon", Strings::stringToFourcc("weap")},
-        {"Projectile", Strings::stringToFourcc("proj")},
-        {"Scenenery", Strings::stringToFourcc("scen")},
-        {"Vehicle", Strings::stringToFourcc("vehi")},
-        {"Biped", Strings::stringToFourcc("bipd")},
-        {"Device", Strings::stringToFourcc("devi")},
-        {"Effect", Strings::stringToFourcc("effe")},
-        {"Sound", Strings::stringToFourcc("snd!")},
-        {"Damage", Strings::stringToFourcc("jpt!")},
-        {"Animation", Strings::stringToFourcc("antr")},
-        {"Actor Variant", Strings::stringToFourcc("actv")},
-        {"Bitmap", Strings::stringToFourcc("bitm")},
-        {"Shader", Strings::stringToFourcc("shdr")},
-        {"Light", Strings::stringToFourcc("ligh")},
+        {"All", GROUP_ID_ALL},
+        #define GROUP_ID(friendlyName, fourccStr) {friendlyName, Strings::stringToFourcc(fourccStr)},
+        GROUP_ID("Weapon", "weap")
+        GROUP_ID("Projectile", "proj")
+        GROUP_ID("Damage", "jpt!")
+        GROUP_ID("Vehicle", "vehi")
+        GROUP_ID("Biped", "bipd")
+        GROUP_ID("Scenenery", "scen")
+        GROUP_ID("Device", "devi")
+        GROUP_ID("Effect", "effe")
+        GROUP_ID("Sound", "snd!")
+        GROUP_ID("Animation", "antr")
+        GROUP_ID("Actor Variant", "actv")
+        GROUP_ID("Bitmap", "bitm")
+        GROUP_ID("Shader", "shdr")
+        GROUP_ID("Light", "ligh")
+        #undef GROUP_ID
     };
 
     #define NUM_GROUP_IDS (sizeof(ids) / sizeof(GroupID))
@@ -44,6 +46,7 @@ namespace HaloCE::Mod::UI {
         
             //////////////////////////////////////////////////////////////////////////
             // Pagination
+
             static int tagsPerPage = 50;
             static int page = 0;
             ImGui::InputInt("Page", &page);
@@ -82,6 +85,12 @@ namespace HaloCE::Mod::UI {
             ImGui::SameLine();
             ImGui::InputText("Search", search, 512);
             bool focused = ImGui::IsItemActive();
+            
+            ImGui::SameLine();
+            if (ImGui::Button("Clear")) {
+                search[0] = 0;
+                groupIdFilterIndex = 0;
+            }
 
             bool hasSearch = search[0] != 0 || groupIdFilterIndex != 0;
 
@@ -119,7 +128,7 @@ namespace HaloCE::Mod::UI {
 
                     bool hasLastSearch = lastSearch[0] != 0;
                     bool containsLastSearch = hasLastSearch && searchStr.find(lastSearch) != std::string::npos;
-                    bool filterNarrowed = lastGroupIdFilterIndex == groupIdFilterIndex || lastGroupIdFilterIndex == 0;
+                    bool filterNarrowed = lastGroupIdFilterIndex == groupIdFilterIndex || ids[lastGroupIdFilterIndex].groupID == GROUP_ID_ALL;
                     bool canReuse = containsLastSearch && filterNarrowed;
                     if (canReuse) {
                         // Results will be a subset of previous results, filter them.
@@ -166,6 +175,7 @@ namespace HaloCE::Mod::UI {
 
             //////////////////////////////////////////////////////////////////////////
             // Render tag item
+
             auto renderTag = [&](int index) {
                 if (index < 0) {
                     ImGui::Text("");

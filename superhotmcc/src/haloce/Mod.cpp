@@ -23,7 +23,7 @@ namespace HaloCE::Mod {
     float timescaleUpdateDeadzone = 0.05f;
 
     float playerDamageMultiplier = 3.0f;
-    float npcDamageMultiplier = 2.0f;
+    float npcDamageMultiplier    = 2.0f;
 
     uintptr_t halo1 = 0;
 
@@ -243,6 +243,25 @@ namespace HaloCE::Mod {
         return originalDamageEntity(entityHandle, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, damage, param_13);
     }
 
+    typedef float(*getShieldDamageResist_t)(uint32_t entityHandle, bool useExtraScalar);
+    getShieldDamageResist_t originalGetShieldDamageResist = nullptr;
+    //
+    float hkGetShieldDamageResist(uint32_t entityHandle, bool useExtraScalar) {
+        UnloadLock lock; // No unloading while we're still executing hook code.
+
+        auto rec = Halo1::getEntityRecord( entityHandle );
+        if (!rec)
+            return originalGetShieldDamageResist(entityHandle, useExtraScalar);
+
+        float result = originalGetShieldDamageResist(entityHandle, useExtraScalar);
+        if (rec->typeId == Halo1::TypeID_Player)
+            result /= playerDamageMultiplier;
+        else
+            result /= npcDamageMultiplier;
+
+        return result;
+    }
+
     void hookFunctions() {
         void* pUpdateEntity = (void*) (halo1 + 0xB3A06CU);
         std::cout << "UpdateEntity: " << pUpdateEntity << std::endl;
@@ -263,6 +282,11 @@ namespace HaloCE::Mod {
         std::cout << "DamageEntity: " << pDamageEntity << std::endl;
         MH_CreateHook( pDamageEntity, hkDamageEntity, (void**) &originalDamageEntity );
         MH_EnableHook( pDamageEntity );
+
+        void* pGetShieldDamageResist = (void*) (halo1 + 0xB9D114U);
+        std::cout << "GetShieldDamageResist: " << pGetShieldDamageResist << std::endl;
+        MH_CreateHook( pGetShieldDamageResist, hkGetShieldDamageResist, (void**) &originalGetShieldDamageResist );
+        MH_EnableHook( pGetShieldDamageResist );
     }
 
     void unhookFunctions() {
@@ -270,56 +294,49 @@ namespace HaloCE::Mod {
         MH_DisableHook( (void*) originalAnimateBones );
         MH_DisableHook( (void*) originalUpdateAllEntities );
         MH_DisableHook( (void*) originalDamageEntity );
+        MH_DisableHook( (void*) originalGetShieldDamageResist );
     }
 
     //////////////////////////////////////////////////////////////////
 
     std::vector<Memory::PatchPtr> patches;
     void patchTags() {
-        // Limit plasma pistol rate of fire.
-        const int projTagIndex = 0;
-        auto plasmaPistolTag = Halo1::findTag( "weapons\\plasma pistol\\plasma pistol", "weap" );
-        std::cout << "Plasma Pistol tag: " << plasmaPistolTag << std::endl;
-        auto projData = Halo1::getProjectileData( plasmaPistolTag, projTagIndex );
-        std::cout << "Plasma Pistol Projectile data: " << projData << std::endl;
-        if (!projData) return;
-        patches.push_back( Memory::createPatch( projData->minRateOfFire, 15.0f ) );
-        patches.push_back( Memory::createPatch( projData->maxRateOfFire, 15.0f ) );
+        std::string weaponsToRoFLimit[] = {
+            "characters\\sentinel\\sentinel",
+            "weapons\\plasma pistol\\plasma pistol",
+        };
+
+        for (const std::string& weapName : weaponsToRoFLimit) {
+            auto weapTag = Halo1::findTag( weapName.c_str(), "weap" );
+            std::cout << weapName << " tag: " << weapTag << std::endl;
+            if (!weapTag) continue;
+            auto projData = Halo1::getProjectileData( weapTag, 0 );
+            std::cout << weapName << " Projectile data: " << projData << std::endl;
+            if (!projData) continue;
+
+            patches.push_back( Memory::createPatch( projData->minRateOfFire, 15.0f ) );
+            patches.push_back( Memory::createPatch( projData->maxRateOfFire, 15.0f ) );
+        }
 
         std::string hitscanProjectiles[] = {
             "weapons\\assault rifle\\bullet",
             "weapons\\pistol\\bullet",
-            "weapons\\sniper rifle\\sniper bullet"
+            "weapons\\sniper rifle\\sniper bullet",
+            "weapons\\shotgun\\pellet",
+            "vehicles\\warthog\\bullet"
         };
-
         for (const std::string& projName : hitscanProjectiles) {
             auto projTag = Halo1::findTag( projName.c_str(), "proj" );
             std::cout << projName << " tag: " << projTag << std::endl;
+            if (!projTag) continue;
             auto projData = (Halo1::ProjectileTagData*) projTag->getData();
             std::cout << projName << " Projectile data: " << projData << std::endl;
-            if (!projData) return;
+            if (!projData) continue;
 
             const float speed = 1.5f;
             patches.push_back( Memory::createPatch( projData->initialSpeed, speed ) );
             patches.push_back( Memory::createPatch( projData->finalSpeed, speed ) );
         }
-
-        // { // Test setting sniper rof really high.
-        //     auto assaultRifleTag = Halo1::findTag( "weapons\\assault rifle\\assault rifle", "weap" );
-        //     auto assaultProjData = Halo1::getProjectileData( assaultRifleTag, 0 );
-        //     if (!assaultProjData) return;
-        //     uint32_t assaultFlags = *(uint32_t*) assaultProjData;
-
-        //     auto sniperTag = Halo1::findTag( "weapons\\sniper rifle\\sniper rifle", "weap" );
-        //     std::cout << "Sniper Rifle tag: " << sniperTag << std::endl;
-        //     auto sniperProjData = Halo1::getProjectileData( sniperTag, 0 );
-        //     std::cout << "Sniper Rifle Projectile data: " << sniperProjData << std::endl;
-        //     if (!sniperProjData) return;
-        //     uint32_t* flags = (uint32_t*) sniperProjData;
-        //     patches.push_back( Memory::createPatch( *flags, assaultFlags ) );
-        //     patches.push_back( Memory::createPatch( sniperProjData->minRateOfFire, 100.0f ) );
-        //     patches.push_back( Memory::createPatch( sniperProjData->maxRateOfFire, 100.0f ) );
-        // }
     }
     void unpatchTags() {
         patches.clear();

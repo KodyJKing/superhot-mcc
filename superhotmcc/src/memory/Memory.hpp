@@ -43,12 +43,20 @@ namespace Memory {
                 m_originalBytes.resize(patchBytes.size());
                 ReadProcessMemory(GetCurrentProcess(), address, m_originalBytes.data(), patchBytes.size(), NULL);
                 WriteProcessMemory(GetCurrentProcess(), address, patchBytes.data(), patchBytes.size(), NULL);
+                m_patchBytes = patchBytes;
             }
             ~Patch() {
-                WriteProcessMemory(GetCurrentProcess(), m_address, m_originalBytes.data(), m_originalBytes.size(), NULL);
+                if (!isAllocated((uintptr_t)m_address))
+                    return;
+                // Only restore if the patch is still applied.
+                std::vector<uint8_t> currentBytes(m_patchBytes.size());
+                ReadProcessMemory(GetCurrentProcess(), m_address, currentBytes.data(), m_patchBytes.size(), NULL);
+                if (currentBytes == m_patchBytes)
+                    WriteProcessMemory(GetCurrentProcess(), m_address, m_originalBytes.data(), m_originalBytes.size(), NULL);
             }
         private:
             std::vector<uint8_t> m_originalBytes;
+            std::vector<uint8_t> m_patchBytes;
             void* m_address;
     };
 
