@@ -2,34 +2,67 @@
 <CheatTable CheatEngineTableVersion="45">
   <CheatEntries>
     <CheatEntry>
-      <ID>5</ID>
-      <Description>"halo1.dll"</Description>
-      <ShowAsHex>1</ShowAsHex>
-      <ShowAsSigned>0</ShowAsSigned>
-      <VariableType>4 Bytes</VariableType>
-      <Address>halo1.dll</Address>
+      <ID>36</ID>
+      <Description>"MCC"</Description>
+      <GroupHeader>1</GroupHeader>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>31</ID>
+          <Description>"gameRunning"</Description>
+          <VariableType>Byte</VariableType>
+          <Address>"mcc-win64-shipping.exe"+3FFCA93</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>32</ID>
+          <Description>"pauseMenuOpen"</Description>
+          <VariableType>Byte</VariableType>
+          <Address>"mcc-win64-shipping.exe"+3FFCA9F</Address>
+        </CheatEntry>
+      </CheatEntries>
     </CheatEntry>
     <CheatEntry>
-      <ID>6</ID>
-      <Description>"mapBase"</Description>
-      <ShowAsHex>1</ShowAsHex>
-      <VariableType>Array of byte</VariableType>
-      <ByteLength>16</ByteLength>
-      <Address>halo1.dll+2B22744</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>9</ID>
-      <Description>"playerHandle"</Description>
-      <ShowAsHex>1</ShowAsHex>
-      <VariableType>4 Bytes</VariableType>
-      <Address>halo1.dll+29A6480</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>2</ID>
-      <Description>"Copy Player Pointer"</Description>
-      <Options moAlwaysHideChildren="1" moManualExpandCollapse="1"/>
-      <VariableType>Auto Assembler Script</VariableType>
-      <AssemblerScript>{ Game   : MCC-Win64-Shipping.exe
+      <ID>35</ID>
+      <Description>"Halo 1"</Description>
+      <Options moManualExpandCollapse="1"/>
+      <GroupHeader>1</GroupHeader>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>5</ID>
+          <Description>"halo1.dll"</Description>
+          <ShowAsHex>1</ShowAsHex>
+          <ShowAsSigned>0</ShowAsSigned>
+          <VariableType>4 Bytes</VariableType>
+          <Address>halo1.dll</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>6</ID>
+          <Description>"mapBase"</Description>
+          <ShowAsHex>1</ShowAsHex>
+          <VariableType>Array of byte</VariableType>
+          <ByteLength>16</ByteLength>
+          <Address>halo1.dll+2B22744</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>9</ID>
+          <Description>"playerHandle"</Description>
+          <ShowAsHex>1</ShowAsHex>
+          <VariableType>4 Bytes</VariableType>
+          <Address>halo1.dll+29A6480</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>33</ID>
+          <Description>"playerController"</Description>
+          <ShowAsHex>1</ShowAsHex>
+          <ShowAsSigned>0</ShowAsSigned>
+          <VariableType>8 Bytes</VariableType>
+          <Address>halo1.dll+2D8FE70</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>2</ID>
+          <Description>"Copy Player Pointer"</Description>
+          <Options moAlwaysHideChildren="1" moManualExpandCollapse="1"/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>{ Game   : MCC-Win64-Shipping.exe
   Version: 
   Date   : 2024-05-22
   Author : Kody
@@ -95,36 +128,26 @@ halo1.dll+C505EF: 76 03                    - jna halo1.dll+C505F4
 halo1.dll+C505F1: 83 CB 04                 - or ebx,04
 }
 </AssemblerScript>
-      <CheatEntries>
-        <CheatEntry>
-          <ID>3</ID>
-          <Description>"playerPtr"</Description>
-          <ShowAsHex>1</ShowAsHex>
-          <ShowAsSigned>0</ShowAsSigned>
-          <VariableType>8 Bytes</VariableType>
-          <Address>playerPtr</Address>
-        </CheatEntry>
-        <CheatEntry>
-          <ID>4</ID>
-          <Description>"*playerPtr"</Description>
-          <ShowAsHex>1</ShowAsHex>
-          <ShowAsSigned>0</ShowAsSigned>
-          <VariableType>8 Bytes</VariableType>
-          <Address>[playerPtr]</Address>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>3</ID>
+              <Description>"playerPtr"</Description>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>8 Bytes</VariableType>
+              <Address>playerPtr</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>4</ID>
+              <Description>"*playerPtr"</Description>
+              <ShowAsHex>1</ShowAsHex>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>8 Bytes</VariableType>
+              <Address>[playerPtr]</Address>
+            </CheatEntry>
+          </CheatEntries>
         </CheatEntry>
       </CheatEntries>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>31</ID>
-      <Description>"gameRunning"</Description>
-      <VariableType>Byte</VariableType>
-      <Address>"mcc-win64-shipping.exe"+3FFCA93</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>32</ID>
-      <Description>"pauseMenuOpen"</Description>
-      <VariableType>Byte</VariableType>
-      <Address>"mcc-win64-shipping.exe"+3FFCA9F</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>30</ID>
@@ -132,10 +155,10 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
       <GroupHeader>1</GroupHeader>
     </CheatEntry>
     <CheatEntry>
-      <ID>33</ID>
-      <Description>"shield"</Description>
-      <VariableType>Float</VariableType>
-      <Address>[playerPtr]+A0</Address>
+      <ID>34</ID>
+      <Description>"actions (bitfield)"</Description>
+      <VariableType>4 Bytes</VariableType>
+      <Address>2B2775DD484+14</Address>
     </CheatEntry>
   </CheatEntries>
   <CheatCodes>

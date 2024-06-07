@@ -81,11 +81,13 @@ namespace Halo1 {
     static const uintptr_t pEntityListOffset = 0x1C42248;
     static const uintptr_t playerCamOffset = 0x2D9B9C0;
     static const uintptr_t playerHandleOffset = 0x29A6480;
+    static const uintptr_t playerControllerOffset = 0x2D8FE70U;
 
     EntityList* getEntityListPointer() { return *(EntityList**) ( dllBase + pEntityListOffset ); }
     uintptr_t getEntityArrayBase() { return *(uintptr_t*) ( dllBase + entityArrayOffset ); }
     Camera* getPlayerCameraPointer() { return (Camera*) ( dllBase + playerCamOffset ); }
     uint32_t getPlayerHandle() { return *(uint32_t*) ( dllBase + playerHandleOffset ); }
+    PlayerController* getPlayerControllerPointer() { return * (PlayerController**) ( dllBase + playerControllerOffset ); }
 
     // No longer includes file path, only the map name.
     char* getMapName() {

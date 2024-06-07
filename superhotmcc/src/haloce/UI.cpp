@@ -69,8 +69,7 @@ namespace HaloCE::Mod::UI {
 
             if (ImGui::Button("Tag Browser"))
                 showTagBrowser = !showTagBrowser;
-            if (showTagBrowser)
-                tagBrowser();
+            if (showTagBrowser) tagBrowser();
         }
 
     }
@@ -88,6 +87,7 @@ namespace HaloCE::Mod::UI {
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     // ESP
+    // Todo: Move into Halo1ESP.cpp
 
     struct ESPSettings {
         bool anchorHighlight = false;
@@ -212,8 +212,8 @@ namespace HaloCE::Mod::UI {
         
         // Tabs
         if (ImGui::BeginTabBar("ESP Tabs")) {
+            
             if (ImGui::BeginTabItem("Entities")) {
-
                 ImGui::Text("%p", highlightEntity);
 
                 // Copy button
@@ -245,6 +245,7 @@ namespace HaloCE::Mod::UI {
 
                 ImGui::EndTabItem();
             }
+
             if (ImGui::BeginTabItem("Camera")) {
                 if (paused) ImGui::SliderFloat("Fov Adjust", &espSettings.fovScale, 0.0f, 2.0f);
                 Camera& camera = Overlay::ESP::camera;
@@ -255,6 +256,40 @@ namespace HaloCE::Mod::UI {
                 // ImGui::Text("Screen: %.2f x %.2f", camera.width, camera.height);
                 ImGui::EndTabItem();
             }
+
+            #ifdef PLAYER_CONTROLLER_TAB
+            if (ImGui::BeginTabItem("PlayerController")) {
+                auto playerController = Halo1::getPlayerControllerPointer();
+                ImGui::Text("%p", playerController);
+
+                uint32_t actions = playerController->actions;
+                for (int i = 0; i < 32; i++) {
+                    if (i > 0 && i % 8 != 0)
+                        ImGui::SameLine();
+                    char text[255] = {0};
+                    snprintf( text, 255, "##flag%d", i );
+                    ImGui::CheckboxFlags( text, &actions, 1 << i );
+                }
+
+                ImVec4 green = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+                ImVec4 white = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+                #define SHOW_ACTION_1( name ) ImGui::TextColored( (actions & Halo1::PlayerActionFlags::name) ? green : white, #name);
+                #define SHOW_ACTION_2( name ) ImGui::SameLine(); SHOW_ACTION_1( name );
+                SHOW_ACTION_1(crouch);
+                SHOW_ACTION_2(jump);
+                SHOW_ACTION_2(flash);
+                SHOW_ACTION_2(melee);
+                SHOW_ACTION_1(reload);
+                SHOW_ACTION_2(shoot);
+                SHOW_ACTION_2(grenade1);
+                SHOW_ACTION_2(grenade2);
+                #undef SHOW_ACTION_2
+                #undef SHOW_ACTION_1
+
+                ImGui::EndTabItem();
+            }
+            #endif
+
             ImGui::EndTabBar();
         }
 
