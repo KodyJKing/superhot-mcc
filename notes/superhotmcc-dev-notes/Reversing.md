@@ -41,7 +41,7 @@ The call right above `updateEntity` will be the `update` function.
 
 ## PlayerController
 
-`PlayerController` contains things like player angles and input data. It also contains a handle to the target under their reticle for some reason. Looking for this is the easiest way to find this structure.
+`PlayerController` contains things like player angles and input data. It also contains a handle to the target under their reticle for some reason. Looking for this is the easiest way to find this structure. Look at targets and away from them, scanning for changed/unchanged values.
 
 You will find several results with the same value. 
 
@@ -61,11 +61,15 @@ Just search for 1 when paused and 0 when unpaused. You can restrict the search t
 
 ## Animations
 
-Bone poses live directly on the Entity structure, though they have varying offset from the entity base. `Entity.field_0x1aa` holds the offset from entity base to the bones array. Bone poses use encoding `struct Transform { Quaternion rotation; Vec4 translation; }`. When viewing an entity in memory, look for a region where every 8th float is 1.
+Bone poses live directly on the Entity structure, though they have varying offset from the entity base. `Entity.field_0x1aa` holds the offset from entity base to the bones array. Bone poses use encoding `struct Transform { Quaternion rotation; Vec3 translation; float scale; }`. Scaling bones seems pretty rare, so when viewing an entity in memory, look for a region where every 8th float is 1.
 
-`Transform.translation.w` might actually be scale.
+Set a data breakpoint on the first float of the first bone. You may find a few functions that update bones. The one you want just handles non-procedural animations. Nopping out calls to it will cause the entity to rotate wildly like in this clip: https://www.youtube.com/watch?v=dpigozuFYwc
 
 I've only reversed the `Animation` structure enough to find `boneCount`. See `Halo1.cpp:Entity::boneCount` for information on how animations are accessed.
+
+## updateContrail function.
+
+Open a .contrail file in Guerilla and look for it's min/max point state transition duration fields. Then in game, look for these values in the tag's data. (You may want to have the mod's tag-browser UI updated to make finding this easier.). Set a data breakpoint on a transition duration field. In the game's current state, only the `updateContrail` function will access this field. 
 
 # See Also
 

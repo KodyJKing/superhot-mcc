@@ -27,6 +27,7 @@ namespace HaloCE::Mod::UI {
         GROUP_ID("Scenenery", "scen")
         GROUP_ID("Device", "devi")
         GROUP_ID("Effect", "effe")
+        GROUP_ID("Contrail", "cont")
         GROUP_ID("Sound", "snd!")
         GROUP_ID("Animation", "antr")
         GROUP_ID("Actor Variant", "actv")
@@ -194,11 +195,11 @@ namespace HaloCE::Mod::UI {
                         if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy index to clipboard");
                         if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) ImGui::SetClipboardText( std::to_string(index).c_str() );
 
-                        // ImGui::SameLine();
-                        // sprintf_s( text, "%X", tag->tagID );
-                        // ImGui::Text(text);
-                        // if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy TagID to clipboard");
-                        // if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) ImGui::SetClipboardText( text );
+                        ImGui::SameLine();
+                        sprintf_s( text, "%X", tag->tagID );
+                        ImGui::Text(text);
+                        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy TagID to clipboard");
+                        if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) ImGui::SetClipboardText( text );
 
                         // ImGui::SameLine();
                         // sprintf_s( text, "%p", tag );
@@ -211,6 +212,13 @@ namespace HaloCE::Mod::UI {
                         ImGui::Text("%s", groupID.c_str());
                         if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy GroupID to clipboard");
                         if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) ImGui::SetClipboardText( groupID.c_str() );
+
+                        ImGui::SameLine();
+                        auto pDataAddress = &tag->dataAddress;
+                        sprintf_s( text, "%p", pDataAddress );
+                        ImGui::Text("%s", text);
+                        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy data address pointer to clipboard");
+                        if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) ImGui::SetClipboardText( text );
 
                         ImGui::SameLine();
                         auto data = tag->getData();

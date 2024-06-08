@@ -262,6 +262,18 @@ namespace HaloCE::Mod {
         return result;
     }
 
+    typedef void (*updateContrail_t)(uint32_t unknownHandle, float unknownFloat);
+    updateContrail_t originalUpdateContrail = nullptr;
+    //
+    void hkUpdateContrail(uint32_t unknownHandle, float unknownFloat) {
+        UnloadLock lock; // No unloading while we're still executing hook code.
+        float timeScale = getGlobalTimeScale();
+        float u = rand() / (float) RAND_MAX;
+        if (u > timeScale)
+            return;
+        originalUpdateContrail(unknownHandle, unknownFloat);
+    }
+
     void hookFunctions() {
         void* pUpdateEntity = (void*) (halo1 + 0xB3A06CU);
         std::cout << "UpdateEntity: " << pUpdateEntity << std::endl;
@@ -287,6 +299,11 @@ namespace HaloCE::Mod {
         std::cout << "GetShieldDamageResist: " << pGetShieldDamageResist << std::endl;
         MH_CreateHook( pGetShieldDamageResist, hkGetShieldDamageResist, (void**) &originalGetShieldDamageResist );
         MH_EnableHook( pGetShieldDamageResist );
+
+        void * pUpdateContrail = (void*) (halo1 + 0xBD77D0U);
+        std::cout << "UpdateContrail: " << pUpdateContrail << std::endl;
+        MH_CreateHook( pUpdateContrail, hkUpdateContrail, (void**) &originalUpdateContrail );
+        MH_EnableHook( pUpdateContrail );
     }
 
     void unhookFunctions() {
@@ -295,6 +312,7 @@ namespace HaloCE::Mod {
         MH_DisableHook( (void*) originalUpdateAllEntities );
         MH_DisableHook( (void*) originalDamageEntity );
         MH_DisableHook( (void*) originalGetShieldDamageResist );
+        MH_DisableHook( (void*) originalUpdateContrail );
     }
 
     //////////////////////////////////////////////////////////////////
@@ -336,6 +354,7 @@ namespace HaloCE::Mod {
             const float speed = 1.5f;
             patches.push_back( Memory::createPatch( projData->initialSpeed, speed ) );
             patches.push_back( Memory::createPatch( projData->finalSpeed, speed ) );
+            patches.push_back( Memory::createPatch( projData->arc, 0.0f ) );
         }
     }
     void unpatchTags() {
@@ -351,11 +370,16 @@ namespace HaloCE::Mod {
         hookFunctions();
         TimeScale::init();
 
+        // #define PATCH_TAGS
+        #ifdef PATCH_TAGS
         patchTags();
+        #endif
     }
 
     void free() {
+        #ifdef PATCH_TAGS
         unpatchTags();
+        #endif
         unhookFunctions();
     }
 
