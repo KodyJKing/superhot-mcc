@@ -1,3 +1,5 @@
+// Reverse engineered Halo 1 structures and access functions go here.
+
 #pragma once
 
 #include <stdint.h>

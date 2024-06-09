@@ -1,3 +1,5 @@
+// Reverse engineered Halo 1 structures and access functions go here.
+
 #include "Halo1.hpp"
 #include <Windows.h>
 #include <iostream>
@@ -72,8 +74,6 @@ namespace Halo1 {
             result.push_back( bones[i] );
         return result;
     }
-
-    // ===============
 
     // === Pointers ===
 

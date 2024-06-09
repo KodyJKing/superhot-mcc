@@ -139,13 +139,8 @@ namespace HaloCE::Mod {
         float globalTimeScale = getGlobalTimeScale();
         float timeScale = timescaleForEntity( rec, entity, globalTimeScale );
         
-        if ( settings.timescaleDeadzoning && timeScale < timescaleUpdateDeadzone ) {
+        if ( settings.timescaleDeadzoning && timeScale < timescaleUpdateDeadzone )
             return 1;
-
-            // // Skip update with probability 1 - timeScale.
-            // if (rand() / (float) RAND_MAX > timeScale)
-            //     return 1;
-        }
 
         // Advance animation progress by timescale.
         AnimationState* animState = nullptr;
