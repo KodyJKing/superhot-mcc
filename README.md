@@ -1,3 +1,5 @@
+Note, this mod also depends on a map mod which I haven't published yet. You don't *technically* need it, but gameplay will be unbalanced without it.
+
 ## Setup
 
 Install [Visual Studio 2022](https://visualstudio.microsoft.com/) and add MSBuild to your PATH. Location may vary. For me, it's located under `C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin`.
