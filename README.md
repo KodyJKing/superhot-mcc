@@ -27,7 +27,7 @@ Arguments:
 
 ### `watch_build.ps1`
 
-Builds mod. Run compiles on file change. 
+Builds mod and recompiles on file change. 
 
 Press `R` in the terminal to rebuild without waiting for a file change.
 
