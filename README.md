@@ -8,11 +8,11 @@ Don't forget to clone recursively to get submodules:
 git clone --recursive
 ```
 
-
-
 ## Workflow
 
 When developing, run `scripts/watch_launcher.ps1` to build/run in watch mode. When you save a file, this script will uninject, rebuild, and reinject the mod DLL.
+
+For the moment, you will need to reinject if you exit a Halo 1 map and then re-enter it. This is because the game unloads `halo1.dll` when you exit to menu. Reinitialization will be implemented soon.
 
 ## Scripts
 
