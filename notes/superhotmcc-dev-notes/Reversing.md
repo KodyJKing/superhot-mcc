@@ -71,6 +71,10 @@ I've only reversed the `Animation` structure enough to find `boneCount`. See `Ha
 
 Open a .contrail file in Guerilla and look for it's min/max point state transition duration fields. Then in game, look for these values in the tag's data. (You may want to have the mod's tag-browser UI updated to make finding this easier.). Set a data breakpoint on a transition duration field. In the game's current state, only the `updateContrail` function will access this field. 
 
+## updateActor function (aka updateAI)
+
+Pick any actr tag. Set a data breakpoint on it's data address field. This may be accessed by `getTagDataPointer`, which is not actor specific, so climb up the stack one or two calls. Then open the function you find in Ghidra. Climp up the call tree until you find a function that takes no parameters. That should be the `updateActors` function. The function just prior was the `updateActor` function.
+
 # See Also
 
 [Kavawuvi's map file documentation](https://opencarnage.net/index.php?/topic/6693-halo-map-file-structure-revision-212/)

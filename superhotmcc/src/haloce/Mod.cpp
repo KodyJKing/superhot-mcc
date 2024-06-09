@@ -269,6 +269,19 @@ namespace HaloCE::Mod {
         originalUpdateContrail(unknownHandle, unknownFloat);
     }
 
+    // updateActor updates AIs.
+    typedef void (*updateActor)(uint64_t actorHandle);
+    updateActor originalUpdateActor = nullptr;
+    //
+    void hkUpdateActor(uint64_t actorHandle) {
+        UnloadLock lock; // No unloading while we're still executing hook code.
+        float timeScale = getGlobalTimeScale();
+        float u = rand() / (float) RAND_MAX;
+        if (u > timeScale)
+            return;
+        originalUpdateActor(actorHandle);
+    }
+
     void hookFunctions() {
         void* pUpdateEntity = (void*) (halo1 + 0xB3A06CU);
         std::cout << "UpdateEntity: " << pUpdateEntity << std::endl;
@@ -299,6 +312,11 @@ namespace HaloCE::Mod {
         std::cout << "UpdateContrail: " << pUpdateContrail << std::endl;
         MH_CreateHook( pUpdateContrail, hkUpdateContrail, (void**) &originalUpdateContrail );
         MH_EnableHook( pUpdateContrail );
+
+        void * pUpdateActor = (void*) (halo1 + 0xC04A14U);
+        std::cout << "UpdateActor: " << pUpdateActor << std::endl;
+        MH_CreateHook( pUpdateActor, hkUpdateActor, (void**) &originalUpdateActor );
+        MH_EnableHook( pUpdateActor );
     }
 
     void unhookFunctions() {

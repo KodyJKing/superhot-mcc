@@ -30,6 +30,7 @@ namespace HaloCE::Mod::UI {
         GROUP_ID("Contrail", "cont")
         GROUP_ID("Sound", "snd!")
         GROUP_ID("Animation", "antr")
+        GROUP_ID("Actor", "actr")
         GROUP_ID("Actor Variant", "actv")
         GROUP_ID("Bitmap", "bitm")
         GROUP_ID("Shader", "shdr")
