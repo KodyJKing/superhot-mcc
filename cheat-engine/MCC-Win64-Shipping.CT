@@ -586,6 +586,53 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
         <Byte>C2</Byte>
       </After>
     </CodeEntry>
+    <CodeEntry>
+      <Description>Get Particle Tag Data :mov ecx,[rcx]</Description>
+      <AddressString>halo1.dll+B89D2A</AddressString>
+      <Before>
+        <Byte>EC</Byte>
+        <Byte>50</Byte>
+        <Byte>4C</Byte>
+        <Byte>8B</Byte>
+        <Byte>F1</Byte>
+      </Before>
+      <Actual>
+        <Byte>8B</Byte>
+        <Byte>09</Byte>
+      </Actual>
+      <After>
+        <Byte>E8</Byte>
+        <Byte>17</Byte>
+        <Byte>19</Byte>
+        <Byte>F1</Byte>
+        <Byte>FF</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>updateParticleSystem function :mov [rsp+10],rbx</Description>
+      <AddressString>halo1.dll+B89D08</AddressString>
+      <Before>
+        <Byte>00</Byte>
+        <Byte>C3</Byte>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+        <Byte>CC</Byte>
+      </Before>
+      <Actual>
+        <Byte>48</Byte>
+        <Byte>89</Byte>
+        <Byte>5C</Byte>
+        <Byte>24</Byte>
+        <Byte>10</Byte>
+      </Actual>
+      <After>
+        <Byte>48</Byte>
+        <Byte>89</Byte>
+        <Byte>74</Byte>
+        <Byte>24</Byte>
+        <Byte>18</Byte>
+      </After>
+    </CodeEntry>
     <CodeEntry GroupHeader="1">
       <Description/>
     </CodeEntry>
@@ -2163,6 +2210,11 @@ end
       <Address>"halo1.dll"+A9B648</Address>
       <Header>void * __fastcall getTagDataPointer(short tagIndex)
 </Header>
+    </DisassemblerComment>
+    <DisassemblerComment>
+      <Address>"halo1.dll"+B89D2A</Address>
+      <Comment>get particle tag data pointer
+</Comment>
     </DisassemblerComment>
     <DisassemblerComment>
       <Address>"halo1.dll"+B9FC58</Address>

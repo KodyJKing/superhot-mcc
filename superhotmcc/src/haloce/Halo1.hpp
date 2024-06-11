@@ -235,9 +235,6 @@ namespace Halo1 {
 
     // =======================================================
 
-
-    void init();
-    
     EntityList* getEntityListPointer();
     Camera* getPlayerCameraPointer();
     uint32_t getPlayerHandle();

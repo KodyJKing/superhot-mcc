@@ -19,4 +19,8 @@ namespace Overlay::ESP {
     void drawText(Vec3 pos, std::string text, ImU32 color);
 
     void drawCircle(Vec3 center, float radius, ImU32 color, bool perspective = true, bool filled = false);
+
+    void beginESPWindow(const char * name);
+
+    void endESPWindow();
 }

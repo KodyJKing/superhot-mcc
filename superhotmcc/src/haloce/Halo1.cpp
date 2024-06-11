@@ -8,10 +8,8 @@
 
 namespace Halo1 {
 
-    static uintptr_t dllBase;
-
-    void init() {
-        dllBase = (uintptr_t) GetModuleHandleA( "halo1.dll" );
+    uintptr_t dllBase() {
+        return (uintptr_t) GetModuleHandleA( "halo1.dll" );
     }
 
     // === Methods ===
@@ -83,11 +81,11 @@ namespace Halo1 {
     static const uintptr_t playerHandleOffset = 0x29A6480;
     static const uintptr_t playerControllerOffset = 0x2D8FE70U;
 
-    EntityList* getEntityListPointer() { return *(EntityList**) ( dllBase + pEntityListOffset ); }
-    uintptr_t getEntityArrayBase() { return *(uintptr_t*) ( dllBase + entityArrayOffset ); }
-    Camera* getPlayerCameraPointer() { return (Camera*) ( dllBase + playerCamOffset ); }
-    uint32_t getPlayerHandle() { return *(uint32_t*) ( dllBase + playerHandleOffset ); }
-    PlayerController* getPlayerControllerPointer() { return * (PlayerController**) ( dllBase + playerControllerOffset ); }
+    EntityList* getEntityListPointer() { return *(EntityList**) ( dllBase() + pEntityListOffset ); }
+    uintptr_t getEntityArrayBase() { return *(uintptr_t*) ( dllBase() + entityArrayOffset ); }
+    Camera* getPlayerCameraPointer() { return (Camera*) ( dllBase() + playerCamOffset ); }
+    uint32_t getPlayerHandle() { return *(uint32_t*) ( dllBase() + playerHandleOffset ); }
+    PlayerController* getPlayerControllerPointer() { return * (PlayerController**) ( dllBase() + playerControllerOffset ); }
 
     // No longer includes file path, only the map name.
     char* getMapName() {
@@ -118,7 +116,7 @@ namespace Halo1 {
     }
 
     MapHeader* getMapHeader() {
-        MapHeader* result = (MapHeader*) ( dllBase + 0x2B22744U );
+        MapHeader* result = (MapHeader*) ( dllBase() + 0x2B22744U );
         if ( !checkMapHeader( result ) )
             return nullptr;
         return result;
@@ -137,21 +135,21 @@ namespace Halo1 {
     }
 
     uint64_t translateMapAddress( uint32_t address ) {
-        uint64_t relocatedMapBase = *(uint64_t*) ( dllBase + 0x2D9CE10U );
-        uint64_t mapBase = *(uint64_t*) ( dllBase + 0x2EA3410U );
+        uint64_t relocatedMapBase = *(uint64_t*) ( dllBase() + 0x2D9CE10U );
+        uint64_t mapBase = *(uint64_t*) ( dllBase() + 0x2EA3410U );
         return address + ( relocatedMapBase - mapBase );
     }
 
     Tag* getTag( uint32_t tagID ) {
         if (tagID == NULL_HANDLE)
             return nullptr;
-        Tag* tagArray = *(Tag**) ( dllBase + 0x1C34FB0U );
+        Tag* tagArray = *(Tag**) ( dllBase() + 0x1C34FB0U );
         return &tagArray[tagID & 0xFFFF];
     }
 
     Tag* findTag( const char* path, uint32_t fourCC) {
         if ( !validTagPath( path ) ) return nullptr;
-        Tag* tagArray = *(Tag**) ( dllBase + 0x1C34FB0U );
+        Tag* tagArray = *(Tag**) ( dllBase() + 0x1C34FB0U );
         for ( uint32_t i = 0; i < 0x10000; i++ ) {
             auto tag = &tagArray[i];
             if ( !tagExists( tag ) ) break;

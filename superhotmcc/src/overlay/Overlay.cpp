@@ -19,10 +19,6 @@ namespace Overlay {
         return gameWindow;
     }
 
-    struct Settings {
-        bool showESP = false;
-    } settings = {};
-
     void initializeContext(HWND targetWindow) {
         if (ImGui::GetCurrentContext( ))
             return;
@@ -33,7 +29,6 @@ namespace Overlay {
     void credits() {
         ImGui::SeparatorText("Credits");
         if ( ImGui::CollapsingHeader("Dear ImGui") ) ImGui::TextWrapped(Licenses::imGui);
-        if ( ImGui::CollapsingHeader("AsmJit") ) ImGui::TextWrapped(Licenses::asmJit);
         if ( ImGui::CollapsingHeader("MinHook") ) ImGui::TextWrapped(Licenses::minHook);
         if ( ImGui::CollapsingHeader("UniversalHookX") ) ImGui::TextWrapped(Licenses::universalHookX);
         ImGui::TextWrapped("Thanks to Kavawuvi for their documentation of the Halo CE map and tag format.");
@@ -51,16 +46,7 @@ namespace Overlay {
 
         // Tabs
         if (ImGui::BeginTabBar("SuperHot MCC Tabs")) {
-            if (ImGui::BeginTabItem("Dev")) {
-                ImGui::Checkbox("ESP", &settings.showESP);
-                if (ImGui::IsItemHovered()) ImGui::SetTooltip("Show debug ESP (F1)");
-                HaloCE::Mod::UI::debug();
-                ImGui::EndTabItem();
-            }
-            if (ImGui::BeginTabItem("Settings")) {
-                HaloCE::Mod::UI::settings();
-                ImGui::EndTabItem();
-            }
+            HaloCE::Mod::UI::mainWindowTabs();
             if (ImGui::BeginTabItem("About")) {
                 ImGui::Text("Superhot MCC 1.0.0 by Kody King");
                 credits();
@@ -72,35 +58,6 @@ namespace Overlay {
         ImGui::End();
     }
 
-    void esp() {
-        ESP::updateScreenSize();
-
-        ImGui::Begin(
-            "__ESP", 0,
-            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar |
-                ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse |
-                ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoBringToFrontOnFocus |
-                ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMouseInputs
-        );
-        {
-
-            // Set Window position to top left corner
-            ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-
-            // Set Window size to full screen
-            ImGui::SetWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y), ImGuiCond_Always);
-
-            HaloCE::Mod::UI::esp();
-        }
-        ImGui::End();
-    }
-
-    void checkHotkeys() {
-        if (ImGui::IsKeyPressed(ImGuiKey_F1, false))
-            settings.showESP = !settings.showESP;
-        HaloCE::Mod::UI::checkHotKeys();
-    }
 
     void render() {
         UnloadLock lock; // Prevent unloading while rendering
@@ -114,12 +71,10 @@ namespace Overlay {
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        checkHotkeys();
+        HaloCE::Mod::UI::topLevelRender();
 
         if ( paused )
             mainModWindow();
-        if ( settings.showESP )
-            esp();
 
         ImGui::EndFrame();
     }

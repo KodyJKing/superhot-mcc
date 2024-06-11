@@ -21,10 +21,10 @@ project "superhotmcc"
 
     includedirs {
         "src",
-        "../vendor/asmjit/asmjit/src",
         "../vendor/minhook/include",
         "../vendor/imgui/backends",
         "../vendor/imgui",
+        "../vendor/zydis",
     }
 
     pchheader "pch.h"
@@ -32,15 +32,15 @@ project "superhotmcc"
     forceincludes "pch.h"
 
     links { 
-        "asmjit",
-        "MinHook"
+        "MinHook",
+        "Zydis",
     }
 
     filter "configurations:Debug"
         runtime "Debug"
 
         --  Turn symbols off when you're using Cheat Engine as part of your workflow. 
-        --  Cheat Engine will keep .pdf files open and prevent the linker from writing to them.
+        --  Cheat Engine will keep .pdb files open and prevent the linker from writing to them.
         -- symbols "On"
         symbols "Off"
   

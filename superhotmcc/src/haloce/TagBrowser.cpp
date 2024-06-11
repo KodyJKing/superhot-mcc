@@ -28,6 +28,7 @@ namespace HaloCE::Mod::UI {
         GROUP_ID("Device", "devi")
         GROUP_ID("Effect", "effe")
         GROUP_ID("Contrail", "cont")
+        GROUP_ID("Particle", "part")
         GROUP_ID("Sound", "snd!")
         GROUP_ID("Animation", "antr")
         GROUP_ID("Actor", "actr")
@@ -232,6 +233,7 @@ namespace HaloCE::Mod::UI {
                         ImGui::Text("%s", path);
                         if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy path to clipboard");
                         if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) ImGui::SetClipboardText( path );
+
                     }
                 } else {
                     ImGui::Text("%04d NULL", index);

@@ -3,21 +3,17 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
-#include "asmjit/x86.h"
 #include "MinHook.h"
 #include "utils/Utils.hpp"
 #include "utils/UnloadLock.hpp"
-#include "memory/Memory.hpp"
-#include "memory/Allocation.hpp"
-#include "asm/Hook.hpp"
 #include "asm/AsmHelper.hpp"
+#include "memory/Memory.hpp"
 #include "Halo1.hpp"
 #include "Rewind.hpp"
 #include "TimeScale.hpp"
+#include "DllMain.hpp"
 
 namespace HaloCE::Mod {
-
-    namespace x86 = asmjit::x86;
 
     // Deadzoning is intended to prevent discrete actions (like spawning projectiles) from being spammed when an entity should be nearly frozen.
     float timescaleUpdateDeadzone = 0.05f;
@@ -52,6 +48,12 @@ namespace HaloCE::Mod {
         }
 
         return result;
+    }
+
+    bool shouldSkipTick() {
+        float timeScale = getGlobalTimeScale();
+        float u = rand() / (float) RAND_MAX;
+        return u > timeScale;
     }
 
     float timescaleForEntity( Halo1::EntityRecord* rec, Halo1::Entity* entity, float globalTimeScale ) {
@@ -275,57 +277,41 @@ namespace HaloCE::Mod {
     //
     void hkUpdateActor(uint64_t actorHandle) {
         UnloadLock lock; // No unloading while we're still executing hook code.
-        float timeScale = getGlobalTimeScale();
-        float u = rand() / (float) RAND_MAX;
-        if (u > timeScale)
+        if (shouldSkipTick())
             return;
         originalUpdateActor(actorHandle);
     }
 
     void hookFunctions() {
-        void* pUpdateEntity = (void*) (halo1 + 0xB3A06CU);
-        std::cout << "UpdateEntity: " << pUpdateEntity << std::endl;
-        MH_CreateHook( pUpdateEntity, hkUpdateEntity, (void**) &originalUpdateEntity );
-        MH_EnableHook( pUpdateEntity );
+        std::cout << "\nHooking functions:\n" << std::endl;
 
-        void* pAnimateBones = (void*) (halo1 + 0xC41984U);
-        std::cout << "AnimateBones: " << pAnimateBones << std::endl;
-        MH_CreateHook( pAnimateBones, hkAnimateBones, (void**) &originalAnimateBones );
-        MH_EnableHook( pAnimateBones );
+        #define HOOK_FUNC( func, offset) \
+            void* p##func = (void*) (halo1 + offset); \
+            std::cout << #func << ": " << std::endl; \
+            std::cout << AsmHelper::disassemble( (uint8_t*) p##func, 0x100 ) << std::endl; \
+            MH_CreateHook( p##func, hk##func, (void**) &original##func ); \
+            MH_EnableHook( p##func );
 
-        void* pUpdateAllEntities = (void*) (halo1 + 0xB35654U);
-        std::cout << "UpdateAllEntities: " << pUpdateAllEntities << std::endl;
-        MH_CreateHook( pUpdateAllEntities, hkUpdateAllEntities, (void**) &originalUpdateAllEntities );
-        MH_EnableHook( pUpdateAllEntities );
+        HOOK_FUNC( UpdateEntity, 0xB3A06CU );
+        HOOK_FUNC( AnimateBones, 0xC41984U );
+        HOOK_FUNC( UpdateAllEntities, 0xB35654U );
+        HOOK_FUNC( DamageEntity, 0xB9FBD0U );
+        HOOK_FUNC( GetShieldDamageResist, 0xB9D114U );
+        HOOK_FUNC( UpdateContrail, 0xBD77D0U );
+        HOOK_FUNC( UpdateActor, 0xC04A14U );
 
-        void* pDamageEntity = (void*) (halo1 + 0xB9FBD0U);
-        std::cout << "DamageEntity: " << pDamageEntity << std::endl;
-        MH_CreateHook( pDamageEntity, hkDamageEntity, (void**) &originalDamageEntity );
-        MH_EnableHook( pDamageEntity );
-
-        void* pGetShieldDamageResist = (void*) (halo1 + 0xB9D114U);
-        std::cout << "GetShieldDamageResist: " << pGetShieldDamageResist << std::endl;
-        MH_CreateHook( pGetShieldDamageResist, hkGetShieldDamageResist, (void**) &originalGetShieldDamageResist );
-        MH_EnableHook( pGetShieldDamageResist );
-
-        void * pUpdateContrail = (void*) (halo1 + 0xBD77D0U);
-        std::cout << "UpdateContrail: " << pUpdateContrail << std::endl;
-        MH_CreateHook( pUpdateContrail, hkUpdateContrail, (void**) &originalUpdateContrail );
-        MH_EnableHook( pUpdateContrail );
-
-        void * pUpdateActor = (void*) (halo1 + 0xC04A14U);
-        std::cout << "UpdateActor: " << pUpdateActor << std::endl;
-        MH_CreateHook( pUpdateActor, hkUpdateActor, (void**) &originalUpdateActor );
-        MH_EnableHook( pUpdateActor );
+        #undef HOOK_FUNC
     }
 
     void unhookFunctions() {
-        MH_DisableHook( (void*) originalUpdateEntity );
-        MH_DisableHook( (void*) originalAnimateBones );
-        MH_DisableHook( (void*) originalUpdateAllEntities );
-        MH_DisableHook( (void*) originalDamageEntity );
-        MH_DisableHook( (void*) originalGetShieldDamageResist );
-        MH_DisableHook( (void*) originalUpdateContrail );
+        std::cout << "\nUnhooking functions." << std::endl;
+        MH_RemoveHook( (void*) originalUpdateEntity );
+        MH_RemoveHook( (void*) originalAnimateBones );
+        MH_RemoveHook( (void*) originalUpdateAllEntities );
+        MH_RemoveHook( (void*) originalDamageEntity );
+        MH_RemoveHook( (void*) originalGetShieldDamageResist );
+        MH_RemoveHook( (void*) originalUpdateContrail );
+        MH_RemoveHook( (void*) originalUpdateActor );
     }
 
     //////////////////////////////////////////////////////////////////
@@ -374,12 +360,17 @@ namespace HaloCE::Mod {
         patches.clear();
     }
 
+    bool isInstalled = false;
+
     void init() {
+        if (isInstalled)
+            return;
+        isInstalled = true;
+
         const std::string moduleName = "halo1.dll";
         halo1 = (uintptr_t) Utils::waitForModule(moduleName);
         std::cout << moduleName << ": " << (void*) halo1 << std::endl;
 
-        Halo1::init();
         hookFunctions();
         TimeScale::init();
 
@@ -387,71 +378,29 @@ namespace HaloCE::Mod {
         #ifdef PATCH_TAGS
         patchTags();
         #endif
+
+        std::cout << "Mod installed." << std::endl;
     }
 
     void free() {
+        if (!isInstalled)
+            return;
+        isInstalled = false;
+
         #ifdef PATCH_TAGS
         unpatchTags();
         #endif
         unhookFunctions();
+
+        std::cout << "Mod uninstalled." << std::endl;
     }
 
     // Called by mod dll's thread regularly.
     void modThreadUpdate() {
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-
-    // Not currently used, but we may use jump hooks in the near future, so let's keep this for reference.
-    namespace JumpHooks {
-        const size_t codeSize = 0x1000;
-        uint8_t* codeMemory = nullptr;
-
-        std::vector<HookPtr> hooks;
-        HookPtr addHook( 
-            std::string name,
-            uintptr_t targetAddress,
-            size_t instructionSize
-        ) {
-            HookPtr hook = std::make_shared<Hook>( name, targetAddress, instructionSize );
-            hooks.push_back( hook );
-            return hook;
-        }
-
-        void onConsumeFrag() {
-            std::cout << "Consume frag!" << std::endl;
-        }
-
-        void init() {
-            codeMemory = (uint8_t*) Memory::virtualAllocateNear( halo1, codeSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE );
-            std::cout << "Code: " << (void*)codeMemory << std::endl;
-
-            HookPtr hook = addHook( "ConsumeFrags", halo1 + 0xB0A330, 7 ); {
-                x86::Assembler& a = hook->m_assembler;
-                // Original code
-                // dec byte ptr [rdx+rbx+2FCh]
-                a.dec( x86::byte_ptr( x86::rdx, x86::rbx, 0, 0x2FC ) );
-                // Our code
-                AsmHelper::push( a );
-                CALL_0( a, (uintptr_t) onConsumeFrag );
-                AsmHelper::pop( a );
-            }
-
-            uint8_t* freeCodeMemory = codeMemory;
-            for (HookPtr hook : hooks) 
-                hook->install(freeCodeMemory);
-
-            DWORD oldProtect;
-            VirtualProtect( codeMemory, codeSize, PAGE_EXECUTE_READ, &oldProtect );
-        }
-
-        void free() {
-            hooks.clear();
-
-            if ( codeMemory ) {
-                VirtualFree( codeMemory, 0, MEM_RELEASE );
-                codeMemory = nullptr;
-            }
+        if (Halo1::isGameLoaded()) {
+            init();
+        } else if (isInstalled) {
+            ModHost::reinitialize();
         }
     }
 

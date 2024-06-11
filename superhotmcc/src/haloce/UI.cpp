@@ -17,15 +17,49 @@
 
 namespace HaloCE::Mod::UI {
 
-    void settings() {
+    void renderESP();
+    void checkHotKeys();
+    void devTab();
+
+    bool showEsp = false;
+
+    void topLevelRender() {
+        checkHotKeys();
+
+        if (showEsp) {
+            Overlay::ESP::beginESPWindow("__ESP");
+            renderESP();
+            Overlay::ESP::endESPWindow();
+        }
     }
 
-    void debug() {
+    void checkHotKeys() {
+        if (ImGui::IsKeyPressed( ImGuiKey_F1, false ))
+            showEsp = !showEsp;
+        if (ImGui::IsKeyPressed( ImGuiKey_F2, false ))
+            HaloCE::Mod::settings.enableTimeScale = !HaloCE::Mod::settings.enableTimeScale;
+        if (ImGui::IsKeyPressed( ImGuiKey_F3, false ))
+            HaloCE::Mod::settings.poseInterpolation = !HaloCE::Mod::settings.poseInterpolation;
+        if (ImGui::IsKeyPressed( ImGuiKey_F4, false ))
+            HaloCE::Mod::settings.timescaleDeadzoning = !HaloCE::Mod::settings.timescaleDeadzoning;
+        if (ImGui::IsKeyPressed( ImGuiKey_F5, false ))
+            HaloCE::Mod::settings.shieldLimitedTimeScale = !HaloCE::Mod::settings.shieldLimitedTimeScale;
+    }
+
+
+    void mainWindowTabs() {
+        if (ImGui::BeginTabItem("Dev")) {
+            devTab();
+            ImGui::EndTabItem();
+        }
+    }
+
+    void devTab() {
 
         ImGui::Checkbox("Pose Interpolation", &HaloCE::Mod::settings.poseInterpolation);
         if (ImGui::IsItemHovered()) ImGui::SetTooltip("Enable pose interpolation (F3)");
         
-        if (ImGui::CollapsingHeader("Time Scale", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ImGui::CollapsingHeader("Time Scale")) {
             ImGui::Checkbox("Enable Time Scale", &HaloCE::Mod::settings.enableTimeScale);
             if (ImGui::IsItemHovered()) ImGui::SetTooltip("Enable time scaling (F2)");
 
@@ -70,19 +104,11 @@ namespace HaloCE::Mod::UI {
             if (ImGui::Button("Tag Browser"))
                 showTagBrowser = !showTagBrowser;
             if (showTagBrowser) tagBrowser();
+
+            ImGui::Checkbox("ESP", &showEsp);
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Toggle ESP (F1)");
         }
 
-    }
-
-    void checkHotKeys() {
-        if (ImGui::IsKeyPressed( ImGuiKey_F2, false ))
-            HaloCE::Mod::settings.enableTimeScale = !HaloCE::Mod::settings.enableTimeScale;
-        if (ImGui::IsKeyPressed( ImGuiKey_F3, false ))
-            HaloCE::Mod::settings.poseInterpolation = !HaloCE::Mod::settings.poseInterpolation;
-        if (ImGui::IsKeyPressed( ImGuiKey_F4, false ))
-            HaloCE::Mod::settings.timescaleDeadzoning = !HaloCE::Mod::settings.timescaleDeadzoning;
-        if (ImGui::IsKeyPressed( ImGuiKey_F5, false ))
-            HaloCE::Mod::settings.shieldLimitedTimeScale = !HaloCE::Mod::settings.shieldLimitedTimeScale;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -306,7 +332,7 @@ namespace HaloCE::Mod::UI {
         // return entity->pos;
     }
 
-    void esp() {
+    void renderESP() {
 
         if (!Halo1::isGameLoaded())
             return;

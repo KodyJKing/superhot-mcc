@@ -123,4 +123,24 @@ namespace Overlay::ESP {
         }
     }
 
+    void beginESPWindow(const char * name) {
+        ESP::updateScreenSize();
+        ImGui::Begin(
+            name, 0,
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar |
+                ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse |
+                ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoBringToFrontOnFocus |
+                ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMouseInputs
+        );
+        // Set Window position to top left corner
+        ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+        // Set Window size to full screen
+        ImGui::SetWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y), ImGuiCond_Always);
+    }
+
+    void endESPWindow() {
+        ImGui::End();
+    }
+
 }

@@ -18,8 +18,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.platform}"
 
 group "Dependencies"
    include "vendor/minhook"
-   -- include "vendor/zydis"
-   include "vendor/asmjit"
+   include "vendor/zydis"
 group ""
 
 include "superhotmcc/premake5.lua"
