@@ -1,4 +1,5 @@
 // Provides an RAII type that prevents mod from unloading while certain work is being done.
+#pragma once
 
 #include <stdint.h>
 

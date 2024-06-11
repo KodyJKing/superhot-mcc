@@ -3,10 +3,11 @@
 #include <iostream>
 #include <filesystem>
 #include "utils/Console.hpp"
+#include "utils/UnloadLock.hpp"
+#include "utils/Utils.hpp"
 #include "haloce/Mod.hpp"
 #include "MinHook.h"
 #include "overlay/Overlay.hpp"
-#include "utils/UnloadLock.hpp"
 
 namespace ModHost {
     bool bReinit = false;
@@ -21,11 +22,18 @@ namespace ModHost {
     }
 }
 
+
 // MainThread
 DWORD WINAPI MainThread(LPVOID _hModule) {
     HMODULE hModule = (HMODULE) _hModule;
     Console::alloc();
     Console::toggleConsole();
+
+    std::cout << "Load method: " << (Utils::isInjected() ? "Injection" : "Imported") << std::endl;
+    if (!Utils::isInjected()) { // Give the game some time to load.
+        // This module seems to load late in the game's initialization.
+        Utils::waitForModule("PartyWin.dll");
+    }
 
     do {
         ModHost::bReinit = false;
@@ -36,7 +44,7 @@ DWORD WINAPI MainThread(LPVOID _hModule) {
         while (!ModHost::bExit && !ModHost::bReinit) {
             if (GetAsyncKeyState(VK_F8) & 1)
                 Console::toggleConsole();
-            if (GetAsyncKeyState(VK_F9) & 1) {
+            if ( Utils::isInjected() && (GetAsyncKeyState(VK_F9) & 1) ) { // Only allow uninjecting if the mod was injected.
                 ModHost::exit();
                 break;
             }
@@ -66,7 +74,8 @@ DWORD WINAPI MainThread(LPVOID _hModule) {
 }
 
 // Dll Main
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved) {
+// We dll export this so MSDetours setdll.exe can add it to a carrier dll.
+BOOL __declspec(dllexport) APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved) {
     switch (ul_reason_for_call) {
         case DLL_PROCESS_ATTACH:
             CreateThread(0, 0, MainThread, hModule, 0, 0);

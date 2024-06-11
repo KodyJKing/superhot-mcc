@@ -71,3 +71,7 @@ Press `R` in the terminal to rebuild without waiting for a file change.
 Arguments:
 
 - Inherits from `watch_build.ps1` and `run_launcher.ps1`.
+
+### `package.ps1`
+
+Packages mod into a `.zip` file. Creates a xaudio2_9redist.dll wrapper to load the mod.

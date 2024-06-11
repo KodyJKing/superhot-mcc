@@ -10,6 +10,7 @@
 #include <functional>
 #include <mutex>
 #include <thread>
+#include "utils/Utils.hpp"
 #include "utils/Strings.hpp"
 #include "memory/Memory.hpp"
 #include "TimeScale.hpp"
@@ -40,12 +41,7 @@ namespace HaloCE::Mod::UI {
             HaloCE::Mod::settings.enableTimeScale = !HaloCE::Mod::settings.enableTimeScale;
         if (ImGui::IsKeyPressed( ImGuiKey_F3, false ))
             HaloCE::Mod::settings.poseInterpolation = !HaloCE::Mod::settings.poseInterpolation;
-        if (ImGui::IsKeyPressed( ImGuiKey_F4, false ))
-            HaloCE::Mod::settings.timescaleDeadzoning = !HaloCE::Mod::settings.timescaleDeadzoning;
-        if (ImGui::IsKeyPressed( ImGuiKey_F5, false ))
-            HaloCE::Mod::settings.shieldLimitedTimeScale = !HaloCE::Mod::settings.shieldLimitedTimeScale;
     }
-
 
     void mainWindowTabs() {
         if (ImGui::BeginTabItem("Dev")) {
