@@ -56,9 +56,11 @@ namespace HaloCE::Mod::UI {
 
     void devTab() {
 
-        ImGui::Checkbox("Pose Interpolation", &HaloCE::Mod::settings.poseInterpolation);
-        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Enable pose interpolation (F3)");
-        
+        if (ImGui::CollapsingHeader("Damage Scale", ImGuiTreeNodeFlags_DefaultOpen)) {
+            ImGui::SliderFloat("Player", &HaloCE::Mod::settings.playerDamageScale, 0.0f, 10.0f, "%.1f");
+            ImGui::SliderFloat("NPC", &HaloCE::Mod::settings.npcDamageScale, 0.0f, 10.0f, "%.1f");
+        }
+
         if (ImGui::CollapsingHeader("Time Scale")) {
             ImGui::Checkbox("Enable Time Scale", &HaloCE::Mod::settings.enableTimeScale);
             if (ImGui::IsItemHovered()) ImGui::SetTooltip("Enable time scaling (F2)");
@@ -72,6 +74,9 @@ namespace HaloCE::Mod::UI {
 
             ImGui::Checkbox("Time Scale Deadzoning", &HaloCE::Mod::settings.timescaleDeadzoning);
             if (ImGui::IsItemHovered()) ImGui::SetTooltip("Deadzone time scaling to prevent game from freezing (F4)");
+
+            ImGui::Checkbox("Pose Interpolation", &HaloCE::Mod::settings.poseInterpolation);
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Enable pose interpolation (F3)");
 
             ImGui::Checkbox("Shield Limited Time Scale", &HaloCE::Mod::settings.shieldLimitedTimeScale);
             if (ImGui::IsItemHovered()) ImGui::SetTooltip("Limit time scaling when shields are down (F5)");
@@ -108,7 +113,6 @@ namespace HaloCE::Mod::UI {
             ImGui::Checkbox("ESP", &showEsp);
             if (ImGui::IsItemHovered()) ImGui::SetTooltip("Toggle ESP (F1)");
         }
-
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -283,6 +287,7 @@ namespace HaloCE::Mod::UI {
                 ImGui::EndTabItem();
             }
 
+            #define PLAYER_CONTROLLER_TAB
             #ifdef PLAYER_CONTROLLER_TAB
             if (ImGui::BeginTabItem("PlayerController")) {
                 auto playerController = Halo1::getPlayerControllerPointer();
@@ -311,6 +316,9 @@ namespace HaloCE::Mod::UI {
                 SHOW_ACTION_2(grenade2);
                 #undef SHOW_ACTION_2
                 #undef SHOW_ACTION_1
+
+                ImGui::Text("WalkX %.2f", playerController->walkX);
+                ImGui::Text("WalkY %.2f", playerController->walkY);
 
                 ImGui::EndTabItem();
             }

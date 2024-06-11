@@ -1,4 +1,5 @@
 // This module handles tracking timescale based on player activity.
+// It should probably should be renamed to something like ActivityTracker.
 
 #include "Halo1.hpp"
 #include "math/Math.hpp"
@@ -34,7 +35,12 @@ namespace TimeScale {
     static Vec3 previousLook;
     static float lookSpeed, lookSpeedSmoothed;
 
-    void unpauseForNMilis( uint64_t milis ) { playerIsActingUntil = GetTickCount64() + milis; }
+    // Todo: Switch from using GetTickCount64 to using in-game ticks.
+    void unpauseForNMilis( uint64_t milis ) {
+        auto t = GetTickCount64() + milis;
+        if ( t > playerIsActingUntil )
+            playerIsActingUntil = t;
+    }
 
     void init() {
         // Todo: Load settings from json.
@@ -91,19 +97,26 @@ namespace TimeScale {
         if ( weaponAnim != old_weaponAim ) {
             if ( isReloading( pPlayer ) )
                 unpauseForNMilis( unpauseReloadMilis );
-            if ( isDoingMelee( pPlayer ) )
-                unpauseForNMilis( unpauseMeleeMilis );
+            // if ( isDoingMelee( pPlayer ) ) // This doesn't work, player can spam melee and only trigger this once.
+            //     unpauseForNMilis( unpauseMeleeMilis );
         }
         old_weaponAim = weaponAnim;
 
         uint64_t now = GetTickCount64();
         bool isActing = playerIsActingUntil > now || isThrowingGrenade;
 
-        if ( pPlayer->parentHandle != NULL_HANDLE )
-            isActing = isActing ||
-            GetAsyncKeyState( 'W' ) || GetAsyncKeyState( 'A' ) ||
-            GetAsyncKeyState( 'S' ) || GetAsyncKeyState( 'D' ) ||
-            GetAsyncKeyState( VK_LBUTTON ); // Todo: Use PlayerController instead for controller and mapping independence.
+        auto playerController = Halo1::getPlayerControllerPointer();
+        if ( playerController ) {
+            if (playerController->actions & PlayerActionFlags::melee) {
+                unpauseForNMilis( unpauseMeleeMilis );
+            }
+            if (pPlayer->parentHandle != NULL_HANDLE) {
+                bool walkX = fabs( playerController->walkX ) > 0.01f;
+                bool walkY = fabs( playerController->walkY ) > 0.01f;
+                bool shooting = playerController->actions & PlayerActionFlags::shoot;
+                isActing = isActing || walkX || walkY || shooting;
+            }
+        }
 
         // Check if charging plasma bolt.
         if ( weapon ) {

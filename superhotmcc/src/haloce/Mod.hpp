@@ -9,6 +9,9 @@ namespace HaloCE::Mod {
         bool poseInterpolation = true;
         bool timescaleDeadzoning = false;
         bool shieldLimitedTimeScale = false;
+
+        float playerDamageScale = 3.0f;
+        float npcDamageScale = 2.0f;
     } settings = {};
 
     void init();

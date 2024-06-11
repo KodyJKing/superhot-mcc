@@ -18,9 +18,6 @@ namespace HaloCE::Mod {
     // Deadzoning is intended to prevent discrete actions (like spawning projectiles) from being spammed when an entity should be nearly frozen.
     float timescaleUpdateDeadzone = 0.05f;
 
-    float playerDamageMultiplier = 3.0f;
-    float npcDamageMultiplier    = 2.0f;
-
     uintptr_t halo1 = 0;
 
     float getPlayerShield() {
@@ -233,9 +230,9 @@ namespace HaloCE::Mod {
             return originalDamageEntity(entityHandle, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, damage, param_13);
 
         if (rec->typeId == Halo1::TypeID_Player)
-            damage *= playerDamageMultiplier;
+            damage *= settings.playerDamageScale;
         else
-            damage *= npcDamageMultiplier;
+            damage *= settings.npcDamageScale;
 
         return originalDamageEntity(entityHandle, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, damage, param_13);
     }
@@ -252,9 +249,9 @@ namespace HaloCE::Mod {
 
         float result = originalGetShieldDamageResist(entityHandle, useExtraScalar);
         if (rec->typeId == Halo1::TypeID_Player)
-            result /= playerDamageMultiplier;
+            result /= settings.playerDamageScale;
         else
-            result /= npcDamageMultiplier;
+            result /= settings.npcDamageScale;
 
         return result;
     }
