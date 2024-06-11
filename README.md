@@ -31,6 +31,8 @@ If you're using Cheat Engine as part of your workflow, turn off symbols in the d
 
 ## Scripts
 
+All scripts assume you are running from the root of the repository.
+
 ### `build.ps1`
 
 Builds mod once.
