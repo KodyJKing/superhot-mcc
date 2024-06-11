@@ -4,10 +4,14 @@
 #include "Overlay.hpp"
 #include "DX11Hook.hpp"
 #include "halomcc/HaloMCC.hpp"
-#include "haloce/UI.hpp"
 #include "Licenses.hpp"
 #include "overlay/ESP.hpp"
 #include "utils/UnloadLock.hpp"
+#include "math/Math.hpp"
+
+// Todo: Remove reference to game specific code.
+#include "haloce/UI.hpp"
+#include "haloce/halo1.hpp"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -28,8 +32,9 @@ namespace Overlay {
 
     void credits() {
         ImGui::SeparatorText("Credits");
-        if ( ImGui::CollapsingHeader("Dear ImGui") ) ImGui::TextWrapped(Licenses::imGui);
+        if ( ImGui::CollapsingHeader("ImGui") ) ImGui::TextWrapped(Licenses::imGui);
         if ( ImGui::CollapsingHeader("MinHook") ) ImGui::TextWrapped(Licenses::minHook);
+        if ( ImGui::CollapsingHeader("Zydis") ) ImGui::TextWrapped(Licenses::zydis);
         if ( ImGui::CollapsingHeader("UniversalHookX") ) ImGui::TextWrapped(Licenses::universalHookX);
         ImGui::TextWrapped("Thanks to Kavawuvi for their documentation of the Halo CE map and tag format.");
     }
@@ -58,6 +63,36 @@ namespace Overlay {
         ImGui::End();
     }
 
+    void loadedIndicatorWindow() {
+        static uint64_t startTick = GetTickCount64();
+        uint64_t now = GetTickCount64();
+        float uptime = (now - startTick) / 1000.0f;
+        float sin = 0.5f * sinf(uptime * 7.0f) + 0.5f;
+        float blink = Math::lerp(0.7f, 1.0f, sin);
+        // float fade = Math::smoothstep(9.0f, 10.0f, uptime);
+        float alpha = blink; // blink * (1.0f - fade);
+
+        // if ( fade >= 0.99f )
+        //     return;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+
+        ImGui::Begin(
+            "##SuperhotMCCIndicator", nullptr,
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | 
+            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBackground
+        );
+
+            // Center window horizontally.
+            auto displaySize = ImGui::GetIO().DisplaySize;
+            auto windowSize = ImGui::GetWindowSize();
+            ImGui::SetWindowPos(ImVec2((displaySize.x - windowSize.x) / 2, 0));
+
+            ImGui::Text("Superhot MCC Loaded");
+        ImGui::End();
+
+        ImGui::PopStyleVar();
+    }
 
     void render() {
         UnloadLock lock; // Prevent unloading while rendering
@@ -70,6 +105,10 @@ namespace Overlay {
 
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
+
+        // Todo: Replace with modInstance.isGameLoaded() to make this game agnostic.
+        if (!Halo1::isGameLoaded())
+            loadedIndicatorWindow();
 
         HaloCE::Mod::UI::topLevelRender();
 

@@ -73,7 +73,7 @@ namespace HaloCE::Mod::UI {
             HaloCE::Mod::settings.timeScale = timeScalePercent / 100.0f;
 
             ImGui::Checkbox("Time Scale Deadzoning", &HaloCE::Mod::settings.timescaleDeadzoning);
-            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Deadzone time scaling to prevent game from freezing (F4)");
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Keep entities from updating at very low time scales (F4)");
 
             ImGui::Checkbox("Pose Interpolation", &HaloCE::Mod::settings.poseInterpolation);
             if (ImGui::IsItemHovered()) ImGui::SetTooltip("Enable pose interpolation (F3)");
