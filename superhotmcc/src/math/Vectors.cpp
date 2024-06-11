@@ -85,7 +85,11 @@ Quaternion Quaternion::nlerp( Quaternion& b, float t, bool shortestPath) {
     Quaternion c = *this;
     if (shortestPath && b.dot(c) < 0.0f)
         c *= -1.0f;
-    return (c * (1.0f - t) + b * t).normalize();
+    Quaternion result = (c * (1.0f - t) + b * t);
+    float len = result.length();
+    if (fabs(len) < 0.0001f)
+        return b;
+    return result / len;
 }
 
 Quaternion Quaternion::pow( float exponent ) {
