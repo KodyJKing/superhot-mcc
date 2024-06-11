@@ -1,3 +1,5 @@
+[See it in action.](https://www.youtube.com/watch?v=8FDzfyl4kzY)
+
 Note, this mod also depends on a map mod which I haven't published yet. You don't *technically* need it, but gameplay will be unbalanced without it.
 
 ## Setup
