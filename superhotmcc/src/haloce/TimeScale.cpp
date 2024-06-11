@@ -114,7 +114,8 @@ namespace TimeScale {
                 bool walkX = fabs( playerController->walkX ) > 0.01f;
                 bool walkY = fabs( playerController->walkY ) > 0.01f;
                 bool shooting = playerController->actions & PlayerActionFlags::shoot;
-                isActing = isActing || walkX || walkY || shooting;
+                bool altShooting = playerController->actions & PlayerActionFlags::grenade1;
+                isActing = isActing || walkX || walkY || shooting || altShooting;
             }
         }
 
