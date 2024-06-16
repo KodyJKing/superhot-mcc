@@ -74,4 +74,14 @@ Arguments:
 
 ### `package.ps1`
 
-Packages mod into a `.zip` file. Creates a xaudio2_9redist.dll wrapper to load the mod.
+Packages mod into a `.zip` file. Creates a copy of xaudio2_9redist.dll that imports the mod.
+
+### `install_package.ps1`
+
+Runs `package.ps1` and installs the mod into the game. This is not for end users. It's for testing the installation process.
+
+Arguments:
+
+- Inherits from `package.ps1`.
+- `-MCCPath` Path to the root of the MCC installation. Default is `C:\Program Files (x86)\Steam\steamapps\common\Halo The Master Chief Collection`.
+- `-Uninstall` Uninstalls the mod instead of installing it.

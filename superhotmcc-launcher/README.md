@@ -1,0 +1,1 @@
+Currently superhot-launcher is only for development. The release version uses a modified xaudio dll to load the mod.

@@ -53,7 +53,14 @@ namespace Overlay {
         if (ImGui::BeginTabBar("SuperHot MCC Tabs")) {
             HaloCE::Mod::UI::mainWindowTabs();
             if (ImGui::BeginTabItem("About")) {
-                ImGui::Text("Superhot MCC 1.0.0 by Kody King");
+                const char* config =
+                    #ifdef _DEBUG
+                        "Debug";
+                    #else
+                        "Release";
+                    #endif
+                ImGui::Text("Superhot MCC 1.0.0 %s", config);
+                ImGui::Text("Built %s, %s", __DATE__, __TIME__);
                 credits();
                 ImGui::EndTabItem();
             }

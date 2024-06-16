@@ -1,3 +1,5 @@
+// This module is responsible for interpolating entity states after an update for the purpose of time scaling.
+
 #include "Halo1.hpp"
 #include <iostream>
 #include "Rewind.hpp"
@@ -56,6 +58,10 @@ namespace Rewind {
                 rewindFireCooldown( entity, globalTimescale, snap );
                 if (entity->parentHandle == NULL_HANDLE)
                     rewindRotation( entity, timescale, snap );
+                break;
+            }
+            case EntityCategory_Equipment: {
+                rewindRotation( entity, timescale, snap );
                 break;
             }
             case EntityCategory_Projectile: {
