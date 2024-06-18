@@ -78,7 +78,7 @@ Packages mod into a `.zip` file. Creates a copy of xaudio2_9redist.dll that impo
 
 ### `install_package.ps1`
 
-Runs `package.ps1` and installs the mod into the game. This is not for end users. It's for testing the installation process.
+Runs `package.ps1` and installs the mod into the game. This script is for testing, not for end users.
 
 Arguments:
 
