@@ -13,7 +13,7 @@ A clear and concise description of what the bug is.
 **System Info**
 OS:
 CPU:
-Steam Build Date: (under help > about Steam)
+Steam Version: (under help > about Steam)
 MCC Build ID: (under properties > Updates)
 Other mods:
 
