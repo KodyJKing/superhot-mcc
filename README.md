@@ -76,6 +76,10 @@ Arguments:
 
 Packages mod into a `.zip` file. Creates a copy of xaudio2_9redist.dll that imports the mod.
 
+Arguments:
+
+- Inherits from `build.ps1`.
+
 ### `install_package.ps1`
 
 Runs `package.ps1` and installs the mod into the game. This script is for testing, not for end users.

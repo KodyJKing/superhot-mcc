@@ -25,7 +25,7 @@ namespace TimeScale {
     static float maxTimescaleDueToTurning = 0.25f;
 
     static uint32_t unpauseAfterFireMilis = 40;
-    static uint32_t unpauseReloadMilis = 750;
+    static uint32_t unpauseReloadMilis = 1500;
     static uint32_t unpauseMeleeMilis = 400; // 250;
     static uint32_t unpauseWeaponSwapMilis = 250;
 

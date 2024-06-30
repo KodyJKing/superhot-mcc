@@ -3,9 +3,11 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include "MinHook.h"
 #include "utils/Utils.hpp"
 #include "utils/UnloadLock.hpp"
+#include "math/Math.hpp"
 #include "asm/AsmHelper.hpp"
 #include "memory/Memory.hpp"
 #include "Halo1.hpp"
@@ -19,6 +21,69 @@ namespace HaloCE::Mod {
     float timescaleUpdateDeadzone = 0.05f;
 
     uintptr_t halo1 = 0;
+
+    //////////////////////////////////////////////////////////////////
+    // Adrenaline system
+
+    namespace Adrenaline {
+
+        float adrenaline = 0.0f;
+
+        const float adrenalineDecayRate = 0.002f;
+
+        void tick() {
+            if (adrenaline > 0.0f) {
+                adrenaline -= adrenalineDecayRate;
+                if (adrenaline < 0.0f)
+                    adrenaline = 0.0f;
+            }
+        }
+
+        float timescaleModifier() {
+            return Math::smoothstep(0.0f, 0.1f, adrenaline);
+        }
+
+        bool isEnemy(Halo1::Entity* entity) {
+            static std::unordered_set<std::string> enemyTags = {
+                "characters\\elite\\elite",
+                "characters\\grunt\\grunt",
+                "characters\\jackal\\jackal",
+                "characters\\hunter\\hunter",
+                "characters\\flood_infection\\flood_infection",
+                "characters\\floodcombat_human\\floodcombat_human",
+                "characters\\floodcombat_elite\\floodcombat elite",
+                "characters\\floodcarrier\\floodcarrier",
+                "characters\\flood_infection\\flood_infection",
+                "characters\\sentinel\\sentinel"
+            };
+
+            auto tag = entity->tag();
+            if (!tag) return false;
+
+            auto tagPath = tag->getResourcePath();
+            if (!tagPath) return false;
+
+            return enemyTags.count( tagPath );
+        }
+
+        void onDeath(uint32_t entityHandle) {
+            auto rec = Halo1::getEntityRecord( entityHandle );
+            if (!rec) return;
+            auto entity = rec->entity();
+            if (!entity) return;
+            if (isEnemy( entity )) {
+                adrenaline += 0.5f;
+                if (adrenaline > 1.0f)
+                    adrenaline = 1.0f;
+            }
+            if (rec->typeId == Halo1::TypeID_Player) {
+                adrenaline = 0.0f;
+            }
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////
+    // Time scale helpers
 
     float getPlayerShield() {
         auto playerHandle = Halo1::getPlayerHandle();
@@ -36,13 +101,19 @@ namespace HaloCE::Mod {
             
         auto result = TimeScale::timescale;
         
-        if (settings.shieldLimitedTimeScale) {
+        float slowdown = 1.0f - result;
+
+        if (settings.panicMode) {
             float shield = getPlayerShield();
             if (shield < 0.0f) shield = 0.0f;
             if (shield > 1.0f) shield = 1.0f;
-            float slowdown = 1.0f - result;
-            result = 1.0f - slowdown * shield;
+            slowdown *= shield;
         }
+
+        if (settings.adrenalineMode)
+            slowdown *= Adrenaline::timescaleModifier();
+
+        result = 1.0f - slowdown;
 
         return result;
     }
@@ -54,10 +125,15 @@ namespace HaloCE::Mod {
     }
 
     float timescaleForEntity( Halo1::EntityRecord* rec, Halo1::Entity* entity, float globalTimeScale ) {
-        if (rec->typeId == Halo1::TypeID_Player)
+        if (
+            rec->typeId == Halo1::TypeID_Player ||
+            Halo1::isRidingTransport( entity ) || 
+            Halo1::isTransport( entity ) ||
+            // Keep the player from getting stuck talking to the captain on the bridge.
+            entity->fromResourcePath("characters\\captain\\captain") && Halo1::isOnMap("a10") 
+        ) {
             return 1.0f;
-        if (Halo1::isRidingTransport( entity ) || Halo1::isTransport( entity ))
-            return 1.0f;
+        }
         return globalTimeScale;
     }
 
@@ -111,6 +187,7 @@ namespace HaloCE::Mod {
         TimeScale::update();
         originalUpdateAllEntities();
         clearStaleAnimationStates();
+        Adrenaline::tick();
         tickCount++;
     }
     
@@ -174,6 +251,11 @@ namespace HaloCE::Mod {
         return result;
     }
 
+    /*
+        This function seems to only update relative bone transforms from a static animation.
+        It doesn't seem to handle procedural animations like IK. It also doesn't seem to update world matrices for bones.
+        It looks like the function that calls this is responsible for update world matrices.
+    */
     typedef void (*animateBones_t)(uint64_t param1, void* animation, uint16_t frame, Halo1::Transform* bones);
     animateBones_t originalAnimateBones = nullptr;
     //
@@ -234,7 +316,21 @@ namespace HaloCE::Mod {
         else
             damage *= settings.npcDamageScale;
 
-        return originalDamageEntity(entityHandle, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, damage, param_13);
+
+        float oldHealth = 0.0f;
+        if (rec->entity())
+            oldHealth = rec->entity()->health;
+
+        originalDamageEntity(entityHandle, param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10, param_11, damage, param_13);
+
+        float newHealth = 0.0f;
+        if (rec->entity())
+            newHealth = rec->entity()->health;
+        
+        if (newHealth <= 0.0 && oldHealth > 0.0) {
+            std::cout << "Entity " << entityHandle << " died." << std::endl;
+            Adrenaline::onDeath(entityHandle);
+        }
     }
 
     typedef float(*getShieldDamageResist_t)(uint32_t entityHandle, bool useExtraScalar);

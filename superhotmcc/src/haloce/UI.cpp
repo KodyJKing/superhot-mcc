@@ -20,7 +20,9 @@ namespace HaloCE::Mod::UI {
 
     void renderESP();
     void checkHotKeys();
+    void settingsTab();
     void devTab();
+    void adrenalineBar();
 
     bool showEsp = false;
 
@@ -32,6 +34,9 @@ namespace HaloCE::Mod::UI {
             renderESP();
             Overlay::ESP::endESPWindow();
         }
+
+        if (HaloCE::Mod::settings.adrenalineMode)
+            adrenalineBar();
     }
 
     void checkHotKeys() {
@@ -44,19 +49,28 @@ namespace HaloCE::Mod::UI {
     }
 
     void mainWindowTabs() {
+        if (ImGui::BeginTabItem("Settings")) {
+            settingsTab();
+            ImGui::EndTabItem();
+        }
         if (ImGui::BeginTabItem("Dev")) {
             devTab();
             ImGui::EndTabItem();
         }
     }
 
+    void settingsTab() {
+        ImGui::SliderFloat("Player", &HaloCE::Mod::settings.playerDamageScale, 0.0f, 10.0f, "%.1f");
+        ImGui::SliderFloat("NPC", &HaloCE::Mod::settings.npcDamageScale, 0.0f, 10.0f, "%.1f");
+
+        ImGui::Checkbox("Adrenaline Mode", &HaloCE::Mod::settings.adrenalineMode);
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Slow motion is scaled by adrenaline.\nKill enemies to gain adrenaline.");
+
+        ImGui::Checkbox("Panic Mode", &HaloCE::Mod::settings.panicMode);
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Slow motion is scaled by shields.");
+    }
+
     void devTab() {
-
-        if (ImGui::CollapsingHeader("Damage Scale", ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::SliderFloat("Player", &HaloCE::Mod::settings.playerDamageScale, 0.0f, 10.0f, "%.1f");
-            ImGui::SliderFloat("NPC", &HaloCE::Mod::settings.npcDamageScale, 0.0f, 10.0f, "%.1f");
-        }
-
         if (ImGui::CollapsingHeader("Time Scale")) {
             ImGui::Checkbox("Enable Time Scale", &HaloCE::Mod::settings.enableTimeScale);
             if (ImGui::IsItemHovered()) ImGui::SetTooltip("Enable time scaling (F2)");
@@ -69,13 +83,11 @@ namespace HaloCE::Mod::UI {
             HaloCE::Mod::settings.timeScale = timeScalePercent / 100.0f;
 
             ImGui::Checkbox("Time Scale Deadzoning", &HaloCE::Mod::settings.timescaleDeadzoning);
-            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Keep entities from updating at very low time scales (F4)");
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Keep entities from updating at very low time scales.");
 
             ImGui::Checkbox("Pose Interpolation", &HaloCE::Mod::settings.poseInterpolation);
             if (ImGui::IsItemHovered()) ImGui::SetTooltip("Enable pose interpolation (F3)");
 
-            ImGui::Checkbox("Shield Limited Time Scale", &HaloCE::Mod::settings.shieldLimitedTimeScale);
-            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Limit time scaling when shields are down (F5)");
         }
 
         if (ImGui::CollapsingHeader("Tools")) {
@@ -110,6 +122,22 @@ namespace HaloCE::Mod::UI {
             if (ImGui::IsItemHovered()) ImGui::SetTooltip("Toggle ESP (F1)");
         }
     }
+
+    void adrenalineBar() {
+        ImGui::Begin("Adrenaline", 0, 
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |  ImGuiWindowFlags_NoMove | 
+            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground
+        );
+
+        ImVec2 size = ImGui::GetWindowSize();
+        ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+        ImGui::SetWindowPos(ImVec2( (displaySize.x - size.x) / 2.0f, 0));
+
+        float adrenaline = HaloCE::Mod::Adrenaline::adrenaline;
+        ImGui::ProgressBar(adrenaline, ImVec2(0, 0));
+        ImGui::End();
+    }
+
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     // ESP

@@ -8,6 +8,7 @@
 #include "overlay/ESP.hpp"
 #include "utils/UnloadLock.hpp"
 #include "math/Math.hpp"
+#include "version.h"
 
 // Todo: Remove reference to game specific code.
 #include "haloce/UI.hpp"
@@ -51,7 +52,6 @@ namespace Overlay {
 
         // Tabs
         if (ImGui::BeginTabBar("SuperHot MCC Tabs")) {
-            HaloCE::Mod::UI::mainWindowTabs();
             if (ImGui::BeginTabItem("About")) {
                 const char* config =
                     #ifdef _DEBUG
@@ -59,11 +59,12 @@ namespace Overlay {
                     #else
                         "Release";
                     #endif
-                ImGui::Text("Superhot MCC 1.0.0 %s", config);
+                ImGui::Text("Superhot MCC %s %s", config, SUPERHOTMCC_VERSION_STRING);
                 ImGui::Text("Built %s, %s", __DATE__, __TIME__);
                 credits();
                 ImGui::EndTabItem();
             }
+            HaloCE::Mod::UI::mainWindowTabs();
             ImGui::EndTabBar();
         }        
 
@@ -109,6 +110,9 @@ namespace Overlay {
         auto io = ImGui::GetIO();
         io.WantCaptureKeyboard = paused;
         io.WantCaptureMouse = paused;
+        io.NavActive = paused;
+        if (!paused)
+            ShowCursor(FALSE);
 
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();

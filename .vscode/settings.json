@@ -27,7 +27,8 @@
         "pchheader",
         "pchsource",
         "forceincludes",
-        "libdirs"
+        "libdirs",
+        "vpaths"
     ],
     "files.associations": {
         "*.asmlib": "asm-intel-x86-generic",

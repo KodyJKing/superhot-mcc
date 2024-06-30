@@ -36,6 +36,11 @@ project "superhotmcc"
         "Zydis",
     }
 
+    filter "system:windows"
+        systemversion "latest"
+        files { 'versioninfo.rc' }
+        vpaths { ['Resources/*'] = { '*.rc' } }
+
     filter "configurations:Debug"
         runtime "Debug"
 
@@ -48,3 +53,32 @@ project "superhotmcc"
         runtime "Release"
         optimize "On"
 
+-- local function updateBuildNum()
+
+--     local filePath = "./src/buildnum.h"
+
+--     local file = io.open(filePath, "r")
+--     if file == nil then
+--         print("Error: Could not open file " .. filePath)
+--         os.exit(1)
+--     end
+--     local text = file:read("a")
+--     file:close()
+--     local numText = string.gsub(text, "#define BUILDNUM ", "")
+--     local buildNum = tonumber(numText)
+--     if buildNum == nil then
+--         print("Error: Could not parse build number from " .. numText)
+--         os.exit(1)
+--     end
+--     buildNum = buildNum + 1
+
+--     file = io.open(filePath, "w")
+--     if file == nil then
+--         print("Error: Could not open file " .. filePath)
+--         os.exit(1)
+--     end
+--     file:write("#define BUILDNUM " .. buildNum .. "\n")
+--     file:close()
+
+-- end
+-- updateBuildNum()
