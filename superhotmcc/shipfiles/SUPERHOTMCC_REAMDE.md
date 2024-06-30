@@ -1,0 +1,21 @@
+## Install
+Paste the contents of this archive under `...\Halo The Master Chief Collection\mcc\binaries\win64`.
+
+## Uninstall
+
+Delete `superhotmcc.dll` and `xaudio2_9redist.dll`, then rename `xaudio2_9redist.dll~` to `xaudio2_9redist.dll`.
+
+## Usage
+
+Start Halo MCC *without* Easy Anti-Cheat.
+
+If the mod loaded correctly, it should say "Superhot MCC Loaded" in the main menu at the top.
+
+## Hotkeys
+
+- `F2` - Toggle time scaling
+- `F8` - Toggle console
+
+## Known Issues
+
+- You may get stuck talking to Captain Keyes on the first level. Turn off time scaling for a moment to progress (F2).

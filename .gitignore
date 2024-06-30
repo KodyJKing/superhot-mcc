@@ -1,19 +1,17 @@
-*.VC.db
+# Directories
+.vs/
+bin/
+obj/
+tmp/
 
-ModDLL/.vs/**
-ModDLL/Debug
-ModDLL/*/Debug
-ModDLL/x64
-ModDLL/packages
-ModDLL/out
-ModDLL/SUPERHOTMCC.zip
-ModDLL/*/.vs/**
-ModDLL/*/Debug
-ModDLL/*/*/Debug
-ModDLL/*/x64
+vendor/*/bin/
+vendor/*/obj/
 
-tmp
-pointerscans
+# Files
+*.vcxproj
+*.vcxproj.user
+*.vcxproj.filters
+*.sln
 
-# RenderDoc captures
-data/*.rdc
+scripts/user
+paired_sensors.txt
