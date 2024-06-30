@@ -60,14 +60,15 @@ namespace HaloCE::Mod::UI {
     }
 
     void settingsTab() {
-        ImGui::SliderFloat("Player", &HaloCE::Mod::settings.playerDamageScale, 0.0f, 10.0f, "%.1f");
-        ImGui::SliderFloat("NPC", &HaloCE::Mod::settings.npcDamageScale, 0.0f, 10.0f, "%.1f");
-
         ImGui::Checkbox("Adrenaline Mode", &HaloCE::Mod::settings.adrenalineMode);
         if (ImGui::IsItemHovered()) ImGui::SetTooltip("Slow motion is scaled by adrenaline.\nKill enemies to gain adrenaline.");
 
         ImGui::Checkbox("Panic Mode", &HaloCE::Mod::settings.panicMode);
         if (ImGui::IsItemHovered()) ImGui::SetTooltip("Slow motion is scaled by shields.");
+
+        ImGui::SeparatorText("Damage Scale");
+        ImGui::SliderFloat("Player", &HaloCE::Mod::settings.playerDamageScale, 0.0f, 5.0f, "%.1f");
+        ImGui::SliderFloat("NPC", &HaloCE::Mod::settings.npcDamageScale, 0.0f, 5.0f, "%.1f");
     }
 
     void devTab() {
