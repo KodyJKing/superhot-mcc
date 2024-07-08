@@ -1,34 +1,5 @@
 '''
     Parse a Cheat Engine structure xml file and convert it to a C structure.
-
-    Sample file:
-
-    <Structures>
-        <Structure Name="Entity" AutoFill="0" AutoCreate="1" DefaultHex="0" AutoDestroy="0" DoNotSaveLocal="0" RLECompression="1" AutoCreateStructsize="4096">
-            <Elements>
-                <Element Offset="0" Vartype="2 Bytes" Bytesize="2" OffsetHex="00000000" Description="tagID" DisplayMethod="hexadecimal"/>
-                <Element Offset="2" Vartype="2 Bytes" Bytesize="2" OffsetHex="00000002" DisplayMethod="hexadecimal"/>
-                <Element Offset="4" Vartype="4 Bytes" Bytesize="4" RLECount="3" OffsetHex="00000004" DisplayMethod="unsigned integer"/>
-                <Element Offset="16" Vartype="4 Bytes" Bytesize="4" OffsetHex="00000010" DisplayMethod="hexadecimal"/>
-                <Element Offset="20" Vartype="4 Bytes" Bytesize="4" OffsetHex="00000014" Description="ageMilis" DisplayMethod="unsigned integer"/>
-                <Element Offset="24" Vartype="Float" Bytesize="4" OffsetHex="00000018" Description="pos.x" DisplayMethod="unsigned integer"/>
-                <Element Offset="28" Vartype="Float" Bytesize="4" OffsetHex="0000001C" Description="pos.y" DisplayMethod="unsigned integer"/>
-                <Element Offset="32" Vartype="Float" Bytesize="4" OffsetHex="00000020" Description="pos.z" DisplayMethod="unsigned integer"/>
-                <Element Offset="36" Vartype="Float" Bytesize="4" OffsetHex="00000024" Description="vel.x" DisplayMethod="unsigned integer"/>
-                <Element Offset="40" Vartype="Float" Bytesize="4" OffsetHex="00000028" Description="vel.y" DisplayMethod="unsigned integer"/>
-                <Element Offset="44" Vartype="Float" Bytesize="4" OffsetHex="0000002C" Description="vel.z" DisplayMethod="unsigned integer"/>
-                <Element Offset="48" Vartype="Float" Bytesize="4" OffsetHex="00000030" Description="fwd.x" DisplayMethod="unsigned integer"/>
-                <Element Offset="52" Vartype="Float" Bytesize="4" OffsetHex="00000034" Description="fwd.y" DisplayMethod="unsigned integer"/>
-                <Element Offset="56" Vartype="Float" Bytesize="4" OffsetHex="00000038" Description="fwd.z" DisplayMethod="unsigned integer"/>
-                <Element Offset="60" Vartype="Float" Bytesize="4" OffsetHex="0000003C" Description="up.x" DisplayMethod="unsigned integer"/>
-                <Element Offset="64" Vartype="Float" Bytesize="4" OffsetHex="00000040" Description="up.y" DisplayMethod="unsigned integer"/>
-                <Element Offset="68" Vartype="Float" Bytesize="4" OffsetHex="00000044" Description="up.z" DisplayMethod="unsigned integer"/>
-                <Element Offset="72" Vartype="Float" Bytesize="4" OffsetHex="00000048" Description="angularVel.x" DisplayMethod="unsigned integer"/>
-                <Element Offset="76" Vartype="Float" Bytesize="4" OffsetHex="0000004C" Description="angularVel.y" DisplayMethod="unsigned integer"/>
-                <Element Offset="80" Vartype="Float" Bytesize="4" OffsetHex="00000050" Description="angularVel.z" DisplayMethod="unsigned integer"/>
-            </Elements>
-        </Structure>
-    </Structures>
 '''
 
 import xml.etree.ElementTree as ET
