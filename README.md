@@ -12,7 +12,7 @@ git clone --recursive
 
 For the intended experience, you will need to use [these maps](https://drive.google.com/file/d/1HuGOeBXWkw4GbMptUdh8bU79_zxIDhpp/view?usp=drive_link). Just back up your existing maps and replace them with these. They should be under `<MCCPath>/halo1/maps`.
 
-They limit the speed of "hitscan" projectiles and add tracers to them. I'm still working on a clean way to include the source tags for them without inflating the repository size unnecessarily.
+The map mods limit the speed of "hitscan" projectiles and add tracers to them. Eventually, I'll keep diffs for the modified tag files directly in this repo.
 
 ## Building and Running
 
