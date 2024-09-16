@@ -6,7 +6,15 @@ Superhot-MCC brings the time dialation mechanics of SUPERHOT to Halo CE.
 
 [![Sample](/preview.webp)](https://www.youtube.com/watch?v=TbxSwqwb824&list=PLj0rP8ScM0HGciDLnYp1a-lr1zsl_15vi)
 
-## Setup
+## Installation
+
+Download the latest [release](https://github.com/KodyJKing/superhot-mcc/releases) and follow the instructions in `SUPERHOTMCC_REAMDE.md`.
+
+### Map Files
+
+For the intended experience, you will need to use [these maps](https://drive.google.com/file/d/1HuGOeBXWkw4GbMptUdh8bU79_zxIDhpp/view?usp=drive_link). Just back up your existing maps and replace them with these. They should be under `<MCCPath>/halo1/maps`. The map mods limit the speed of "hitscan" projectiles and add tracers to them. Eventually these may be hosted on the Steam Workshop.
+
+## Developer Setup
 
 Install [Visual Studio 2022](https://visualstudio.microsoft.com/) and add MSBuild to your PATH. Location may vary. For me, it's located under `C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin`.
 
@@ -16,7 +24,7 @@ Don't forget to clone recursively to get submodules:
 git clone --recursive
 ```
 
-For the intended experience, you will need to use [these maps](https://drive.google.com/file/d/1HuGOeBXWkw4GbMptUdh8bU79_zxIDhpp/view?usp=drive_link). Just back up your existing maps and replace them with these. They should be under `<MCCPath>/halo1/maps`. The map mods limit the speed of "hitscan" projectiles and add tracers to them. Eventually, I'll keep diffs for the modified tag files directly in this repo.
+Make sure to install the modded map files.
 
 ## Building and Running
 
