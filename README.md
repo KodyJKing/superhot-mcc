@@ -1,6 +1,6 @@
 # Superhot MCC
 
-Superhot-MCC brings the time dialation mechanics of SUPERHOT to Halo. Currently only CE on the Steam version of MCC is supported.
+Superhot-MCC brings the time dialation mechanics of SUPERHOT to Halo CE.
 
 [See it in action.](https://www.youtube.com/watch?v=TbxSwqwb824&list=PLj0rP8ScM0HGciDLnYp1a-lr1zsl_15vi)
 
