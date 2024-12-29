@@ -4,7 +4,7 @@ param(
     [string]$watchPath,
     [string]$command,
     [string]$extensions = ".cpp, .hpp, .c, .h, .lua, .ps1, .bat, .rc",
-    [string]$ignorePaths = ".\superhotmcc\src\buildnum.h"
+    [string]$ignorePaths = "bin, obj"
 )
 
 $global:process = $null
@@ -13,7 +13,7 @@ $global:extensions = $extensions -split "," | ForEach-Object { $_.Trim() }
 $global:ignorePath = $ignorePaths -split "," | ForEach-Object { $_.Trim() }
 
 function Run-Command {
-    $global:process = Start-Process powershell -NoNewWindow -PassThru -ArgumentList "-Command", $command
+    $global:process = Start-Process pwsh -NoNewWindow -PassThru -ArgumentList "-Command", $command
 }
 
 function Kill-Tree {

@@ -285,7 +285,7 @@ namespace HaloCE::Mod::UI {
 
                 ImGui::SameLine();
                 ImGui::Checkbox("anchor", &espSettings.anchorHighlight);
-                if (ImGui::IsItemHovered()) ImGui::SetTooltip("Keep current entity highlighted (Shift-V)");
+                if (ImGui::IsItemHovered()) ImGui::SetTooltip("Keep current entity highlighted (Shift+V)");
                 bool anchorHotkeyDown = ImGui::GetIO().KeyShift && ImGui::IsKeyPressed( ImGuiKey_V, false );
                 if (anchorHotkeyDown) espSettings.anchorHighlight = !espSettings.anchorHighlight;
 
