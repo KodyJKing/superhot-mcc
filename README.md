@@ -16,13 +16,13 @@ For the intended experience, you will need to use [these maps](https://drive.goo
 
 ## Developer Setup
 
-Install [Visual Studio 2022](https://visualstudio.microsoft.com/) and add MSBuild to your PATH. Location may vary. For me, it's located under `C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin`.
-
-Don't forget to clone recursively to get submodules:
+Clone the repository recursively to get submodules:
 
 ```powershell
 git clone --recursive
-```
+``` 
+
+Install [Visual Studio 2022](https://visualstudio.microsoft.com/) and add MSBuild to your PATH. Location may vary. For me, it's located under `C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin`.
 
 Make sure to install the modded map files.
 
@@ -40,6 +40,24 @@ Halo MCC will need to be running when you run `run_launcher.ps1`.
 When developing, run `scripts/watch_launcher.ps1` to build/run in watch mode. When you save a source file, this script will uninject, rebuild, and reinject the mod DLL.
 
 If you're using Cheat Engine as part of your workflow, turn off symbols in the debug build configuration (`superhotmcc/premake5.lua`). Otherwise, Cheat Engine will hold on to the PDB file and prevent rebuilding.
+
+## Packaging
+
+If you want to package the mod for distribution, you will need to build MSDetours' `setdll.exe` first. 
+
+Make sure that `nmake` is on your path. For me, it is located under `C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\<latest>\bin\Hostx64\x64`.
+
+Then run
+
+```powershell
+.scripts/build_setdll.bat
+```
+
+To compile and generate the package, run
+```powershell
+./scripts/package.ps1 -Config Release
+```
+The generated `.zip` file will be under `bin/Release-Win64`.
 
 ## Scripts
 
