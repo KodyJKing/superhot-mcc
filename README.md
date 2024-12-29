@@ -88,9 +88,12 @@ Arguments:
 
 Packages mod into a `.zip` file. Creates a copy of xaudio2_9redist.dll that imports the mod.
 
+You must manually run `build_setdll.bat` before running this script.
+
 Arguments:
 
 - Inherits from `build.ps1`.
+- `-MCCPath` Path to the root of the MCC installation. This is where the xaudio dll is pulled from. Default is `C:\Program Files (x86)\Steam\steamapps\common\Halo The Master Chief Collection`.
 
 ### `install_package.ps1`
 
@@ -101,3 +104,7 @@ Arguments:
 - Inherits from `package.ps1`.
 - `-MCCPath` Path to the root of the MCC installation. Default is `C:\Program Files (x86)\Steam\steamapps\common\Halo The Master Chief Collection`.
 - `-Uninstall` Uninstalls the mod instead of installing it.
+
+### `build_setdll.bat`
+
+Builds `setdll.exe` (from MS Detours). This is only needed when packaging the mod for distribution.
