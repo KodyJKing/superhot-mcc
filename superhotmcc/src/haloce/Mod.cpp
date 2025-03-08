@@ -218,7 +218,7 @@ namespace HaloCE::Mod {
         if ( settings.timescaleDeadzoning && timeScale < timescaleUpdateDeadzone )
             return 1;
 
-        // Advance animation progress by timescale.
+        // Animation interpolation pre-update:
         AnimationState* animState = nullptr;
         if (entity->entityCategory == Halo1::EntityCategory_Biped) {
             animState = getAnimationState( entity );
@@ -235,15 +235,16 @@ namespace HaloCE::Mod {
 
         // Interpolate old and new entity states according to timescale.
         Rewind::rewind( rec, timeScale, globalTimeScale, snap );
-        
+
+        // Animation interpolation post-update:
         if (animState) {
             if (entity->animId != animState->animId) {
-                animState->frameProgress = 0;              // Reset if we swap animations.
+                animState->frameProgress = 0;              // Reset if we change animations.
             } else {
                 if (animState->frameProgress >= 1)
                     animState->frameProgress = 0;          // Advance animation frame once we've progressed through a whole frame.
                 else
-                    entity->animFrame = animState->frame;  // Otherwise revert the entities frame.
+                    entity->animFrame = animState->frame;  // Otherwise revert the frame on the entity.
             }
         }
 
@@ -286,7 +287,7 @@ namespace HaloCE::Mod {
         // Get target bone state.
         originalAnimateBones(param1, animation, frame, bones);
 
-        // Interpolate bone state.
+        // Interpolate between snapshot and target pose by frameProgress.
         float progress = animState.frameProgress;
         for ( uint16_t i = 0; i < boneCount; i++ ) {
             auto& bone = bones[i];
