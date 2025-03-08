@@ -223,10 +223,10 @@ namespace HaloCE::Mod {
         if (entity->entityCategory == Halo1::EntityCategory_Biped) {
             animState = getAnimationState( entity );
             if (animState) {
-                animState->animId = entity->animId;
+                animState->animId = entity->animId;     // Snapshot the amimation state for comparison after the update.
                 animState->frame = entity->animFrame;
-                animState->frameProgress += timeScale;
-                animState->lastUpdateTick = tickCount;
+                animState->frameProgress += timeScale;  // Advance our interpolated animation by the timescale.
+                animState->lastUpdateTick = tickCount;  // Track the last update for this entity so we can clear stale entities from the interpolation system.
             }
         }
 
@@ -235,16 +235,15 @@ namespace HaloCE::Mod {
 
         // Interpolate old and new entity states according to timescale.
         Rewind::rewind( rec, timeScale, globalTimeScale, snap );
-
-        // Advance animation frame once we've progressed through a whole frame.
+        
         if (animState) {
             if (entity->animId != animState->animId) {
-                animState->frameProgress = 0;
+                animState->frameProgress = 0;              // Reset if we swap animations.
             } else {
                 if (animState->frameProgress >= 1)
-                    animState->frameProgress = 0;
+                    animState->frameProgress = 0;          // Advance animation frame once we've progressed through a whole frame.
                 else
-                    entity->animFrame = animState->frame;
+                    entity->animFrame = animState->frame;  // Otherwise revert the entities frame.
             }
         }
 
