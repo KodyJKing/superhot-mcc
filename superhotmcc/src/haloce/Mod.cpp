@@ -254,7 +254,7 @@ namespace HaloCE::Mod {
     /*
         This function seems to only update relative bone transforms from a static animation.
         It doesn't seem to handle procedural animations like IK. It also doesn't seem to update world matrices for bones.
-        It looks like the function that calls this is responsible for update world matrices.
+        It looks like the function that calls this is responsible for updating world matrices.
     */
     typedef void (*animateBones_t)(uint64_t param1, void* animation, uint16_t frame, Halo1::Transform* bones);
     animateBones_t originalAnimateBones = nullptr;
