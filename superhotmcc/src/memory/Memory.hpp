@@ -16,7 +16,7 @@ namespace Memory {
         return std::nullopt;
     }
 
-    //  Safe for unallocated memory, but not check page protection.
+    //  Safe for unallocated memory, but does not check page protection.
     template<typename T>
     bool safeWriteFast(uintptr_t address, T value) {
         if (isAllocated(address)) {
