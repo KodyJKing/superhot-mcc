@@ -10,14 +10,16 @@
         <CheatEntry>
           <ID>31</ID>
           <Description>"gameRunning"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
           <VariableType>Byte</VariableType>
-          <Address>"mcc-win64-shipping.exe"+3FFCA93</Address>
+          <Address>"mcc-win64-shipping.exe"+4000B9D</Address>
         </CheatEntry>
         <CheatEntry>
           <ID>32</ID>
           <Description>"pauseMenuOpen"</Description>
+          <ShowAsSigned>0</ShowAsSigned>
           <VariableType>Byte</VariableType>
-          <Address>"mcc-win64-shipping.exe"+3FFCA9F</Address>
+          <Address>"mcc-win64-shipping.exe"+4000B97</Address>
         </CheatEntry>
       </CheatEntries>
     </CheatEntry>
@@ -44,11 +46,12 @@
           <Address>halo1.dll+2B22744</Address>
         </CheatEntry>
         <CheatEntry>
-          <ID>9</ID>
+          <ID>64</ID>
           <Description>"playerHandle"</Description>
           <ShowAsHex>1</ShowAsHex>
+          <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
-          <Address>halo1.dll+29A6480</Address>
+          <Address>halo1.dll+29AE480</Address>
         </CheatEntry>
         <CheatEntry>
           <ID>33</ID>
@@ -154,6 +157,174 @@ halo1.dll+C505F1: 83 CB 04                 - or ebx,04
       <ID>30</ID>
       <Description>"=== Temporary =========================================="</Description>
       <GroupHeader>1</GroupHeader>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>67</ID>
+      <Description>"Scans"</Description>
+      <Options moAlwaysHideChildren="1" moManualExpandCollapse="1"/>
+      <GroupHeader>1</GroupHeader>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>43</ID>
+          <Description>"Pause Menu Open?"</Description>
+          <Options moAlwaysHideChildren="1" moManualExpandCollapse="1"/>
+          <GroupHeader>1</GroupHeader>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>41</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+4000B97</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>40</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+4000B8B</Address>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>44</ID>
+          <Description>"Is In Game?"</Description>
+          <Options moAlwaysHideChildren="1" moManualExpandCollapse="1"/>
+          <GroupHeader>1</GroupHeader>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>45</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+3ED25AC</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>46</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+3ED2EDC</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>47</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+3ED302C</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>48</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+3ED428C</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>49</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+3ED452C</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>50</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+3ED47CC</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>51</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+3F11234</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>52</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+3F7AFE8</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>53</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+3F92AC1</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>54</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+3F92BC0</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>55</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+3FA3570</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>56</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+4000B60</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>57</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+4000B9D</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>58</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+4000B9F</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>59</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+4001B10</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>60</ID>
+              <Description>"No description"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>"mcc-win64-shipping.exe"+4001B90</Address>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>61</ID>
+          <Description>"Player Handle"</Description>
+          <Options moAlwaysHideChildren="1" moManualExpandCollapse="1"/>
+          <GroupHeader>1</GroupHeader>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>62</ID>
+              <Description>"No description"</Description>
+              <ShowAsHex>1</ShowAsHex>
+              <VariableType>4 Bytes</VariableType>
+              <Address>halo1.dll+1F8CAEC</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>63</ID>
+              <Description>"No description"</Description>
+              <ShowAsHex>1</ShowAsHex>
+              <VariableType>4 Bytes</VariableType>
+              <Address>halo1.dll+2634B30</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>65</ID>
+              <Description>"No description"</Description>
+              <ShowAsHex>1</ShowAsHex>
+              <VariableType>4 Bytes</VariableType>
+              <Address>halo1.dll+2DA0038</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>66</ID>
+              <Description>"No description"</Description>
+              <ShowAsHex>1</ShowAsHex>
+              <VariableType>4 Bytes</VariableType>
+              <Address>halo1.dll+2DA3550</Address>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+      </CheatEntries>
     </CheatEntry>
   </CheatEntries>
   <CheatCodes>

@@ -256,7 +256,7 @@ namespace HaloCE::Mod::UI {
     }
 
     void espWindow() {
-        bool paused = HaloMCC::isGamePaused();
+        bool paused = HaloMCC::isPauseMenuOpen();
         ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysAutoResize;
         if (!paused)
             flags |= ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove 
