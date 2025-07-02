@@ -252,6 +252,8 @@ namespace Halo1 {
 
     uint64_t translateMapAddress( uint32_t address );
 
+    uint32_t translateToMapAddress(uint64_t absoluteAddress);
+
     WeaponProjectileData * getProjectileData(Tag * tag, uint32_t projectileIndex);
 
     uint16_t boneCount(void * anim);

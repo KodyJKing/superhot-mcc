@@ -134,10 +134,19 @@ namespace Halo1 {
         return header && Memory::isAllocated( (uintptr_t) header ) && checkMapHeader( header );
     }
 
+    static const uintptr_t relocatedMapBaseOffset = 0x2D9CE10U;
+    static const uintptr_t mapBaseOffset = 0x2EA3410U;
+
     uint64_t translateMapAddress( uint32_t address ) {
-        uint64_t relocatedMapBase = *(uint64_t*) ( dllBase() + 0x2D9CE10U );
-        uint64_t mapBase = *(uint64_t*) ( dllBase() + 0x2EA3410U );
+        uint64_t relocatedMapBase = *(uint64_t*) ( dllBase() + relocatedMapBaseOffset );
+        uint64_t mapBase = *(uint64_t*) ( dllBase() + mapBaseOffset );
         return address + ( relocatedMapBase - mapBase );
+    }
+
+    uint32_t translateToMapAddress( uint64_t absoluteAddress ) {
+        uint64_t relocatedMapBase = *(uint64_t*) ( dllBase() + relocatedMapBaseOffset );
+        uint64_t mapBase = *(uint64_t*) ( dllBase() + mapBaseOffset );
+        return (uint32_t) ( absoluteAddress - ( relocatedMapBase - mapBase ) );
     }
 
     Tag* getTag( uint32_t tagID ) {

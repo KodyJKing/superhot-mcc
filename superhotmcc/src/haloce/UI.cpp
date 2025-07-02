@@ -94,25 +94,35 @@ namespace HaloCE::Mod::UI {
         if (ImGui::CollapsingHeader("Tools")) {
             // Translate map address
             ImGui::BeginChild("##Translate Map Address", ImVec2(0, 0), ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY);
-                ImGui::Text("Translate Map Address");
-                static char address[255] = {0};
-                ImGui::InputText("##Address", address, 255);
-                static uint32_t mapAddress = 0;
-                try {
-                    mapAddress = std::stoul( address, nullptr, 16 );
-                } catch (...) {
-                    mapAddress = 0;
-                }
-                if (mapAddress) {
-                    uint64_t translated = Halo1::translateMapAddress( mapAddress );
-                    ImGui::Text("-> %p", (void*) translated);
-                    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy translated address to clipboard");
-                    if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                        char text[255] = {0};
-                        snprintf( text, 255, "%p", (void*) translated );
-                        ImGui::SetClipboardText( text );
+
+                auto renderAddressInput = [](const char* label, char* buffer, size_t bufferSize, const char* outputFormat, auto translateFunc) {
+                    ImGui::Text("%s", label);
+                    char labelId[255] = {0};
+                    snprintf(labelId, 255, "##%s", label);
+                    ImGui::InputText(labelId, buffer, bufferSize);
+                    uint64_t inputAddress = 0;
+                    try {
+                        inputAddress = std::stoull(buffer, nullptr, 16);
+                    } catch (...) {
+                        inputAddress = 0;
                     }
-                }
+                    if (inputAddress) {
+                        uint64_t translated = translateFunc(inputAddress);
+                        ImGui::Text("-> %p", (void*) translated);
+                        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy translated address to clipboard");
+                        if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+                            char text[255] = {0};
+                            snprintf(text, 255, outputFormat, (void*) translated);
+                            ImGui::SetClipboardText(text);
+                        }
+                    }
+                };
+
+                static char address[255] = {0};
+                static char address2[255] = {0};
+                renderAddressInput("From Map Relative Address", address, 255, "%p", Halo1::translateMapAddress);
+                renderAddressInput("To Map Relative Address", address2, 255, "%X", Halo1::translateToMapAddress);
+
             ImGui::EndChild();
 
             if (ImGui::Button("Tag Browser"))
@@ -489,7 +499,7 @@ namespace HaloCE::Mod::UI {
         if (!Halo1::isGameLoaded())
             return;
 
-        // ImGui::ProgressBar( getGlobalTimeScale(), ImVec2(200.0f, 0.0f) );
+        ImGui::ProgressBar( getGlobalTimeScale(), ImVec2(200.0f, 0.0f) );
 
         espWindow();
 
