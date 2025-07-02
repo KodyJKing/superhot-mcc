@@ -4,7 +4,7 @@ param(
     [string]$watchPath,
     [string]$command,
     [string]$extensions = ".cpp, .hpp, .c, .h, .lua, .ps1, .bat, .rc",
-    [string]$ignorePaths = "bin, obj"
+    [string]$ignorePaths = "bin, obj, .git"
 )
 
 $global:process = $null
@@ -43,7 +43,7 @@ try {
     Run-Command
 
     $watcher = New-Object System.IO.FileSystemWatcher
-    $watcher.Path = $watchPath
+    $watcher.Path = (Resolve-Path $watchPath).Path
     $watcher.IncludeSubdirectories = $true
     $watcher.EnableRaisingEvents = $true
 
