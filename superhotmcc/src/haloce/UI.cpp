@@ -4,6 +4,7 @@
 #include "UI.hpp"
 #include "Halo1.hpp"
 #include "halomcc/HaloMCC.hpp"
+#include "utils/ImGuiUtils.hpp"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -107,7 +108,13 @@ namespace HaloCE::Mod::UI {
                         inputAddress = 0;
                     }
                     if (inputAddress) {
-                        uint64_t translated = translateFunc(inputAddress);
+                        using ArgType = decltype(translateFunc);
+                        uint64_t translated = 0;
+                        if constexpr (std::is_invocable_v<decltype(translateFunc), uint32_t>) {
+                            translated = translateFunc(static_cast<uint32_t>(inputAddress));
+                        } else {
+                            translated = translateFunc(inputAddress);
+                        }
                         ImGui::Text("-> %p", (void*) translated);
                         if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy translated address to clipboard");
                         if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
@@ -368,17 +375,25 @@ namespace HaloCE::Mod::UI {
             #define BSP_TAB
             #ifdef BSP_TAB
             if (ImGui::BeginTabItem("BSP")) {
-                uint32_t bspVertexCount = Halo1::bspVertexCount();
-                Halo1::BSPVertex* bspVertices = Halo1::getBSPVertexArray();
+                uintptr_t bspPointer = Halo1::getBSPPointer();
+                char bspPointerStr[255] = {0}; snprintf(bspPointerStr, 255, "%p", (void*) bspPointer);
+                ImGuiUtils::renderCopyableText("BSP Pointer", bspPointerStr);
+                
+                uint32_t bspVertexCount = Halo1::getBSPVertexCount();
                 ImGui::Text("BSP Vertices: %d", bspVertexCount);
+                
+                Halo1::BSPVertex* bspVertices = Halo1::getBSPVertexArray();
+                char bspVerticesStr[255] = {0}; snprintf( bspVerticesStr, 255, "%p", bspVertices );
+                ImGuiUtils::renderCopyableText("BSP Vertex Array", bspVerticesStr);
 
-                ImGui::Text("BSP Vertex Array: %p", bspVertices);
-                if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy address to clipboard");
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                    char text[255] = {0};
-                    snprintf( text, 255, "%p", bspVertices );
-                    ImGui::SetClipboardText( text );
-                }
+                // Edge count
+                uint32_t bspEdgeCount = Halo1::getBSPEdgeCount();
+                ImGui::Text("BSP Edges: %d", bspEdgeCount);
+
+                // Edge array
+                Halo1::BSPEdge* bspEdges = Halo1::getBSPEdgeArray();
+                char bspEdgesStr[255] = {0}; snprintf( bspEdgesStr, 255, "%p", bspEdges );
+                ImGuiUtils::renderCopyableText("BSP Edge Array", bspEdgesStr);
 
                 ImGui::EndTabItem();
             }
@@ -476,7 +491,7 @@ namespace HaloCE::Mod::UI {
         namespace ESP = Overlay::ESP;
         Camera& camera = ESP::camera;
 
-        uint32_t bspVertexCount = Halo1::bspVertexCount();
+        uint32_t bspVertexCount = Halo1::getBSPVertexCount();
         Halo1::BSPVertex* bspVertices = Halo1::getBSPVertexArray();
         if (bspVertices == nullptr || bspVertexCount == 0)
             return;
@@ -492,6 +507,36 @@ namespace HaloCE::Mod::UI {
             auto toVertex = pos - camera.pos;
             if (toVertex.length() > espSettings.maxBSPVertexDistance) continue;
             ESP::drawPoint( pos, color );
+        }
+
+        uint32_t bspEdgeCount = Halo1::getBSPEdgeCount();
+        Halo1::BSPEdge* bspEdges = Halo1::getBSPEdgeArray();
+        if (bspEdges == nullptr || bspEdgeCount == 0)
+            return;
+
+        alpha = gamePaused ? 0x20 : 0x40;
+        color = IM_COL32( 255, 255, 0, alpha );
+
+        for (uint32_t i = 0; i < bspEdgeCount; i++) {
+            auto edge = &bspEdges[i];
+            if (edge->startVertex >= bspVertexCount || edge->endVertex >= bspVertexCount)
+                continue; // Invalid edge, skip it.
+            auto startVertex = &bspVertices[edge->startVertex];
+            auto endVertex = &bspVertices[edge->endVertex];
+
+            auto toStart = startVertex->pos - camera.pos;
+            auto toEnd = endVertex->pos - camera.pos;
+            if (toStart.length() > espSettings.maxBSPVertexDistance || toEnd.length() > espSettings.maxBSPVertexDistance)
+                continue; // Skip edges that are too far away.
+            
+            auto toStartDot = toStart.dot( camera.fwd );
+            auto toEndDot = toEnd.dot( camera.fwd );
+            if (toStartDot < 0.0f || toEndDot < 0.0f)
+                continue; // Skip edges that are behind the camera.
+            
+            auto startPos = startVertex->pos;
+            auto endPos = endVertex->pos;
+            ESP::drawLine( startPos, endPos, color );
         }
     }
 

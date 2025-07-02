@@ -292,11 +292,34 @@ namespace Halo1 {
     bool isGameLoaded();
 
     // = BSP =======================
+
+    #pragma pack(push, 1)
     struct BSPVertex {
         Vec3 pos;
         uint32_t firstEdgeIndex;
     };
 
-    uint32_t bspVertexCount();
+    struct BSPEdge {
+        uint32_t startVertex, endVertex;    // Indices into the BSPVertex array
+        uint32_t forwardEdge, backwardEdge; // Indices into the BSPEdge array
+        uint32_t leftSurface, rightSurface; // Indices into the BSPSurface array
+    };
+
+    struct BlockPointer {
+        uint32_t count;
+        uint32_t offset;   // Use translateMapAddress to get the actual pointer
+        uint32_t bullshit; // Not sure what this does.
+    };
+
+    struct CollisionBSP {
+        BlockPointer bsp3DNodes, planes, leaves, bsp2DRefs, bsp2DNodes, surfaces, edges, vertices;
+    };
+    #pragma pack(pop)
+
+    uintptr_t getBSPPointer();
+    uint32_t getBSPVertexCount();
     BSPVertex* getBSPVertexArray();
+
+    uint32_t getBSPEdgeCount();
+    BSPEdge* getBSPEdgeArray();
 }
