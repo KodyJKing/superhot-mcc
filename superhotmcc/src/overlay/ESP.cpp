@@ -37,6 +37,19 @@ namespace Overlay::ESP {
         return camera.project(worldPos);
     }
 
+    void drawPoint(Vec3 pos, ImU32 color) {
+        Vec3 screenPos = worldToScreen(pos);
+
+        if (screenPos.z < 0)
+            return;
+
+        ImGui::GetWindowDrawList()->AddRect(
+            ImVec2{screenPos.x - 1.0f, screenPos.y - 1.0f},
+            ImVec2{screenPos.x + 1.0f, screenPos.y + 1.0f},
+            color
+        );
+    }
+
     void drawLine(Vec3 a, Vec3 b, ImU32 color) {
         Vec3 screenA = worldToScreen(a);
         Vec3 screenB = worldToScreen(b);

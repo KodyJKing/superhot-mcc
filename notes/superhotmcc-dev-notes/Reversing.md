@@ -75,6 +75,22 @@ Open a .contrail file in Guerilla and look for it's min/max point state transiti
 
 Pick any actr tag. Set a data breakpoint on it's data address field. This may be accessed by `getTagDataPointer`, which is not actor specific, so climb up the stack one or two calls. Then open the function you find in Ghidra. Climp up the call tree until you find a function that takes no parameters. That should be the `updateActors` function. The function just prior was the `updateActor` function.
 
+## BSP Vertices
+
+- Open the tag browser and select the "BSP" filter.
+- Right click the map tag's data pointer to copy it to clipboard.
+- Open this address in CE's memory viewer and display as floats.
+- Scroll down until you find a long list of BSP Vertices (x, y, z, firstEdgeIndex). Every 4th float should be 0.
+- This is very tedious, so you may want to open CE's "Graphical Memory View" to skip over large sections of data. They should be easily distinguishable by "texture".
+- In this list find an easy to access vertex and move your player near it.
+- Set a data breakpoint on the first float of the vertex.
+- Shoot the level geometry near the vertex to trigger access. (may require a few shots / firing somewhere else first)
+- Backtrace the access to determine how to access the vertex array. 
+    - There should be a global that points to the active BSP.
+    - The BSPVertexBlockOffset is at offset `0x58` from the BSP base.
+
+See https://c20.reclaimers.net/h1/tags/scenario_structure_bsp/#tag-field-collision-bsp
+
 # See Also
 
 [Kavawuvi's map file documentation](https://opencarnage.net/index.php?/topic/6693-halo-map-file-structure-revision-212/)

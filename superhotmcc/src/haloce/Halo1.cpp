@@ -319,4 +319,27 @@ namespace Halo1 {
     bool isCameraLoaded() { return Memory::isAllocated( (uintptr_t) getPlayerCameraPointer() ); }
     bool isGameLoaded() { return GetModuleHandleA( "halo1.dll" ) && isMapLoaded() && Halo1::isCameraLoaded() && isEntityListLoaded() && isEntityArrayLoaded(); }
 
+    // = BSP =======================
+
+    uintptr_t _getBspPointer() {
+        uintptr_t bspPointerPointer = (uintptr_t) ( dllBase() + 0x1C55C68U );
+        uintptr_t bspPointer = Memory::safeRead<uintptr_t>(bspPointerPointer).value_or(0);
+        return bspPointer;
+    }
+
+    uint32_t bspVertexCount() {
+        uintptr_t bspPointer = _getBspPointer();
+        if ( !bspPointer ) return 0;
+        return Memory::safeRead<uint32_t>(bspPointer + 0x54 ).value_or( 0 );
+    }
+
+    BSPVertex* getBSPVertexArray() {
+        uintptr_t bspPointer = _getBspPointer();
+        if ( !bspPointer ) return nullptr;
+        uint32_t vertexArrayAddress = Memory::safeRead<uint32_t>( bspPointer + 0x58 ).value_or( 0 );
+        uintptr_t vertexArray = Halo1::translateMapAddress( vertexArrayAddress );
+        if ( !vertexArray ) return nullptr;
+        return (BSPVertex*) vertexArray;
+    }
+
 }

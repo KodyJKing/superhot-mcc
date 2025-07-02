@@ -12,6 +12,8 @@ namespace Overlay::ESP {
 
     Vec3 worldToScreen(Vec3 worldPos);
 
+    void drawPoint(Vec3 pos, ImU32 color);
+
     void drawLine(Vec3 start, Vec3 end, ImU32 color);
 
     void drawBox(Vec3 center, Vec3 size, ImU32 color);

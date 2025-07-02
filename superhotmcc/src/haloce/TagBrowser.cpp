@@ -36,6 +36,7 @@ namespace HaloCE::Mod::UI {
         GROUP_ID("Bitmap", "bitm")
         GROUP_ID("Shader", "shdr")
         GROUP_ID("Light", "ligh")
+        GROUP_ID("BSP", "sbsp")
         #undef GROUP_ID
     };
 

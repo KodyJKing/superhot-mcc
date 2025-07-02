@@ -108,6 +108,7 @@
         "xutility": "cpp",
         "unordered_set": "cpp",
         "fstream": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "future": "cpp"
     }
 }

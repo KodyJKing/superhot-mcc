@@ -289,4 +289,12 @@ namespace Halo1 {
     bool isCameraLoaded();
     bool isGameLoaded();
 
+    // = BSP =======================
+    struct BSPVertex {
+        Vec3 pos;
+        uint32_t firstEdgeIndex;
+    };
+
+    uint32_t bspVertexCount();
+    BSPVertex* getBSPVertexArray();
 }

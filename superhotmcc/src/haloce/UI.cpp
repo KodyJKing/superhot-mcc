@@ -148,12 +148,15 @@ namespace HaloCE::Mod::UI {
         bool anchorHighlight = false;
         float fovScale = 0.637f;
         float maxDistance = 100.0f;
+        float maxBSPVertexDistance = 20.0f;
         struct Filter {
             bool biped = true;
             bool vehicle = false;
             bool weapon = false;
             bool projectile = false;
             bool scenery = false;
+            bool equipment = false;
+            bool other = false;
         } filter = {};
     } espSettings = {};
 
@@ -164,7 +167,8 @@ namespace HaloCE::Mod::UI {
         if (c == Halo1::EntityCategory_Weapon)     return espSettings.filter.weapon;
         if (c == Halo1::EntityCategory_Projectile) return espSettings.filter.projectile;
         if (c == Halo1::EntityCategory_Scenery)    return espSettings.filter.scenery;
-        return false;
+        if (c == Halo1::EntityCategory_Equipment)   return espSettings.filter.equipment;
+        return espSettings.filter.other;
     }
 
     void filterSettings() {
@@ -173,7 +177,8 @@ namespace HaloCE::Mod::UI {
         ImGui::Checkbox("Weapon", &espSettings.filter.weapon);
         ImGui::Checkbox("Projectile", &espSettings.filter.projectile);
         ImGui::Checkbox("Scenery", &espSettings.filter.scenery);
-    
+        ImGui::Checkbox("Equipment", &espSettings.filter.equipment);
+        ImGui::Checkbox("Other", &espSettings.filter.other);
     }
 
     Halo1::Entity* highlightEntity = nullptr;
@@ -197,7 +202,7 @@ namespace HaloCE::Mod::UI {
             bool bones;
         } view = {};
 
-        bool paused = HaloMCC::isGamePaused();
+        bool paused = HaloMCC::isPauseMenuOpen();
 
         #define VIEW_TOGGLE( name ) if (paused) { ImGui::Checkbox("##" #name, &view.name); ImGui::SameLine(); }
 
@@ -349,6 +354,26 @@ namespace HaloCE::Mod::UI {
             }
             #endif
 
+            // BSP Data
+            #define BSP_TAB
+            #ifdef BSP_TAB
+            if (ImGui::BeginTabItem("BSP")) {
+                uint32_t bspVertexCount = Halo1::bspVertexCount();
+                Halo1::BSPVertex* bspVertices = Halo1::getBSPVertexArray();
+                ImGui::Text("BSP Vertices: %d", bspVertexCount);
+
+                ImGui::Text("BSP Vertex Array: %p", bspVertices);
+                if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy address to clipboard");
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+                    char text[255] = {0};
+                    snprintf( text, 255, "%p", bspVertices );
+                    ImGui::SetClipboardText( text );
+                }
+
+                ImGui::EndTabItem();
+            }
+            #endif
+
             ImGui::EndTabBar();
         }
 
@@ -365,26 +390,9 @@ namespace HaloCE::Mod::UI {
         // return entity->pos;
     }
 
-    void renderESP() {
-
-        if (!Halo1::isGameLoaded())
-            return;
-
-        ImGui::ProgressBar( getGlobalTimeScale(), ImVec2(200.0f, 0.0f) );
-
-        espWindow();
-
-        auto haloCam = Halo1::getPlayerCameraPointer();
-
+    void renderESP_entities() {
         namespace ESP = Overlay::ESP;
-
         Camera& camera = ESP::camera;
-
-        camera.pos = haloCam->pos;
-        camera.fwd = haloCam->fwd;
-        camera.up = haloCam->up;
-        camera.fov = haloCam->fov * espSettings.fovScale;
-        camera.verticalFov = true;
 
         std::vector<Halo1::Entity*> entitiesToDraw;
         Halo1::foreachEntityRecord( [&]( Halo1::EntityRecord* rec ) {
@@ -415,7 +423,7 @@ namespace HaloCE::Mod::UI {
             highlightEntity = highlightIndex >= 0 ? entitiesToDraw[highlightIndex] : nullptr;
         }
 
-        bool gamePaused = HaloMCC::isGamePaused();
+        bool gamePaused = HaloMCC::isPauseMenuOpen();
         byte alpha = gamePaused ? 0x40 : 0xFF;
         for (Halo1::Entity* entity : entitiesToDraw) {
             auto color = IM_COL32( 255, 255, 255, alpha );
@@ -423,11 +431,80 @@ namespace HaloCE::Mod::UI {
             if (entity == highlightEntity) {
                 color = IM_COL32( 64, 64, 255, alpha );
                 radius = 0.2f;
+
+                // Draw coordinate frame on highlighted entity
+                auto red = IM_COL32( 255, 64, 64, alpha );
+                auto green = IM_COL32( 64, 255, 64, alpha );
+                auto blue = IM_COL32( 64, 64, 255, alpha );
+                Vec3 pos = displayPos( entity );
+                Vec3 ex = Vec3{1,0,0} * 0.5f;
+                Vec3 ey = Vec3{0,1,0} * 0.5f;
+                Vec3 ez = Vec3{0,0,1} * 0.5f;
+                ESP::drawLine( pos, pos + ex, red );
+                ESP::drawLine( pos, pos + ey, green );
+                ESP::drawLine( pos, pos + ez, blue );
+
+                float nudgeSpeed = 0.1f;
+                if (ImGui::GetIO().KeyShift) nudgeSpeed *= 0.5f;
+
+                // Numpad 4,6 to nudge -x,+x
+                if (ImGui::IsKeyPressed( ImGuiKey_Keypad4, false )) entity->pos.x -= nudgeSpeed;
+                if (ImGui::IsKeyPressed( ImGuiKey_Keypad6, false )) entity->pos.x += nudgeSpeed;
+                // Numpad 8,5 to nudge +y,-y
+                if (ImGui::IsKeyPressed( ImGuiKey_Keypad8, false )) entity->pos.y += nudgeSpeed;
+                if (ImGui::IsKeyPressed( ImGuiKey_Keypad5, false )) entity->pos.y -= nudgeSpeed;
+                // Numpad 7,9 to nudge +z,-z
+                if (ImGui::IsKeyPressed( ImGuiKey_Keypad7, false )) entity->pos.z += nudgeSpeed;
+                if (ImGui::IsKeyPressed( ImGuiKey_Keypad9, false )) entity->pos.z -= nudgeSpeed;
             }
             Vec3 pos = displayPos( entity );
             ESP::drawCircle( pos, radius, color, true );
         }
+    }
 
+    void renderESP_BSP() {
+        namespace ESP = Overlay::ESP;
+        Camera& camera = ESP::camera;
+
+        uint32_t bspVertexCount = Halo1::bspVertexCount();
+        Halo1::BSPVertex* bspVertices = Halo1::getBSPVertexArray();
+        if (bspVertices == nullptr || bspVertexCount == 0)
+            return;
+
+        bool gamePaused = HaloMCC::isPauseMenuOpen();
+        byte alpha = gamePaused ? 0x40 : 0xFF;
+        auto color = IM_COL32( 255, 255, 0, alpha );
+        float radius = 0.05f;
+
+        for (uint32_t i = 0; i < bspVertexCount; i++) {
+            auto vertex = &bspVertices[i];
+            Vec3 pos = vertex->pos;
+            auto toVertex = pos - camera.pos;
+            if (toVertex.length() > espSettings.maxBSPVertexDistance) continue;
+            ESP::drawPoint( pos, color );
+        }
+    }
+
+    void renderESP() {
+        if (!Halo1::isGameLoaded())
+            return;
+
+        // ImGui::ProgressBar( getGlobalTimeScale(), ImVec2(200.0f, 0.0f) );
+
+        espWindow();
+
+        // Setup ESP camera to match player camera.
+        Camera& camera = Overlay::ESP::camera;
+        auto haloCam = Halo1::getPlayerCameraPointer();
+        camera.pos = haloCam->pos;
+        camera.fwd = haloCam->fwd;
+        camera.up = haloCam->up;
+        camera.fov = haloCam->fov * espSettings.fovScale;
+        camera.verticalFov = true;
+
+        renderESP_entities();
+
+        renderESP_BSP();
     }
 
 }
