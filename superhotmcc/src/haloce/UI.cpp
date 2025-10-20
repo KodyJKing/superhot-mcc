@@ -72,6 +72,72 @@ namespace HaloCE::Mod::UI {
         ImGui::SliderFloat("NPC", &HaloCE::Mod::settings.npcDamageScale, 0.0f, 5.0f, "%.1f");
     }
 
+    void infoSection() {
+        // Player handle
+        auto playerHandle = Halo1::getPlayerHandle();
+        ImGui::Text("Player Handle: %X", playerHandle);
+
+        // Player pointer
+        auto playerRec = Halo1::getEntityRecord( playerHandle );
+        ImGui::Text("Player Pointer: %p", (void*) playerRec);
+
+        // Player position
+        if (playerRec) {
+            auto player = playerRec->entity();
+            if (player) {
+                ImGui::Text("Player Position: %.2f, %.2f, %.2f", player->pos.x, player->pos.y, player->pos.z);
+            }
+        }
+    }
+
+    void toolsSection() {
+        // Translate map address
+        ImGui::BeginChild("##Translate Map Address", ImVec2(0, 0), ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY);
+
+            auto renderAddressInput = [](const char* label, char* buffer, size_t bufferSize, const char* outputFormat, auto translateFunc) {
+                ImGui::Text("%s", label);
+                char labelId[255] = {0};
+                snprintf(labelId, 255, "##%s", label);
+                ImGui::InputText(labelId, buffer, bufferSize);
+                uint64_t inputAddress = 0;
+                try {
+                    inputAddress = std::stoull(buffer, nullptr, 16);
+                } catch (...) {
+                    inputAddress = 0;
+                }
+                if (inputAddress) {
+                    using ArgType = decltype(translateFunc);
+                    uint64_t translated = 0;
+                    if constexpr (std::is_invocable_v<decltype(translateFunc), uint32_t>) {
+                        translated = translateFunc(static_cast<uint32_t>(inputAddress));
+                    } else {
+                        translated = translateFunc(inputAddress);
+                    }
+                    ImGui::Text("-> %p", (void*) translated);
+                    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy translated address to clipboard");
+                    if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+                        char text[255] = {0};
+                        snprintf(text, 255, outputFormat, (void*) translated);
+                        ImGui::SetClipboardText(text);
+                    }
+                }
+            };
+
+            static char address[255] = {0};
+            static char address2[255] = {0};
+            renderAddressInput("From Map Relative Address", address, 255, "%p", Halo1::translateMapAddress);
+            renderAddressInput("To Map Relative Address", address2, 255, "%X", Halo1::translateToMapAddress);
+
+        ImGui::EndChild();
+
+        if (ImGui::Button("Tag Browser"))
+            showTagBrowser = !showTagBrowser;
+        if (showTagBrowser) tagBrowser();
+
+        ImGui::Checkbox("ESP", &showEsp);
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Toggle ESP (F1)");
+    }
+
     void devTab() {
         if (ImGui::CollapsingHeader("Time Scale")) {
             ImGui::Checkbox("Enable Time Scale", &HaloCE::Mod::settings.enableTimeScale);
@@ -93,51 +159,11 @@ namespace HaloCE::Mod::UI {
         }
 
         if (ImGui::CollapsingHeader("Tools")) {
-            // Translate map address
-            ImGui::BeginChild("##Translate Map Address", ImVec2(0, 0), ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY);
+            toolsSection();
+        }
 
-                auto renderAddressInput = [](const char* label, char* buffer, size_t bufferSize, const char* outputFormat, auto translateFunc) {
-                    ImGui::Text("%s", label);
-                    char labelId[255] = {0};
-                    snprintf(labelId, 255, "##%s", label);
-                    ImGui::InputText(labelId, buffer, bufferSize);
-                    uint64_t inputAddress = 0;
-                    try {
-                        inputAddress = std::stoull(buffer, nullptr, 16);
-                    } catch (...) {
-                        inputAddress = 0;
-                    }
-                    if (inputAddress) {
-                        using ArgType = decltype(translateFunc);
-                        uint64_t translated = 0;
-                        if constexpr (std::is_invocable_v<decltype(translateFunc), uint32_t>) {
-                            translated = translateFunc(static_cast<uint32_t>(inputAddress));
-                        } else {
-                            translated = translateFunc(inputAddress);
-                        }
-                        ImGui::Text("-> %p", (void*) translated);
-                        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Right click to copy translated address to clipboard");
-                        if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                            char text[255] = {0};
-                            snprintf(text, 255, outputFormat, (void*) translated);
-                            ImGui::SetClipboardText(text);
-                        }
-                    }
-                };
-
-                static char address[255] = {0};
-                static char address2[255] = {0};
-                renderAddressInput("From Map Relative Address", address, 255, "%p", Halo1::translateMapAddress);
-                renderAddressInput("To Map Relative Address", address2, 255, "%X", Halo1::translateToMapAddress);
-
-            ImGui::EndChild();
-
-            if (ImGui::Button("Tag Browser"))
-                showTagBrowser = !showTagBrowser;
-            if (showTagBrowser) tagBrowser();
-
-            ImGui::Checkbox("ESP", &showEsp);
-            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Toggle ESP (F1)");
+        if (ImGui::CollapsingHeader("Info")) {
+            infoSection();
         }
     }
 
@@ -559,7 +585,7 @@ namespace HaloCE::Mod::UI {
 
         renderESP_entities();
 
-        renderESP_BSP();
+        // renderESP_BSP();
     }
 
 }
